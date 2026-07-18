@@ -1,9 +1,3 @@
-target/
-*.class
-*.jar
-*.war
-*.ear
-*.log
-.idea/
-*.iml
-.vscode/
+node_modules/
+dist/
+.env
