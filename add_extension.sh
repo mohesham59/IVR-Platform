@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration file path
-CONF_FILE="/etc/extensions.conf"
+CONF_FILE="/etc/asterisk/extensions.conf"
 
 # Check if correct number of arguments are provided
 if [ "$#" -ne 2 ]; then
@@ -13,9 +13,10 @@ fi
 EXTENSION=$1
 BUSINESS_NAME=$2
 
-# Check if the user has root privileges
-if [ "$EUID" -ne 0 ]; then
-  echo "Error: Please run this script as root (e.g. using sudo) to modify $CONF_FILE"
+# Check if the config file is writable
+if [ ! -w "$CONF_FILE" ]; then
+  echo "Error: Cannot write to $CONF_FILE. Please ensure the current user has write permission."
+  echo "Run: sudo chmod o+w $CONF_FILE"
   exit 1
 fi
 
