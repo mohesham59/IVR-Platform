@@ -71,17 +71,25 @@ public class IvrAgiScript extends BaseAgiScript {
             scriptName = scriptName.substring(0, scriptName.length() - 4);
         }
 
+        // Use business_name parameter if provided
+        String businessName = request.getParameter("business_name");
+        String scenarioName = scriptName;
+        if (businessName != null && !businessName.trim().isEmpty()) {
+            // Replace spaces with underscores for the filename (e.g., "Tech Support" -> "Tech_Support")
+            scenarioName = businessName.trim().replaceAll("\\s+", "_");
+        }
+
         String callerId = request.getCallerIdNumber();
         System.out.println("[IvrAgiScript] New call from " + callerId
                 + " on extension " + request.getExtension()
-                + " → scenario: " + scriptName);
+                + " → scenario: " + scenarioName + " (businessName: " + businessName + ")");
 
         // --- Step 2: Load the scenario (cached after first load) ---
         Map<String, Object> scenario;
         try {
-            scenario = scenarioLoader.loadScenario(scriptName);
+            scenario = scenarioLoader.loadScenario(scenarioName);
         } catch (RuntimeException e) {
-            System.err.println("[IvrAgiScript] Failed to load scenario '" + scriptName + "': " + e.getMessage());
+            System.err.println("[IvrAgiScript] Failed to load scenario '" + scenarioName + "': " + e.getMessage());
             // Play a generic error and hang up
             streamFile("tt-somethingwrong");
             hangup();
