@@ -222,7 +222,8 @@ AI isn't cosmetic here — it removes the two biggest barriers to building a goo
 ---
 ## 🔄 Flow Diagram
 
-![AI IVR Architecture](AI-IVR-Platform-Architecture.png)
+<img width="1600" height="1251" alt="Flow Digram" src="https://github.com/user-attachments/assets/e96ca2ef-dd77-4bf5-9986-0481dc886673" />
+
 ---
 
 ## 🏗️ Architecture
