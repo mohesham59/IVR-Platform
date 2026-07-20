@@ -13,33 +13,34 @@ import java.util.Map;
  * IvrAgiScript — the AGI script that handles each incoming call.
  *
  * HOW IT WORKS:
- *   1. Asterisk calls AGI(agi://host/restaurant-booking-001) for a call.
- *   2. The DefaultAgiServer dispatches the call to this script's service() method
- *      on a worker thread from its thread pool.
- *   3. service() uses request.getScript() to get the scenario name
- *      (e.g. "restaurant-booking-001"), loads the matching JSON via ScenarioLoader,
- *      and walks through the nodes from the first one to the end.
+ * 1. Asterisk calls AGI(agi://host/restaurant-booking-001) for a call.
+ * 2. The DefaultAgiServer dispatches the call to this script's service() method
+ * on a worker thread from its thread pool.
+ * 3. service() uses request.getScript() to get the scenario name
+ * (e.g. "restaurant-booking-001"), loads the matching JSON via ScenarioLoader,
+ * and walks through the nodes from the first one to the end.
  *
  * THREAD SAFETY:
- *   - This class has NO instance fields that hold per-call state.
- *   - All per-call data (collected digits, current node, etc.) lives in
- *     LOCAL VARIABLES inside service(). Local variables are on the thread's
- *     stack, so each concurrent call has its own independent copy.
- *   - The ScenarioLoader is shared but is itself thread-safe (ConcurrentHashMap).
- *   - This means 100 calls to the same extension all work independently.
+ * - This class has NO instance fields that hold per-call state.
+ * - All per-call data (collected digits, current node, etc.) lives in
+ * LOCAL VARIABLES inside service(). Local variables are on the thread's
+ * stack, so each concurrent call has its own independent copy.
+ * - The ScenarioLoader is shared but is itself thread-safe (ConcurrentHashMap).
+ * - This means 100 calls to the same extension all work independently.
  *
  * SUPPORTED NODE TYPES:
- *   - "play"     → plays an audio file, then moves to "next"
- *   - "menu"     → plays a prompt, collects 1+ DTMF digits, routes by choice
- *   - "form"     → collects multiple fields (date, time, etc.) one by one
- *   - "transfer" → transfers the call to another SIP destination
- *   - "extension"→ dials a SIP extension and branches on answered / no-answer
- *   - "database" → executes a DB query and branches on result
+ * - "play" → plays an audio file, then moves to "next"
+ * - "menu" → plays a prompt, collects 1+ DTMF digits, routes by choice
+ * - "form" → collects multiple fields (date, time, etc.) one by one
+ * - "transfer" → transfers the call to another SIP destination
+ * - "extension"→ dials a SIP extension and branches on answered / no-answer
+ * - "database" → executes a DB query and branches on result
  */
 public class IvrAgiScript extends BaseAgiScript {
 
     // Shared scenario loader — injected via constructor.
-    // This is the ONLY instance field, and it's thread-safe + read-only after construction.
+    // This is the ONLY instance field, and it's thread-safe + read-only after
+    // construction.
     private final ScenarioLoader scenarioLoader;
 
     /**
@@ -62,7 +63,8 @@ public class IvrAgiScript extends BaseAgiScript {
         // e.g. AGI(agi://host/restaurant-booking-001) → "restaurant-booking-001"
         String scriptName = request.getScript();
 
-        // Clean up the script name: remove leading slash and .json/.agi extension if present
+        // Clean up the script name: remove leading slash and .json/.agi extension if
+        // present
         if (scriptName.startsWith("/")) {
             scriptName = scriptName.substring(1);
         }
@@ -77,7 +79,8 @@ public class IvrAgiScript extends BaseAgiScript {
         String businessName = request.getParameter("business_name");
         String scenarioName = scriptName;
         if (businessName != null && !businessName.trim().isEmpty()) {
-            // Replace spaces with underscores for the filename (e.g., "Tech Support" -> "Tech_Support")
+            // Replace spaces with underscores for the filename (e.g., "Tech Support" ->
+            // "Tech_Support")
             scenarioName = businessName.trim().replaceAll("\\s+", "_");
         }
 
@@ -125,30 +128,30 @@ public class IvrAgiScript extends BaseAgiScript {
             System.out.println("[IvrAgiScript] [" + callerId + "] Processing node: "
                     + currentNodeId + " (type=" + nodeType + ")");
 
-// Dispatch to the right handler based on node type
-        switch (nodeType) {
-            case "play":
-                currentNodeId = handlePlayNode(node);
-                break;
-            case "menu":
-                currentNodeId = handleMenuNode(node);
-                break;
-            case "form":
-                currentNodeId = handleFormNode(node, callData, callerId);
-                break;
-            case "transfer":
-                currentNodeId = handleTransferNode(node);
-                break;
-            case "extension":
-                currentNodeId = handleExtensionNode(node);
-                break;
-            case "database":
-                currentNodeId = handleDatabaseNode(node);
-                break;
-            default:
-                System.err.println("[IvrAgiScript] Unknown node type: " + nodeType);
-                currentNodeId = (String) node.get("next"); // Try to continue anyway
-        }
+            // Dispatch to the right handler based on node type
+            switch (nodeType) {
+                case "play":
+                    currentNodeId = handlePlayNode(node);
+                    break;
+                case "menu":
+                    currentNodeId = handleMenuNode(node);
+                    break;
+                case "form":
+                    currentNodeId = handleFormNode(node, callData, callerId);
+                    break;
+                case "transfer":
+                    currentNodeId = handleTransferNode(node);
+                    break;
+                case "extension":
+                    currentNodeId = handleExtensionNode(node);
+                    break;
+                case "database":
+                    currentNodeId = handleDatabaseNode(node);
+                    break;
+                default:
+                    System.err.println("[IvrAgiScript] Unknown node type: " + nodeType);
+                    currentNodeId = (String) node.get("next"); // Try to continue anyway
+            }
         }
 
         // --- Step 5: Clean up ---
@@ -163,7 +166,8 @@ public class IvrAgiScript extends BaseAgiScript {
      * Handles a "play" node: plays an audio file, then returns the next node id.
      *
      * JSON example:
-     *   { "id": "welcome", "type": "play", "audio": "welcome_restaurant.wav", "next": "main_menu" }
+     * { "id": "welcome", "type": "play", "audio": "welcome_restaurant.wav", "next":
+     * "main_menu" }
      */
     private String handlePlayNode(Map<String, Object> node) throws AgiException {
         String audioFile = (String) node.get("audio");
@@ -185,17 +189,18 @@ public class IvrAgiScript extends BaseAgiScript {
      * and routes to the appropriate next node based on the caller's choice.
      *
      * JSON example:
-     *   {
-     *     "id": "main_menu", "type": "menu",
-     *     "audio": "main_menu_prompt.wav",
-     *     "prompt": "Press 1 for reservations...",
-     *     "timeout": 5000, "max_digits": 1,
-     *     "choices": { "1": "reservations", "2": "hours_info" },
-     *     "invalid": "invalid_choice",
-     *     "timeout_node": "repeat_menu"
-     *   }
+     * {
+     * "id": "main_menu", "type": "menu",
+     * "audio": "main_menu_prompt.wav",
+     * "prompt": "Press 1 for reservations...",
+     * "timeout": 5000, "max_digits": 1,
+     * "choices": { "1": "reservations", "2": "hours_info" },
+     * "invalid": "invalid_choice",
+     * "timeout_node": "repeat_menu"
+     * }
      *
-     * - "audio"  = the .wav file Asterisk plays (stored in /var/lib/asterisk/sounds/)
+     * - "audio" = the .wav file Asterisk plays (stored in
+     * /var/lib/asterisk/sounds/)
      * - "prompt" = human-readable description (used for logging only, NOT played)
      */
     @SuppressWarnings("unchecked")
@@ -252,21 +257,23 @@ public class IvrAgiScript extends BaseAgiScript {
      * (e.g. date, time, party size) and stores them in the per-call data map.
      *
      * JSON example:
-     *   {
-     *     "id": "reservations", "type": "form",
-     *     "fields": [
-     *       { "audio": "enter_date.wav", "prompt": "Enter date MMDD", "length": 4, "var": "res_date" },
-     *       { "audio": "enter_time.wav", "prompt": "Enter time HHMM", "length": 4, "var": "res_time" }
-     *     ],
-     *     "next": "confirm_reservation"
-     *   }
+     * {
+     * "id": "reservations", "type": "form",
+     * "fields": [
+     * { "audio": "enter_date.wav", "prompt": "Enter date MMDD", "length": 4, "var":
+     * "res_date" },
+     * { "audio": "enter_time.wav", "prompt": "Enter time HHMM", "length": 4, "var":
+     * "res_time" }
+     * ],
+     * "next": "confirm_reservation"
+     * }
      *
-     * - "audio"  = the .wav file Asterisk plays for this field
+     * - "audio" = the .wav file Asterisk plays for this field
      * - "prompt" = human-readable description (logging only)
      */
     @SuppressWarnings("unchecked")
     private String handleFormNode(Map<String, Object> node, Map<String, String> callData,
-                                  String callerId) throws AgiException {
+            String callerId) throws AgiException {
 
         // Get the list of fields to collect
         List<Map<String, Object>> fields = (List<Map<String, Object>>) node.get("fields");
@@ -312,7 +319,8 @@ public class IvrAgiScript extends BaseAgiScript {
      * (e.g. a SIP extension or phone number).
      *
      * JSON example:
-     *   { "id": "transfer_operator", "type": "transfer", "destination": "SIP/101", "next": "end" }
+     * { "id": "transfer_operator", "type": "transfer", "destination": "SIP/101",
+     * "next": "end" }
      */
     private String handleTransferNode(Map<String, Object> node) throws AgiException {
         String destination = (String) node.get("destination");
@@ -331,16 +339,18 @@ public class IvrAgiScript extends BaseAgiScript {
      * whether the call was answered or not.
      *
      * JSON example:
-     *   {
-     *     "id": "operator_ext", "type": "extension",
-     *     "extension": "SIP/101",
-     *     "answered": "connected_to_operator",
-     *     "noanswer": "extension_unavailable"
-     *   }
+     * {
+     * "id": "operator_ext", "type": "extension",
+     * "extension": "SIP/101",
+     * "answered": "connected_to_operator",
+     * "noanswer": "extension_unavailable"
+     * }
      *
-     * - "extension" = the SIP endpoint to dial (e.g., "SIP/101" or "SIP/operator@192.168.1.100")
-     * - "answered"  = node id to route to if the call is answered
-     * - "noanswer"  = node id to route to if the call is not answered (timeout or busy)
+     * - "extension" = the SIP endpoint to dial (e.g., "SIP/101" or
+     * "SIP/operator@192.168.1.100")
+     * - "answered" = node id to route to if the call is answered
+     * - "noanswer" = node id to route to if the call is not answered (timeout or
+     * busy)
      */
     private String handleExtensionNode(Map<String, Object> node) throws AgiException {
         String extension = (String) node.get("extension");
@@ -377,74 +387,95 @@ public class IvrAgiScript extends BaseAgiScript {
      * variable "returnedResult", then branches to the next node.
      *
      * JSON example:
-     *   {
-     *     "id": "database_get_balance",
-     *     "type": "database",
-     *     "table": "accounts",
-     *     "column": "balance",
-     *     "url": "jdbc:postgresql://localhost:5432/bank",
-     *     "next": "main_menu"
-     *   }
+     * {
+     * "id": "database_get_balance",
+     * "type": "database",
+     * "table": "accounts",
+     * "column": "balance",
+     * "url": "jdbc:postgresql://localhost:5432/bank",
+     * "next": "main_menu"
+     * }
      *
-     * - "url"    = JDBC connection string to the database
-     * - "table"  = table name to query
+     * - "url" = JDBC connection string to the database
+     * - "table" = table name to query
      * - "column" = column to select
-     * - "next"   = node id to continue to (optional; defaults to "end")
+     * - "next" = node id to continue to (optional; defaults to "end")
      */
-    private String handleDatabaseNode(Map<String, Object> node) throws AgiException {
+    private String handleDatabaseNode(
+            Map<String, Object> node) throws AgiException {
+
         String url = (String) node.get("url");
+
         String table = (String) node.get("table");
+
         String column = (String) node.get("column");
 
-        System.out.println("[IvrAgiScript] Database lookup → table=" + table
-                + ", column=" + column + ", url=" + url);
+        System.out.println(
+                "[IvrAgiScript] Database lookup → "
+                        + "table=" + table
+                        + ", column=" + column
+                        + ", url=" + url);
 
-        // Default result; replaced by the actual query value.
         String returnedResult = "";
 
         try {
-            // Load the driver (adjust to your DB vendor, e.g. org.postgresql.Driver)
-            Class.forName("org.postgresql.Driver");
 
-            try (java.sql.Connection conn = java.sql.DriverManager.getConnection(url);
-                 java.sql.Statement stmt = conn.createStatement();
-                 java.sql.ResultSet rs = stmt.executeQuery(
-                         "SELECT " + column + " FROM " + table + " LIMIT 1")) {
+            Class.forName(
+                    "org.postgresql.Driver");
+
+            try (
+                    java.sql.Connection conn = java.sql.DriverManager.getConnection(
+                            url);
+
+                    java.sql.Statement stmt = conn.createStatement();
+
+                    java.sql.ResultSet rs = stmt.executeQuery(
+                            "SELECT "
+                                    + column
+                                    + " FROM "
+                                    + table
+                                    + " LIMIT 1")) {
 
                 if (rs.next()) {
-                    returnedResult = rs.getString(column); // cast to String
+
+                    returnedResult = rs.getString(column);
+
                     System.out.println("Database Result: " + returnedResult);
                 }
             }
+
         } catch (Exception e) {
+
             System.err.println("[IvrAgiScript] DB error: " + e.getMessage());
+
             returnedResult = "ERROR";
         }
 
         System.out.println("[IvrAgiScript] returnedResult = " + returnedResult);
 
-        // Announce "your result is" then say the value
+        // Announce the result
         streamFile("your-result-is");
 
-        // Try to read as number first; if fails, read as text using phonetic alphabet
-        try {
-            double numeric = Double.parseDouble(returnedResult);
-            sayNumber(numeric);
-        } catch (NumberFormatException nfe) {
-            // Result contains letters; spell it out using phonetic alphabet
-            // Asterisk sound files: digits/<letter> (e.g. digits/a, digits/b, etc.)
-            String upper = returnedResult.toUpperCase();
-            for (char c : upper.toCharArray()) {
-                if (Character.isLetter(c)) {
-                    streamFile("digits/" + c);
-                } else if (Character.isDigit(c)) {
-                    streamFile("digits/" + c);
-                }
-            }
-        }
+        /*
+         * Build a complete sentence.
+         *
+         * Example:
+         *
+         * returnedResult = "250.75"
+         *
+         * textResult =
+         * "Your result is 250.75"
+         */
+        String textResult = "Your result is " + returnedResult;
 
-        // Continue to the next node, or end if not specified
+        /*
+         * Pass the current AGI channel
+         * to the TTS engine.
+         */
+        TtsEngine.sayText(channel,textResult);
+
         String next = (String) node.get("next");
+
         return next != null ? next : "end";
     }
 }

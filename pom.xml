@@ -18,6 +18,19 @@
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
+    <!-- Text To speach debendencies -->
+    <dependency>
+                <groupId>com.google.cloud</groupId>
+                <artifactId>libraries-bom</artifactId>
+                <version>26.83.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+      <!-- Google Cloud Text-to-Speech -->
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-texttospeech</artifactId>
+        </dependency>
     <dependency>
       <groupId>org.asteriskjava</groupId>
       <artifactId>asterisk-java</artifactId>
