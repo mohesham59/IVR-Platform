@@ -5,3 +5,12 @@ dist/
 .vscode/ 
 target/
 git 
+
+## ignoring alll frontend  
+
+src/*.tsx 
+src/index.css
+src/ivr/
+src/components/
+
+*.html
