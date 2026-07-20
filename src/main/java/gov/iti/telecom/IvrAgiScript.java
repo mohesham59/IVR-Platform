@@ -33,6 +33,7 @@ import java.util.Map;
  *   - "menu"     → plays a prompt, collects 1+ DTMF digits, routes by choice
  *   - "form"     → collects multiple fields (date, time, etc.) one by one
  *   - "transfer" → transfers the call to another SIP destination
+ *   - "extension"→ dials a SIP extension and branches on answered / no-answer
  */
 public class IvrAgiScript extends BaseAgiScript {
 
@@ -136,6 +137,9 @@ public class IvrAgiScript extends BaseAgiScript {
                     break;
                 case "transfer":
                     currentNodeId = handleTransferNode(node);
+                    break;
+                case "extension":
+                    currentNodeId = handleExtensionNode(node);
                     break;
                 default:
                     System.err.println("[IvrAgiScript] Unknown node type: " + nodeType);
@@ -316,5 +320,50 @@ public class IvrAgiScript extends BaseAgiScript {
 
         // Move to the next node (usually "end" after a transfer)
         return (String) node.get("next");
+    }
+
+    /**
+     * Handles an "extension" node: dials a SIP extension and branches based on
+     * whether the call was answered or not.
+     *
+     * JSON example:
+     *   {
+     *     "id": "operator_ext", "type": "extension",
+     *     "extension": "SIP/101",
+     *     "answered": "connected_to_operator",
+     *     "noanswer": "extension_unavailable"
+     *   }
+     *
+     * - "extension" = the SIP endpoint to dial (e.g., "SIP/101" or "SIP/operator@192.168.1.100")
+     * - "answered"  = node id to route to if the call is answered
+     * - "noanswer"  = node id to route to if the call is not answered (timeout or busy)
+     */
+    private String handleExtensionNode(Map<String, Object> node) throws AgiException {
+        String extension = (String) node.get("extension");
+
+        System.out.println("[IvrAgiScript] Dialing SIP extension: " + extension);
+
+        // Use Asterisk's Dial application to call the SIP endpoint
+        // Dial(SIP/101,30) - 30 second timeout
+        exec("Dial", extension + ",30");
+
+        // After Dial completes, check the result
+        // The Dial application sets DIALSTATUS channel variable:
+        // - ANSWERED: call was answered
+        // - BUSY: extension is busy
+        // - NOANSWER: no one answered within timeout
+        // - CANCEL: caller hung up
+        // - CONGESTION: network congestion
+        String dialStatus = getVariable("DIALSTATUS");
+
+        System.out.println("[IvrAgiScript] Dial result for " + extension + ": " + dialStatus);
+
+        // Route based on dial status
+        if ("ANSWERED".equals(dialStatus)) {
+            return (String) node.get("answered");
+        } else {
+            // For BUSY, NOANSWER, CANCEL, CONGESTION - all go to noanswer path
+            return (String) node.get("noanswer");
+        }
     }
 }

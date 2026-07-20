@@ -141,6 +141,20 @@ function NodePropsContent({ node }: { node: FlowNode }) {
             <Toggle label="Announce Wait Time" defaultChecked />
           </>
         )}
+        {node.type === 'transfer' && (
+          <>
+            <FieldRow label="Destination">
+              <TextInput value={node.data?.transfer?.destination ?? ''} placeholder="SIP/101 or 5551234" />
+            </FieldRow>
+          </>
+        )}
+        {node.type === 'extension' && (
+          <>
+            <FieldRow label="SIP Extension">
+              <TextInput value={node.data?.extension?.destination ?? ''} placeholder="SIP/101" />
+            </FieldRow>
+          </>
+        )}
         {node.type === 'api' && (
           <>
             <FieldRow label="Method">
