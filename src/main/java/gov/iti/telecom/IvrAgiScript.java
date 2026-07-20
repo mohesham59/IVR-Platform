@@ -34,6 +34,7 @@ import java.util.Map;
  *   - "form"     → collects multiple fields (date, time, etc.) one by one
  *   - "transfer" → transfers the call to another SIP destination
  *   - "extension"→ dials a SIP extension and branches on answered / no-answer
+ *   - "database" → executes a DB query and branches on result
  */
 public class IvrAgiScript extends BaseAgiScript {
 
@@ -124,27 +125,30 @@ public class IvrAgiScript extends BaseAgiScript {
             System.out.println("[IvrAgiScript] [" + callerId + "] Processing node: "
                     + currentNodeId + " (type=" + nodeType + ")");
 
-            // Dispatch to the right handler based on node type
-            switch (nodeType) {
-                case "play":
-                    currentNodeId = handlePlayNode(node);
-                    break;
-                case "menu":
-                    currentNodeId = handleMenuNode(node);
-                    break;
-                case "form":
-                    currentNodeId = handleFormNode(node, callData, callerId);
-                    break;
-                case "transfer":
-                    currentNodeId = handleTransferNode(node);
-                    break;
-                case "extension":
-                    currentNodeId = handleExtensionNode(node);
-                    break;
-                default:
-                    System.err.println("[IvrAgiScript] Unknown node type: " + nodeType);
-                    currentNodeId = (String) node.get("next"); // Try to continue anyway
-            }
+// Dispatch to the right handler based on node type
+        switch (nodeType) {
+            case "play":
+                currentNodeId = handlePlayNode(node);
+                break;
+            case "menu":
+                currentNodeId = handleMenuNode(node);
+                break;
+            case "form":
+                currentNodeId = handleFormNode(node, callData, callerId);
+                break;
+            case "transfer":
+                currentNodeId = handleTransferNode(node);
+                break;
+            case "extension":
+                currentNodeId = handleExtensionNode(node);
+                break;
+            case "database":
+                currentNodeId = handleDatabaseNode(node);
+                break;
+            default:
+                System.err.println("[IvrAgiScript] Unknown node type: " + nodeType);
+                currentNodeId = (String) node.get("next"); // Try to continue anyway
+        }
         }
 
         // --- Step 5: Clean up ---
@@ -365,5 +369,62 @@ public class IvrAgiScript extends BaseAgiScript {
             // For BUSY, NOANSWER, CANCEL, CONGESTION - all go to noanswer path
             return (String) node.get("noanswer");
         }
+    }
+
+    /**
+     * Handles a "database" node: connects using the URL from JSON, runs a
+     * SELECT on the given table/column, stores the result string in a local
+     * variable "returnedResult", then branches to the next node.
+     *
+     * JSON example:
+     *   {
+     *     "id": "database_get_balance",
+     *     "type": "database",
+     *     "table": "accounts",
+     *     "column": "balance",
+     *     "url": "jdbc:postgresql://localhost:5432/bank",
+     *     "next": "main_menu"
+     *   }
+     *
+     * - "url"    = JDBC connection string to the database
+     * - "table"  = table name to query
+     * - "column" = column to select
+     * - "next"   = node id to continue to (optional; defaults to "end")
+     */
+    private String handleDatabaseNode(Map<String, Object> node) throws AgiException {
+        String url = (String) node.get("url");
+        String table = (String) node.get("table");
+        String column = (String) node.get("column");
+
+        System.out.println("[IvrAgiScript] Database lookup → table=" + table
+                + ", column=" + column + ", url=" + url);
+
+        // Default result; replaced by the actual query value.
+        String returnedResult = "";
+
+        try {
+            // Load the driver (adjust to your DB vendor, e.g. org.postgresql.Driver)
+            Class.forName("org.postgresql.Driver");
+
+            try (java.sql.Connection conn = java.sql.DriverManager.getConnection(url);
+                 java.sql.Statement stmt = conn.createStatement();
+                 java.sql.ResultSet rs = stmt.executeQuery(
+                         "SELECT " + column + " FROM " + table + " LIMIT 1")) {
+
+                if (rs.next()) {
+                    returnedResult = rs.getString(column); // cast to String
+                    System.out.println("Database Result: " + returnedResult);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[IvrAgiScript] DB error: " + e.getMessage());
+            returnedResult = "ERROR";
+        }
+
+        System.out.println("[IvrAgiScript] returnedResult = " + returnedResult);
+
+        // Continue to the next node, or end if not specified
+        String next = (String) node.get("next");
+        return next != null ? next : "end";
     }
 }
