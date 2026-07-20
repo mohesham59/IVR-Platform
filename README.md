@@ -469,24 +469,6 @@ The IVR Builder is the centerpiece of the product experience — it's what lets 
 
 ---
 
-## 📸 Screenshots
-
-> Screenshots are maintained under `docs/screenshots/`. Placeholders below — replace with actual captures before publishing.
-
-| Screen | Path |
-|---|---|
-| Login | `docs/screenshots/login.png` |
-| Dashboard | `docs/screenshots/dashboard.png` |
-| IVR Builder | `docs/screenshots/ivr-builder.png` |
-| Queue Management | `docs/screenshots/queues.png` |
-| Voice Prompt Library | `docs/screenshots/voice-prompts.png` |
-| Reports | `docs/screenshots/reports.png` |
-| AI Assistant | `docs/screenshots/ai-assistant.png` |
-| User Management | `docs/screenshots/users.png` |
-| Audit Logs | `docs/screenshots/audit-logs.png` |
-
----
-
 ## 🚀 Installation
 
 ### Requirements
