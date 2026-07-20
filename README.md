@@ -695,29 +695,6 @@ All external traffic is terminated over **HTTPS/TLS** at the reverse proxy layer
 
 ---
 
-## 🗺️ Roadmap
-
-- [x] Business Analysis & SRS
-- [x] Domain-Driven Design (DDD) & Aggregate Modeling
-- [x] Logical Database Design
-- [x] Physical PostgreSQL Database Design
-- [x] System Architecture Diagram
-- [ ] Core Java Backend — Authentication & Tenant Management
-- [ ] Core Java Backend — IVR Flow Engine
-- [ ] Core Java Backend — Queue & Call Routing
-- [ ] React Frontend — IVR Builder (Drag & Drop)
-- [ ] React Frontend — Dashboard & Reports
-- [ ] Asterisk Integration (PJSIP, AGI, Dialplan)
-- [ ] AI Service Integration (OpenAI)
-- [ ] Docker Compose Local Environment
-- [ ] End-to-End Testing Suite
-- [ ] CI/CD Pipeline
-- [ ] Production Deployment Guide
-- [ ] WebRTC In-Browser Calling
-- [ ] Speech-to-Text & Voice Bots
-
----
-
 ## 🤝 Contributing
 
 Contributions are welcome! To contribute:
