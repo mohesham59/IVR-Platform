@@ -423,26 +423,6 @@ public class IvrAgiScript extends BaseAgiScript {
 
         System.out.println("[IvrAgiScript] returnedResult = " + returnedResult);
 
-        // Announce "your result is" then say the value
-        streamFile("your-result-is");
-
-        // Try to read as number first; if fails, read as text using phonetic alphabet
-        try {
-            double numeric = Double.parseDouble(returnedResult);
-            sayNumber(numeric);
-        } catch (NumberFormatException nfe) {
-            // Result contains letters; spell it out using phonetic alphabet
-            // Asterisk sound files: digits/<letter> (e.g. digits/a, digits/b, etc.)
-            String upper = returnedResult.toUpperCase();
-            for (char c : upper.toCharArray()) {
-                if (Character.isLetter(c)) {
-                    streamFile("digits/" + c);
-                } else if (Character.isDigit(c)) {
-                    streamFile("digits/" + c);
-                }
-            }
-        }
-
         // Continue to the next node, or end if not specified
         String next = (String) node.get("next");
         return next != null ? next : "end";
