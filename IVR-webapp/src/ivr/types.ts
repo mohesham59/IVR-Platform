@@ -38,6 +38,12 @@ export interface FlowNode {
   collapsed: boolean
   disabled: boolean
   ports: NodePort[]
+  vxmlFormId?: string
+  vxmlPrompt?: string
+  vxmlAudioFile?: string
+  vxmlVarName?: string
+  vxmlDest?: string
+  vxmlChoices?: Record<string, string>
 }
 
 export interface FlowEdge {
@@ -56,4 +62,43 @@ export interface FlowVersion {
   tag: 'draft' | 'published' | 'archived'
   savedAt: string
   author: string
+}
+
+export interface VxmlProperty {
+  name: string
+  value: string
+}
+
+export interface VxmlVar {
+  name: string
+  expr?: string
+}
+
+export interface VxmlDialog {
+  id: string
+  type: 'form' | 'menu'
+  prompt?: string
+  audio?: string
+  fields?: Array<{
+    name: string
+    prompt?: string
+    audio?: string
+    type?: string
+    length?: number
+  }>
+  choices?: Array<{
+    dtmf: string
+    next: string
+    label?: string
+  }>
+  next?: string
+  transferDest?: string
+}
+
+export interface VxmlDocumentModel {
+  version: '2.1'
+  xmlNamespace: 'http://www.w3.org/2001/vxml'
+  rootApp?: string
+  vars: VxmlVar[]
+  dialogs: VxmlDialog[]
 }
