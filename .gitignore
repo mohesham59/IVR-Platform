@@ -14,3 +14,5 @@ src/ivr/
 src/components/
 
 *.html
+
+.fuse_hidden*
