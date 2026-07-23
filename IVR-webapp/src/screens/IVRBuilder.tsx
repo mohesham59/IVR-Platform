@@ -5,7 +5,7 @@ import {
   Phone, Play, Square, ChevronUp, X, Send, Bot,
   Copy, Scissors, Trash2, EyeOff, Pencil, Group,
   AlertTriangle, CheckCircle, XCircle, Info, RefreshCw,
-  GitBranch, Zap,
+  GitBranch, Zap, Code,
 } from 'lucide-react'
 import FlowCanvas from '../ivr/FlowCanvas'
 import NodeLibrary from '../ivr/NodeLibrary'
@@ -13,6 +13,10 @@ import PropertiesPanel from '../ivr/PropertiesPanel'
 import { INITIAL_NODES, INITIAL_EDGES, VERSIONS } from '../ivr/initialFlow'
 import { NODE_DEFS } from '../ivr/nodeConfig'
 import type { FlowNode, FlowEdge, NodeType } from '../ivr/types'
+import VxmlModal from '../components/VxmlModal'
+import { generateVxml } from '../ivr/vxmlGenerator'
+import { parseVxml } from '../ivr/vxmlParser'
+
 
 type ValidationItem = { type: 'error' | 'warning' | 'info'; message: string; nodeId?: string }
 const VALIDATION_ITEMS: ValidationItem[] = [
@@ -79,8 +83,37 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
     { role: 'ai', text: 'Hi! I\'m your AI flow assistant. Describe an IVR and I\'ll generate the full flow, or ask me to improve the current one.' }
   ])
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId: string } | null>(null)
-  const [darkMode, setDarkMode] = useState(false)
-  const simIntervalRef = useRef<number | null>(null)
+  const [vxmlModalOpen, setVxmlModalOpen] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleExportVxml = () => {
+    const vxml = generateVxml(nodes, edges, 'Hospital_Main_IVR')
+    const blob = new Blob([vxml], { type: 'application/voicexml+xml;charset=utf-8;' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = 'IVR-scenario.vxml'
+    link.click()
+  }
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const content = event.target?.result as string
+      if (content) {
+        try {
+          const parsed = parseVxml(content)
+          setNodes(parsed.nodes)
+          alert('Successfully imported VoiceXML flow!')
+        } catch (err: any) {
+          alert('Failed to parse VXML file: ' + err.message)
+        }
+      }
+    }
+    reader.readAsText(file)
+  }
+
 
   const selectedNode = nodes.find(n => n.id === selectedId) ?? null
 
@@ -224,17 +257,28 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
 
         <div className="w-px h-5 bg-[#E5E7EB] mx-1" />
 
-        {/* Import / Export */}
-        {[
-          { icon: <Upload className="w-3.5 h-3.5" />, label: 'Import' },
-          { icon: <Download className="w-3.5 h-3.5" />, label: 'Export' },
-        ].map((btn) => (
-          <button key={btn.label}
-            className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#1F2937] transition-colors text-xs font-medium">
-            {btn.icon}
-            <span className="hidden lg:inline">{btn.label}</span>
-          </button>
-        ))}
+        {/* Hidden VXML file input */}
+        <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".vxml,.xml" className="hidden" />
+
+        {/* VXML Standard Import / Export / View */}
+        <button onClick={() => fileInputRef.current?.click()}
+          className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#1F2937] transition-colors text-xs font-medium" title="Import VoiceXML (.vxml)">
+          <Upload className="w-3.5 h-3.5" />
+          <span className="hidden lg:inline">Import VXML</span>
+        </button>
+
+        <button onClick={handleExportVxml}
+          className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#1F2937] transition-colors text-xs font-medium" title="Export VoiceXML (.vxml)">
+          <Download className="w-3.5 h-3.5" />
+          <span className="hidden lg:inline">Export VXML</span>
+        </button>
+
+        <button onClick={() => setVxmlModalOpen(true)}
+          className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] hover:bg-[#DBEAFE] transition-colors text-xs font-semibold" title="View / Edit VoiceXML Source">
+          <Code className="w-3.5 h-3.5" />
+          <span className="hidden lg:inline">VXML Source</span>
+        </button>
+
 
         <div className="w-px h-5 bg-[#E5E7EB] mx-1" />
 
@@ -510,6 +554,18 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
           <span className="text-sm font-semibold">Flow published successfully!</span>
         </div>
       )}
+
+      {/* VoiceXML Modal */}
+      <VxmlModal
+        isOpen={vxmlModalOpen}
+        onClose={() => setVxmlModalOpen(false)}
+        nodes={nodes}
+        edges={edges}
+        onImportVxml={(code) => {
+          const parsed = parseVxml(code)
+          setNodes(parsed.nodes)
+        }}
+      />
     </div>
   )
 }
