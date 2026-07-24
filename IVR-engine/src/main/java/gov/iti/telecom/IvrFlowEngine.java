@@ -49,14 +49,13 @@ public class IvrFlowEngine {
         System.out.println("  AGI port            : " + AGI_PORT);
         System.out.println("==============================================");
 
-        // --- Step 2: Create the shared scenario loader ---
-        // This is thread-safe and will be shared across all concurrent calls.
+        // --- Step 2: Create the shared scenario loaders ---
         ScenarioLoader scenarioLoader = new ScenarioLoader(scenariosDir);
+        gov.iti.telecom.vxml.VxmlScenarioLoader vxmlScenarioLoader = new gov.iti.telecom.vxml.VxmlScenarioLoader(scenariosDir);
 
         // --- Step 3: Create the AGI script that handles calls ---
-        // One instance, shared by all calls. Thread-safe because all call
-        // state is in local variables inside service().
-        IvrAgiScript agiScript = new IvrAgiScript(scenarioLoader);
+        IvrAgiScript agiScript = new IvrAgiScript(scenarioLoader, vxmlScenarioLoader);
+
 
         // --- Step 4: Set up the FastAGI server ---
         DefaultAgiServer agiServer = new DefaultAgiServer();

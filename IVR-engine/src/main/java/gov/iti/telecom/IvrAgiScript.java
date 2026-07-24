@@ -36,18 +36,25 @@ import java.util.Map;
  *   - "extension"→ dials a SIP extension and branches on answered / no-answer
  *   - "database" → executes a DB query and branches on result
  */
+import gov.iti.telecom.vxml.VxmlDocument;
+import gov.iti.telecom.vxml.VxmlInterpreter;
+import gov.iti.telecom.vxml.VxmlScenarioLoader;
+
 public class IvrAgiScript extends BaseAgiScript {
 
-    // Shared scenario loader — injected via constructor.
-    // This is the ONLY instance field, and it's thread-safe + read-only after construction.
     private final ScenarioLoader scenarioLoader;
+    private final VxmlScenarioLoader vxmlScenarioLoader;
 
-    /**
-     * @param scenarioLoader the shared, thread-safe scenario loader
-     */
     public IvrAgiScript(ScenarioLoader scenarioLoader) {
         this.scenarioLoader = scenarioLoader;
+        this.vxmlScenarioLoader = new VxmlScenarioLoader("scenarios");
     }
+
+    public IvrAgiScript(ScenarioLoader scenarioLoader, VxmlScenarioLoader vxmlScenarioLoader) {
+        this.scenarioLoader = scenarioLoader;
+        this.vxmlScenarioLoader = vxmlScenarioLoader;
+    }
+
 
     /**
      * Called by the AGI server for EACH incoming call, on its own worker thread.
@@ -86,7 +93,21 @@ public class IvrAgiScript extends BaseAgiScript {
                 + " on extension " + request.getExtension()
                 + " → scenario: " + scenarioName + " (businessName: " + businessName + ")");
 
-        // --- Step 2: Load the scenario (cached after first load) ---
+        // --- Check for VXML Scenario First ---
+        try {
+            VxmlDocument vxmlDoc = vxmlScenarioLoader.loadScenario(scenarioName);
+            if (vxmlDoc != null) {
+                System.out.println("[IvrAgiScript] Executing VoiceXML standard scenario: " + scenarioName);
+                answer();
+                VxmlInterpreter.execute(vxmlDoc, this, callerId);
+                hangup();
+                return;
+            }
+        } catch (Exception e) {
+            System.out.println("[IvrAgiScript] VXML scenario not found or fallback to JSON: " + e.getMessage());
+        }
+
+        // --- Step 2: Load JSON scenario fallback ---
         Map<String, Object> scenario;
         try {
             scenario = scenarioLoader.loadScenario(scenarioName);
@@ -97,6 +118,7 @@ public class IvrAgiScript extends BaseAgiScript {
             hangup();
             return;
         }
+
 
         // Get the list of nodes from the scenario
         List<Map<String, Object>> nodes = ScenarioLoader.getNodes(scenario);
