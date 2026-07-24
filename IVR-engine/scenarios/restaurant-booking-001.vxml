@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+  <meta name="title" content="Restaurant Booking VXML Scenario"/>
+
+  <form id="welcome">
+    <block>
+      <prompt>Welcome to Gourmet Bistro reservation IVR.</prompt>
+      <goto next="#main_menu"/>
+    </block>
+  </form>
+
+  <menu id="main_menu">
+    <prompt>Press 1 for table reservations. Press 2 for opening hours. Press 0 for agent.</prompt>
+    <choice dtmf="1" next="#reservations"/>
+    <choice dtmf="2" next="#hours"/>
+    <choice dtmf="0" next="#transfer_agent"/>
+  </menu>
+
+  <form id="reservations">
+    <field name="party_size">
+      <prompt>Please enter party size.</prompt>
+      <filled>
+        <goto next="#confirm_booking"/>
+      </filled>
+    </field>
+  </form>
+
+  <form id="hours">
+    <block>
+      <prompt>We are open daily from 12 PM to 11 PM.</prompt>
+      <disconnect/>
+    </block>
+  </form>
+
+  <form id="transfer_agent">
+    <transfer name="tr" dest="SIP/101">
+      <prompt>Connecting call to agent...</prompt>
+    </transfer>
+  </form>
+
+  <form id="confirm_booking">
+    <block>
+      <prompt>Your reservation has been confirmed. Goodbye!</prompt>
+      <disconnect/>
+    </block>
+  </form>
+</vxml>

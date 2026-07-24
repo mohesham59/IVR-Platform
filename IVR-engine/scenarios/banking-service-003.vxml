@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+  <form id="bank_start">
+    <block>
+      <prompt>Welcome to National Bank Voice Portal.</prompt>
+      <goto next="#account_pin"/>
+    </block>
+  </form>
+
+  <form id="account_pin">
+    <field name="pin">
+      <prompt>Please enter your 4-digit security PIN.</prompt>
+      <filled>
+        <goto next="#bank_menu"/>
+      </filled>
+    </field>
+  </form>
+
+  <menu id="bank_menu">
+    <prompt>Press 1 for balance. Press 2 for transfer. Press 0 for security.</prompt>
+    <choice dtmf="1" next="#balance_info"/>
+    <choice dtmf="2" next="#transfer_funds"/>
+    <choice dtmf="0" next="#security_transfer"/>
+  </menu>
+
+  <form id="balance_info">
+    <block>
+      <prompt>Your current checking account balance is 4,320 dollars. Thank you.</prompt>
+      <disconnect/>
+    </block>
+  </form>
+
+  <form id="transfer_funds">
+    <transfer name="trans" dest="SIP/301">
+      <prompt>Transferring to wire desk.</prompt>
+    </transfer>
+  </form>
+
+  <form id="security_transfer">
+    <transfer name="sec" dest="SIP/911">
+      <prompt>Connecting to security hotline immediately.</prompt>
+    </transfer>
+  </form>
+</vxml>

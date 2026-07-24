@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+  <form id="support_intro">
+    <block>
+      <prompt>Welcome to Telecom Customer Support IVR.</prompt>
+      <goto next="#support_menu"/>
+    </block>
+  </form>
+
+  <menu id="support_menu">
+    <prompt>Press 1 for Technical Support. Press 2 for Billing.</prompt>
+    <choice dtmf="1" next="#tech_support"/>
+    <choice dtmf="2" next="#billing_support"/>
+  </menu>
+
+  <form id="tech_support">
+    <transfer name="tech" dest="SIP/201">
+      <prompt>Connecting to technical support agent...</prompt>
+    </transfer>
+  </form>
+
+  <form id="billing_support">
+    <transfer name="billing" dest="SIP/202">
+      <prompt>Connecting to billing support specialist...</prompt>
+    </transfer>
+  </form>
+</vxml>
