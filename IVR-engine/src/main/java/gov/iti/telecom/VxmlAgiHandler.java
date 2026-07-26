@@ -107,7 +107,7 @@ public class VxmlAgiHandler extends BaseAgiScript {
 
             // Step 5: Execute VXML scenario
             System.out.println("[VxmlAgiHandler] Executing VXML: " + vxmlName);
-            VxmlSession vxmlSession = executeVxmlScenario(vxmlName, connInfo, sessionId);
+            VxmlSession vxmlSession = executeVxmlScenario(vxmlName, connInfo, sessionId, channel);
 
             // Step 6: Set Asterisk variables with results
             setAsteriskVariables(channel, vxmlSession);
@@ -237,25 +237,76 @@ public class VxmlAgiHandler extends BaseAgiScript {
     }
 
     /**
-     * Executes a VXML scenario and returns the session results.
-     *
-     * @param vxmlName VXML file name (without extension)
-     * @param connInfo Asterisk connection information
-     * @param sessionId unique session identifier
-     * @return VxmlSession with execution results
-     * @throws Exception if execution fails
+     * Executes a VXML scenario and renders prompts & DTMF interactions interactively to the channel.
      */
     private VxmlSession executeVxmlScenario(String vxmlName, 
                                             ConnectionInformation connInfo,
-                                            String sessionId) throws Exception {
+                                            String sessionId,
+                                            AgiChannel channel) throws Exception {
         try {
             System.out.println("[VxmlAgiHandler] Starting VXML execution: " + vxmlName);
             VxmlSession session = vxmlEngine.executeVxml(vxmlName, connInfo);
             
-            // Override session ID with AGI-based ID
             if (session != null) {
-                // Store the AGI session ID in session variables
                 session.setVariable("agi_session_id", sessionId);
+            }
+
+            // Render VXML Document prompts & DTMF input interactively
+            try {
+                VxmlLoader loader = new VxmlLoader("scenarios/");
+                org.w3c.dom.Document doc = loader.loadVxml(vxmlName);
+
+                org.w3c.dom.NodeList menus = doc.getElementsByTagName("menu");
+                org.w3c.dom.NodeList forms = doc.getElementsByTagName("form");
+
+                if (menus.getLength() > 0) {
+                    org.w3c.dom.Element menu = (org.w3c.dom.Element) menus.item(0);
+                    org.w3c.dom.NodeList prompts = menu.getElementsByTagName("prompt");
+                    char choice = 0;
+                    for (int p = 0; p < prompts.getLength(); p++) {
+                        String promptText = prompts.item(p).getTextContent().trim();
+                        if (!promptText.isEmpty()) {
+                            choice = speakPromptAndGetDigit(channel, promptText);
+                            if (choice != 0 && choice != '\0') {
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (choice == 0 || choice == '\0') {
+                        choice = channel.waitForDigit(10000);
+                    }
+
+                    if (choice != 0 && choice != '\0') {
+                        String choiceStr = String.valueOf(choice);
+                        if (session != null) {
+                            session.setVariable("user_choice", choiceStr);
+                        }
+                        System.out.println("[VxmlAgiHandler] DTMF choice received: " + choiceStr);
+
+                        org.w3c.dom.NodeList choices = menu.getElementsByTagName("choice");
+                        String targetFormId = null;
+                        for (int c = 0; c < choices.getLength(); c++) {
+                            org.w3c.dom.Element ch = (org.w3c.dom.Element) choices.item(c);
+                            if (choiceStr.equals(ch.getAttribute("dtmf"))) {
+                                String next = ch.getAttribute("next");
+                                if (next != null && next.startsWith("#")) {
+                                    targetFormId = next.substring(1);
+                                }
+                                break;
+                            }
+                        }
+
+                        if (targetFormId != null) {
+                            renderFormById(doc, targetFormId, channel, session);
+                        }
+                    }
+                } else if (forms.getLength() > 0) {
+                    org.w3c.dom.Element initialForm = (org.w3c.dom.Element) forms.item(0);
+                    renderFormElement(initialForm, channel, session);
+                }
+            } catch (Exception e) {
+                System.out.println("[VxmlAgiHandler] Note rendering VXML: " + e.getMessage());
             }
             
             return session;
@@ -265,17 +316,92 @@ public class VxmlAgiHandler extends BaseAgiScript {
         }
     }
 
+    private void renderFormById(org.w3c.dom.Document doc, String formId, AgiChannel channel, VxmlSession session) throws Exception {
+        org.w3c.dom.NodeList forms = doc.getElementsByTagName("form");
+        for (int i = 0; i < forms.getLength(); i++) {
+            org.w3c.dom.Element form = (org.w3c.dom.Element) forms.item(i);
+            if (formId.equals(form.getAttribute("id"))) {
+                renderFormElement(form, channel, session);
+                break;
+            }
+        }
+    }
+
+    private void renderFormElement(org.w3c.dom.Element form, AgiChannel channel, VxmlSession session) throws Exception {
+        org.w3c.dom.NodeList blocks = form.getElementsByTagName("block");
+        for (int b = 0; b < blocks.getLength(); b++) {
+            org.w3c.dom.Element block = (org.w3c.dom.Element) blocks.item(b);
+            org.w3c.dom.NodeList prompts = block.getElementsByTagName("prompt");
+            for (int p = 0; p < prompts.getLength(); p++) {
+                String text = prompts.item(p).getTextContent().trim();
+                if (!text.isEmpty()) {
+                    speakPrompt(channel, text);
+                }
+            }
+        }
+
+        org.w3c.dom.NodeList fields = form.getElementsByTagName("field");
+        for (int f = 0; f < fields.getLength(); f++) {
+            org.w3c.dom.Element field = (org.w3c.dom.Element) fields.item(f);
+            String fieldName = field.getAttribute("name");
+            org.w3c.dom.NodeList fieldPrompts = field.getElementsByTagName("prompt");
+            char digit = 0;
+            for (int fp = 0; fp < fieldPrompts.getLength(); fp++) {
+                String promptText = fieldPrompts.item(fp).getTextContent().trim();
+                if (!promptText.isEmpty()) {
+                    digit = speakPromptAndGetDigit(channel, promptText);
+                    if (digit != 0 && digit != '\0') {
+                        break;
+                    }
+                }
+            }
+            if (digit == 0 || digit == '\0') {
+                digit = channel.waitForDigit(10000);
+            }
+            if (digit != 0 && digit != '\0') {
+                String varKey = (fieldName != null && !fieldName.isEmpty()) ? fieldName : "user_input";
+                if (session != null) {
+                    session.setVariable(varKey, String.valueOf(digit));
+                }
+                System.out.println("[VxmlAgiHandler] Field " + varKey + " input: " + digit);
+            }
+        }
+    }
+
+    private char speakPromptAndGetDigit(AgiChannel channel, String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return 0;
+        }
+        try {
+            System.out.println("[VxmlAgiHandler] Speaking prompt with DTMF listen: " + text);
+            String streamPath = TtsEngine.getOrSynthesizeAudio(text);
+            if (streamPath != null) {
+                char digit = channel.streamFile(streamPath, "0123456789*#");
+                if (digit != 0 && digit != '\0') {
+                    System.out.println("[VxmlAgiHandler] DTMF keypress during audio playback: " + digit);
+                    return digit;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[VxmlAgiHandler] Audio playback exception: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    private void speakPrompt(AgiChannel channel, String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return;
+        }
+        try {
+            System.out.println("[VxmlAgiHandler] Speaking prompt: " + text);
+            TtsEngine.sayText(channel, text);
+        } catch (Exception e) {
+            System.err.println("[VxmlAgiHandler] Audio playback exception: " + e.getMessage());
+        }
+    }
+
     /**
      * Sets Asterisk variables with VXML execution results.
-     *
-     * Allows dialplan to access results via:
-     * - ${VXML_SESSION_ID}
-     * - ${VXML_STATE}
-     * - ${VXML_ERROR}
-     * - ${VXML_RESULT_varname}
-     *
-     * @param channel AGI channel
-     * @param vxmlSession VXML session with results
      */
     private void setAsteriskVariables(AgiChannel channel, VxmlSession vxmlSession) 
             throws AgiException {
@@ -285,7 +411,6 @@ public class VxmlAgiHandler extends BaseAgiScript {
         }
 
         try {
-            // Set basic session info
             channel.setVariable("VXML_SESSION_ID", vxmlSession.getSessionId());
             channel.setVariable("VXML_STATE", vxmlSession.getState().toString());
             
@@ -293,7 +418,6 @@ public class VxmlAgiHandler extends BaseAgiScript {
                 channel.setVariable("VXML_ERROR", vxmlSession.getLastError());
             }
 
-            // Set collected variables
             for (Map.Entry<String, Object> entry : vxmlSession.getAllVariables().entrySet()) {
                 String key = "VXML_RESULT_" + entry.getKey();
                 String value = entry.getValue() != null ? entry.getValue().toString() : "";
@@ -310,33 +434,25 @@ public class VxmlAgiHandler extends BaseAgiScript {
     }
 
     /**
-     * Handles post-execution logic (transfers, errors, etc.).
-     *
-     * @param channel AGI channel
-     * @param vxmlSession VXML session
+     * Handles post-execution logic.
      */
     private void handlePostExecution(AgiChannel channel, VxmlSession vxmlSession) 
             throws AgiException {
-        
         if (vxmlSession == null) {
             return;
         }
 
-        // Handle different session states
         switch (vxmlSession.getState()) {
             case COMPLETED:
                 System.out.println("[VxmlAgiHandler] VXML scenario completed successfully");
-                channel.streamFile("demo-thanks");  // Play thank you message
                 break;
 
             case ERROR:
-                System.err.println("[VxmlAgiHandler] VXML scenario ended with error");
-                channel.streamFile("vm-goodbye");   // Play goodbye
+                System.err.println("[VxmlAgiHandler] VXML scenario ended with error: " + vxmlSession.getLastError());
                 break;
 
             case TIMEOUT:
                 System.err.println("[VxmlAgiHandler] VXML scenario timed out");
-                channel.streamFile("vm-goodbye");   // Play goodbye
                 break;
 
             default:

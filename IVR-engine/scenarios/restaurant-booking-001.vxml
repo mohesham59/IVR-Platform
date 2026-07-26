@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+
+  <!-- Welcome: play greeting then go to main_menu -->
+  <form id="welcome">
+    <block>
+      <prompt>Welcome to the restaurant booking service.</prompt>
+      <goto next="#main_menu"/>
+    </block>
+  </form>
+
+  <!-- Main Menu: DTMF menu with choices -->
+  <menu id="main_menu" dtmf="true">
+    <prompt>
+      Press 1 for reservations, 2 for hours, 3 for location, 0 for operator.
+    </prompt>
+    <choice dtmf="1" next="#reservations"/>
+    <choice dtmf="2" next="#hours_info"/>
+    <choice dtmf="3" next="#location_info"/>
+    <choice dtmf="0" next="#transfer_operator"/>
+  </menu>
+
+  <!-- Reservations: collect fields -->
+  <form id="reservations">
+    <field name="party_size" type="digits">
+      <prompt>Please enter your party size using the keypad.</prompt>
+    </field>
+    <filled>
+      <prompt>Thank you. Your reservation request is received.</prompt>
+    </filled>
+  </form>
+
+  <form id="hours_info">
+    <block>
+      <prompt>We are open daily from 11 AM to 10 PM.</prompt>
+    </block>
+  </form>
+
+  <form id="location_info">
+    <block>
+      <prompt>We are located at 123 Main Street.</prompt>
+    </block>
+  </form>
+
+  <!-- Transfer to operator -->
+  <form id="transfer_operator">
+    <block>
+      <prompt>Transferring to the operator.</prompt>
+    </block>
+  </form>
+
+</vxml>

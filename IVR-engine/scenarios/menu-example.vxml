@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+
+  <menu id="main_menu" dtmf="true">
+    <prompt>
+      Welcome to the main menu. Press 1 for reservations, press 2 for customer support.
+    </prompt>
+    <choice dtmf="1" next="#reservations"/>
+    <choice dtmf="2" next="#support"/>
+  </menu>
+
+  <form id="reservations">
+    <block>
+      <prompt>You selected reservations. Please hold while we process your request.</prompt>
+    </block>
+  </form>
+
+  <form id="support">
+    <block>
+      <prompt>You selected customer support. An agent will be with you shortly.</prompt>
+    </block>
+  </form>
+
+</vxml>

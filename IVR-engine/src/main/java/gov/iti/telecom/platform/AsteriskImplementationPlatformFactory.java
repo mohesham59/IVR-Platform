@@ -74,7 +74,7 @@ public class AsteriskImplementationPlatformFactory implements org.jvoicexml.Impl
             System.out.println("[AsteriskImplementationPlatformFactory] platform.getSystemOutput().getClass()=" + (systemOutput != null ? systemOutput.getClass().getName() : "null"));
 
             return platform;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new NoresourceError("Failed to create implementation platform", e);
         }
     }

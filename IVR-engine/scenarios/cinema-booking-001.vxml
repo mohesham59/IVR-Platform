@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+
+  <!-- Welcome: play greeting then go to main_menu -->
+  <form id="welcome">
+    <block>
+      <prompt>Welcome to the Starplex Cinema booking service.</prompt>
+      <goto next="#main_menu"/>
+    </block>
+  </form>
+
+  <!-- Main Menu: DTMF menu with choices -->
+  <menu id="main_menu" dtmf="true">
+    <prompt>
+      Press 1 to book tickets, 2 for today's movies, 3 for location, 0 for the operator.
+    </prompt>
+    <choice dtmf="1" next="#book_tickets"/>
+    <choice dtmf="2" next="#movies_info"/>
+    <choice dtmf="3" next="#location_info"/>
+    <choice dtmf="0" next="#transfer_operator"/>
+  </menu>
+
+  <!-- Book Tickets: collect fields -->
+  <form id="book_tickets">
+    <field name="movie_selection" type="digits">
+      <prompt>Press 1 for Action Movie, 2 for Comedy, or 3 for Sci-Fi.</prompt>
+    </field>
+    <field name="ticket_count" type="digits">
+      <prompt>Please enter the number of tickets you wish to purchase.</prompt>
+    </field>
+    <filled>
+      <prompt>Thank you. Your tickets have been booked. Enjoy the movie.</prompt>
+    </filled>
+  </form>
+
+  <form id="movies_info">
+    <block>
+      <prompt>Today we are showing Action Movie at 5 PM, Comedy at 7 PM, and Sci-Fi at 9 PM.</prompt>
+    </block>
+  </form>
+
+  <form id="location_info">
+    <block>
+      <prompt>We are located at 456 Entertainment Avenue.</prompt>
+    </block>
+  </form>
+
+  <!-- Transfer to operator -->
+  <form id="transfer_operator">
+    <block>
+      <prompt>Transferring you to a cinema representative. Please hold.</prompt>
+    </block>
+  </form>
+
+</vxml>

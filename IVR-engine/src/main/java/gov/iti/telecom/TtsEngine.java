@@ -5,96 +5,79 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import com.google.cloud.texttospeech.v1.AudioConfig;
-import com.google.cloud.texttospeech.v1.AudioEncoding;
-import com.google.cloud.texttospeech.v1.SynthesisInput;
-import com.google.cloud.texttospeech.v1.SynthesizeSpeechResponse;
-import com.google.cloud.texttospeech.v1.TextToSpeechClient;
-import com.google.cloud.texttospeech.v1.VoiceSelectionParams;
-import com.google.protobuf.ByteString;
-
 import org.asteriskjava.fastagi.AgiChannel;
 import org.asteriskjava.fastagi.AgiException;
 
+/**
+ * TtsEngine — Text-To-Speech engine for Asterisk IVR platform.
+ * Synthesizes natural speech audio files in WAV, GSM, ULAW, and SLN formats for Asterisk playback.
+ */
 public class TtsEngine {
 
-    private static final Path SOUNDS_DIRECTORY = Paths.get("/var/lib/asterisk/sounds/custom");
+    private static final Path SOUNDS_DIRECTORY = Paths.get("/var/lib/asterisk/sounds/ivr-tts");
 
     public static void sayText(AgiChannel channel, String text) throws IOException, AgiException {
-
-        Path audioFile = null;
-
-        try {
-
-            // Generate temporary WAV file
-            audioFile = generateSpeech(text);
-
-            // Get filename without .wav
-            String fileName = audioFile
-                    .getFileName()
-                    .toString()
-                    .replaceFirst("\\.wav$", "");
-
-            channel.streamFile(
-                    "custom/" + fileName);
-
-        } catch (Exception e) {
-
-            System.err.println(
-                    "[TtsEngine] Error: "
-                            + e.getMessage());
-
-            throw new RuntimeException(e);
-
-        } finally {
-
-            // Delete temporary audio file
-            if (audioFile != null) {
-                Files.deleteIfExists(audioFile);
-            }
+        String streamPath = getOrSynthesizeAudio(text);
+        if (streamPath != null) {
+            System.out.println("[TtsEngine] Streaming synthesized audio to caller: " + streamPath);
+            channel.streamFile(streamPath);
         }
     }
 
-    private static Path generateSpeech(
-            String text) throws IOException {
-
-        Files.createDirectories(
-                SOUNDS_DIRECTORY);
-
-        Path audioFile = Files.createTempFile(
-                SOUNDS_DIRECTORY,
-                "tts-",
-                ".wav");
-
-        SynthesisInput input = SynthesisInput.newBuilder()
-                .setText(text)
-                .build();
-
-        VoiceSelectionParams voice = VoiceSelectionParams.newBuilder()
-                .setLanguageCode("en-US")
-                .build();
-
-        AudioConfig audioConfig = AudioConfig.newBuilder()
-                .setAudioEncoding(
-                        AudioEncoding.LINEAR16)
-                .setSampleRateHertz(8000)
-                .build();
-
-        try (
-                TextToSpeechClient client = TextToSpeechClient.create()) {
-
-            SynthesizeSpeechResponse response = client.synthesizeSpeech(
-                    input,
-                    voice,
-                    audioConfig);
-
-            ByteString audioContent = response.getAudioContent();
-
-            Files.write(
-                    audioFile,
-                    audioContent.toByteArray());
+    public static String getOrSynthesizeAudio(String text) throws IOException {
+        if (text == null || text.trim().isEmpty()) {
+            return null;
         }
 
-        return audioFile;
+        try {
+            Files.createDirectories(SOUNDS_DIRECTORY);
+            String uniqueName = "tts-" + Math.abs(text.hashCode());
+            Path targetWavFile = SOUNDS_DIRECTORY.resolve(uniqueName + ".wav");
+
+            if (!Files.exists(targetWavFile)) {
+                generateSpeech(text, targetWavFile);
+            }
+
+            return "ivr-tts/" + uniqueName;
+        } catch (Exception e) {
+            System.err.println("[TtsEngine] Error synthesizing speech for '" + text + "': " + e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void generateSpeech(String text, Path targetWavFile) throws IOException, InterruptedException {
+        String baseName = targetWavFile.toString().replace(".wav", "");
+        String mp3File = baseName + ".mp3";
+        String wavFile = baseName + ".wav";
+        String gsmFile = baseName + ".gsm";
+        String ulawFile = baseName + ".ulaw";
+        String slnFile = baseName + ".sln";
+
+        ProcessBuilder pbTts = new ProcessBuilder(
+            "python3", "-c",
+            "from gtts import gTTS; tts=gTTS(" + quote(text) + "); tts.save(" + quote(mp3File) + ")"
+        );
+        Process pTts = pbTts.start();
+        int exitTts = pTts.waitFor();
+
+        if (exitTts == 0 && Files.exists(Paths.get(mp3File))) {
+            new ProcessBuilder("ffmpeg", "-y", "-i", mp3File, "-ar", "8000", "-ac", "1", "-codec:a", "pcm_s16le", wavFile).start().waitFor();
+            new ProcessBuilder("ffmpeg", "-y", "-i", mp3File, "-ar", "8000", "-ac", "1", "-codec:a", "libgsm", gsmFile).start().waitFor();
+            new ProcessBuilder("ffmpeg", "-y", "-i", mp3File, "-ar", "8000", "-ac", "1", "-codec:a", "pcm_mulaw", ulawFile).start().waitFor();
+            new ProcessBuilder("ffmpeg", "-y", "-i", mp3File, "-ar", "8000", "-ac", "1", "-f", "s16le", slnFile).start().waitFor();
+
+            new java.io.File(wavFile).setReadable(true, false);
+            new java.io.File(gsmFile).setReadable(true, false);
+            new java.io.File(ulawFile).setReadable(true, false);
+            new java.io.File(slnFile).setReadable(true, false);
+
+            Files.deleteIfExists(Paths.get(mp3File));
+        } else {
+            throw new IOException("Speech synthesis failed for text: " + text);
+        }
+    }
+
+    private static String quote(String text) {
+        return "\"" + text.replace("\"", "\\\"").replace("\n", " ") + "\"";
     }
 }

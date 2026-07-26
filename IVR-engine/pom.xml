@@ -11,6 +11,18 @@
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
   </properties>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.google.cloud</groupId>
+        <artifactId>libraries-bom</artifactId>
+        <version>26.83.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -20,24 +32,16 @@
     </dependency>
   
     <!-- JVoice XML -->
-  <dependency>
-    <groupId>org.jvoicexml</groupId>
-    <artifactId>org.jvoicexml.client</artifactId>
-    <version>0.7.8</version>
-</dependency>
-    <!-- Text To speach debendencies -->
     <dependency>
-                <groupId>com.google.cloud</groupId>
-                <artifactId>libraries-bom</artifactId>
-                <version>26.83.0</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-      <!-- Google Cloud Text-to-Speech -->
-        <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>google-cloud-texttospeech</artifactId>
-        </dependency>
+      <groupId>org.jvoicexml</groupId>
+      <artifactId>org.jvoicexml.client</artifactId>
+      <version>0.7.8</version>
+    </dependency>
+    <!-- Google Cloud Text-to-Speech -->
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-texttospeech</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.asteriskjava</groupId>
       <artifactId>asterisk-java</artifactId>
