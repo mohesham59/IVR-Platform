@@ -11,6 +11,9 @@ import org.jvoicexml.event.ErrorEvent;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * VxmlAgiHandler — intelligent FastAGI handler for dynamic VXML execution.
@@ -366,6 +369,115 @@ public class VxmlAgiHandler extends BaseAgiScript {
                 System.out.println("[VxmlAgiHandler] Field " + varKey + " input: " + digit);
             }
         }
+
+        // Handle <ai> tags
+        org.w3c.dom.NodeList aiNodes = form.getElementsByTagName("ai");
+        for (int a = 0; a < aiNodes.getLength(); a++) {
+            org.w3c.dom.Element aiNode = (org.w3c.dom.Element) aiNodes.item(a);
+            String role = aiNode.getAttribute("role");
+            String options = aiNode.getAttribute("options");
+            
+            String systemPrompt = role + " You must help the user choose one of these options: " + options + ". " +
+                "You must ask for confirmation before making a final decision. " +
+                "Respond ONLY in valid JSON format: {\"status\": \"CONFIRMING\" or \"FINAL\", \"reply\": \"What you say to user\", \"action\": \"The exact destination ID (the part after the colon) if FINAL\"}";
+                
+            String conversationHistory = "";
+            boolean isFinal = false;
+            String finalAction = null;
+            
+            // 1. Play initial prompts inside <ai>
+            org.w3c.dom.NodeList aiPrompts = aiNode.getElementsByTagName("prompt");
+            for (int p = 0; p < aiPrompts.getLength(); p++) {
+                String text = aiPrompts.item(p).getTextContent().trim();
+                if (!text.isEmpty()) {
+                    speakPrompt(channel, text);
+                    conversationHistory += "AI: " + text + "\n";
+                }
+            }
+            
+            while (!isFinal) {
+                // Beep before recording
+                channel.streamFile("beep");
+                
+                // Record audio in /dev/shm to bypass systemd PrivateTmp isolation
+                String recordPath = "/dev/shm/ai_audio_" + System.currentTimeMillis();
+                channel.recordFile(recordPath, "wav", "#", 5000, 0, false, 2000);
+                
+                // Convert to text
+                String text = convertAudioToText(recordPath + ".wav");
+                System.out.println("[VxmlAgiHandler] <ai> User said: " + text);
+                
+                if (text == null || text.trim().isEmpty()) {
+                    speakPrompt(channel, "I didn't hear anything. Let's try again.");
+                    continue;
+                }
+                
+                conversationHistory += "User: " + text + "\n";
+                
+                // Get decision from Ollama
+                com.google.gson.JsonObject llmResponse = OllamaAgent.chatJson(systemPrompt, conversationHistory);
+                String status = llmResponse.has("status") ? llmResponse.get("status").getAsString() : "CONFIRMING";
+                String reply = llmResponse.has("reply") ? llmResponse.get("reply").getAsString() : "I am not sure.";
+                
+                System.out.println("[VxmlAgiHandler] <ai> LLM Response: " + llmResponse.toString());
+                
+                speakPrompt(channel, reply);
+                conversationHistory += "AI: " + reply + "\n";
+                
+                if ("FINAL".equalsIgnoreCase(status)) {
+                    isFinal = true;
+                    finalAction = llmResponse.has("action") ? llmResponse.get("action").getAsString() : null;
+                }
+            }
+            
+            if (finalAction != null && !finalAction.trim().isEmpty()) {
+                if (finalAction.contains(":")) {
+                    finalAction = finalAction.split(":")[1].trim();
+                }
+                System.out.println("[VxmlAgiHandler] <ai> Jumping to form: " + finalAction);
+                renderFormById(form.getOwnerDocument(), finalAction, channel, session);
+            } else {
+                System.out.println("[VxmlAgiHandler] <ai> No final action, ending session.");
+                // You could optionally jump to a default form here.
+            }
+        }
+    }
+
+    private String convertAudioToText(String wavFilePath) throws Exception {
+        String pythonScript = "import speech_recognition as sr\n" +
+                "import sys\n" +
+                "r = sr.Recognizer()\n" +
+                "with sr.AudioFile(sys.argv[1]) as source:\n" +
+                "    audio = r.record(source)\n" +
+                "try:\n" +
+                "    print(r.recognize_google(audio))\n" +
+                "except Exception as e:\n" +
+                "    import traceback\n" +
+                "    traceback.print_exc(file=sys.stderr)\n" +
+                "    sys.exit(1)\n";
+
+        Path scriptPath = Paths.get("/dev/shm/asr.py");
+        Files.writeString(scriptPath, pythonScript);
+
+        ProcessBuilder pb = new ProcessBuilder("python3", "/dev/shm/asr.py", wavFilePath);
+        pb.redirectErrorStream(true); // capture stderr with stdout
+        Process p = pb.start();
+        
+        java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream()));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = br.readLine()) != null) {
+            sb.append(line).append("\n");
+        }
+        int exitCode = p.waitFor();
+        String output = sb.toString().trim();
+        
+        if (exitCode != 0) {
+            System.err.println("[VxmlAgiHandler] Python ASR failed with exit code " + exitCode + ". Output:\n" + output);
+            return "";
+        }
+        
+        return output;
     }
 
     private char speakPromptAndGetDigit(AgiChannel channel, String text) {
