@@ -1,9 +1,18 @@
+.gitignore
+node_modules/
+dist/
+.env
+.vscode/ 
 target/
-*.class
-*.jar
-*.war
-*.ear
-*.log
-.idea/
-*.iml
-.vscode/
+git 
+
+## ignoring alll frontend  
+
+src/*.tsx 
+src/index.css
+src/ivr/
+src/components/
+
+*.html
+
+.fuse_hidden*

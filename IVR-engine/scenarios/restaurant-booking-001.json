@@ -1,0 +1,59 @@
+{
+    "scenario_id": "restaurant-booking-001",
+    "business_type": "restaurant",
+    "nodes": [
+        {
+            "id": "welcome",
+            "type": "play",
+            "audio": "welcome_restaurant.wav",
+            "next": "main_menu"
+        },
+        {
+            "id": "main_menu",
+            "type": "menu",
+            "audio": "main_menu_prompt.wav",
+            "prompt": "Press 1 for reservations, 2 for hours, 3 for location, 0 for operator",
+            "timeout": 5000,
+            "max_digits": 1,
+            "choices": {
+                "1": "reservations",
+                "2": "hours_info",
+                "3": "location_info",
+                "0": "transfer_operator"
+            },
+            "invalid": "invalid_choice",
+            "timeout_node": "repeat_menu"
+        },
+        {
+            "id": "reservations",
+            "type": "form",
+            "fields": [
+                {
+                    "audio": "enter_date.wav",
+                    "prompt": "Enter date MMDD",
+                    "length": 4,
+                    "var": "res_date"
+                },
+                {
+                    "audio": "enter_time.wav",
+                    "prompt": "Enter time HHMM",
+                    "length": 4,
+                    "var": "res_time"
+                },
+                {
+                    "audio": "enter_party_size.wav",
+                    "prompt": "Enter party size",
+                    "length": 2,
+                    "var": "party_size"
+                }
+            ],
+            "next": "confirm_reservation"
+        },
+        {
+            "id": "transfer_operator",
+            "type": "transfer",
+            "destination": "SIP/101",
+            "next": "end"
+        }
+    ]
+}

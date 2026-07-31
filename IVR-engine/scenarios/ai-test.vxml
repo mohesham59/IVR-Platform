@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1">
+  <form id="main">
+    <block>
+      <prompt>Connecting to the AI engine.</prompt>
+    </block>
+    
+    <ai role="You are a polite assistant." options="transfer:transfer_form, mobile balance:balance_form, complaint:complaint_form">
+      <prompt>Welcome to our intelligent routing system. How can I direct your call today?</prompt>
+    </ai>
+  </form>
+
+  <form id="transfer_form">
+    <block>
+       <prompt>You are now in the transfer menu. Goodbye.</prompt>
+    </block>
+  </form>
+
+  <form id="balance_form">
+    <block>
+       <prompt>Your mobile balance is 50 dollars. Have a nice day.</prompt>
+    </block>
+  </form>
+
+  <form id="complaint_form">
+    <block>
+       <prompt>Please state your complaint after the beep.</prompt>
+    </block>
+  </form>
+</vxml>
