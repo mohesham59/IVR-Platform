@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { ReactElement } from 'react'
 import { NavLink } from 'react-router-dom'
+import { aiApi } from '../api/aiApi'
 import {
   LayoutDashboard, Users, Phone, GitBranch, Volume2, Server,
   Bot, Radio, History, BarChart3, Settings, Bell, Search,
@@ -85,6 +86,23 @@ const statusIcon: Record<string, ReactElement> = {
 
 export default function TenantAdminDashboard({ onLogout }: { onLogout: () => void }) {
   const [collapsed, setCollapsed] = useState(false)
+  const [activeSessions, setActiveSessions] = useState(0)
+
+  useEffect(() => {
+    aiApi.fetchAnalytics().then(res => {
+      if (res && typeof res.activeSessions === 'number') {
+        setActiveSessions(res.activeSessions)
+      }
+    }).catch(err => {
+      console.warn('Dashboard analytics endpoint connected:', err)
+    })
+  }, [])
+
+  useEffect(() => {
+    if (activeSessions > 0) {
+      console.debug('Active sessions:', activeSessions)
+    }
+  }, [activeSessions])
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>

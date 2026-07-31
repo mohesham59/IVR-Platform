@@ -52,8 +52,17 @@ export interface FlowEdge {
 
 export interface FlowVersion {
   id: string
+  versionId: string
+  sessionId: string
+  createdAt: string
+  savedAt: string
   label: string
   tag: 'draft' | 'published' | 'archived'
-  savedAt: string
   author: string
+  flow: { nodes: FlowNode[]; edges: FlowEdge[] }
+  nodes?: FlowNode[]
+  edges?: FlowEdge[]
+  summary?: string
+  prompt?: string
+  score?: number
 }

@@ -1,20 +1,32 @@
 import { useState } from 'react'
-import { ChevronDown, Save, Clock, RotateCcw, CheckCircle, Archive, GitBranch, AlertTriangle, XCircle, Info } from 'lucide-react'
-import type { FlowNode, FlowVersion } from './types'
+import { ChevronDown, Save, Clock, RotateCcw, CheckCircle, Archive, GitBranch, AlertTriangle, XCircle, Info, Eye, Layers } from 'lucide-react'
+import type { FlowNode, FlowVersion, FlowEdge } from './types'
 import { NODE_DEFS, NODE_ICONS } from './nodeConfig'
 
-interface ValidationItem {
+export interface ValidationItem {
   type: 'error' | 'warning' | 'info'
+  code?: string
   message: string
   nodeId?: string
 }
 
 interface Props {
   selectedNode: FlowNode | null
+  flowName: string
+  nodesCount: number
+  edgesCount: number
   versions: FlowVersion[]
   validationItems: ValidationItem[]
   activeTab: 'props' | 'versions' | 'validation'
   onTabChange: (t: 'props' | 'versions' | 'validation') => void
+  onNodeChange?: (updatedNode: FlowNode) => void
+  onRestoreVersion?: (version: FlowVersion) => void
+  onSelectNode?: (nodeId?: string) => void
+  onSaveVersion?: () => void
+  selectedVersionId?: string | null
+  onSelectVersion?: (version: FlowVersion | null) => void
+  nodes?: FlowNode[]
+  edges?: FlowEdge[]
 }
 
 function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
@@ -26,51 +38,66 @@ function FieldRow({ label, children }: { label: string; children: React.ReactNod
   )
 }
 
-function TextInput({ value, placeholder }: { value?: string; placeholder?: string }) {
+function TextInput({ value, onChange, placeholder }: { value?: string; onChange?: (v: string) => void; placeholder?: string }) {
   return (
-    <input defaultValue={value} placeholder={placeholder}
-      className="w-full h-8 px-2.5 rounded-lg border border-[#E5E7EB] bg-white text-xs text-[#1F2937] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition-all" />
+    <input
+      value={value ?? ''}
+      onChange={e => onChange?.(e.target.value)}
+      placeholder={placeholder}
+      className="w-full h-8 px-2.5 rounded-lg border border-[#E5E7EB] bg-white text-xs text-[#1F2937] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition-all"
+    />
   )
 }
 
-function SelectInput({ options, value }: { options: string[]; value?: string }) {
+function SelectInput({ options, value, onChange }: { options: string[]; value?: string; onChange?: (v: string) => void }) {
   return (
     <div className="relative">
-      <select defaultValue={value}
-        className="w-full h-8 pl-2.5 pr-7 rounded-lg border border-[#E5E7EB] bg-white text-xs text-[#1F2937] outline-none focus:border-[#2563EB] appearance-none cursor-pointer">
-        {options.map(o => <option key={o}>{o}</option>)}
+      <select
+        value={value ?? options[0]}
+        onChange={e => onChange?.(e.target.value)}
+        className="w-full h-8 pl-2.5 pr-7 rounded-lg border border-[#E5E7EB] bg-white text-xs text-[#1F2937] outline-none focus:border-[#2563EB] appearance-none cursor-pointer"
+      >
+        {options.map(o => <option key={o} value={o}>{o}</option>)}
       </select>
       <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF] pointer-events-none" />
     </div>
   )
 }
 
-function Toggle({ label, defaultChecked }: { label: string; defaultChecked?: boolean }) {
-  const [on, setOn] = useState(defaultChecked ?? false)
+function Toggle({ label, checked, onChange }: { label: string; checked?: boolean; onChange?: (val: boolean) => void }) {
   return (
     <div className="flex items-center justify-between">
       <span className="text-[#374151] text-xs">{label}</span>
-      <button onClick={() => setOn(!on)}
-        className={`w-8 h-4.5 rounded-full transition-colors relative flex-shrink-0 ${on ? 'bg-[#2563EB]' : 'bg-[#E5E7EB]'}`}
-        style={{ height: '18px', width: '32px' }}>
-        <span className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-all ${on ? 'left-3.5' : 'left-0.5'}`} />
+      <button
+        type="button"
+        onClick={() => onChange?.(!checked)}
+        className={`w-8 h-4.5 rounded-full transition-colors relative flex-shrink-0 ${checked ? 'bg-[#2563EB]' : 'bg-[#E5E7EB]'}`}
+        style={{ height: '18px', width: '32px' }}
+      >
+        <span className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-all ${checked ? 'left-3.5' : 'left-0.5'}`} />
       </button>
     </div>
   )
 }
 
-function NodePropsContent({ node }: { node: FlowNode }) {
-  const def = NODE_DEFS[node.type]
+function NodePropsContent({ node, onNodeChange }: { node: FlowNode; onNodeChange?: (updated: FlowNode) => void }) {
+  const def = NODE_DEFS[node.type] || { label: node.type, description: '', iconBg: '#EFF6FF', color: '#2563EB' }
+
+  const handleUpdate = (fields: Partial<FlowNode>) => {
+    if (onNodeChange) {
+      onNodeChange({ ...node, ...fields })
+    }
+  }
 
   return (
     <div className="space-y-4">
       {/* Node identity */}
       <div className="flex items-center gap-3 p-3 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB]">
         <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base flex-shrink-0" style={{ backgroundColor: def.iconBg }}>
-          {NODE_ICONS[node.type]}
+          {NODE_ICONS[node.type] || '⚡'}
         </div>
-        <div>
-          <p className="text-[#1F2937] font-semibold text-sm">{node.title}</p>
+        <div className="min-w-0 flex-1">
+          <p className="text-[#1F2937] font-semibold text-sm truncate">{node.title}</p>
           <span className="inline-flex px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide mt-0.5"
             style={{ backgroundColor: def.iconBg, color: def.color }}>{def.label}</span>
         </div>
@@ -81,23 +108,31 @@ function NodePropsContent({ node }: { node: FlowNode }) {
         <h4 className="text-[#9CA3AF] text-[10px] font-semibold uppercase tracking-wider">Node Settings</h4>
 
         <FieldRow label="Node Name">
-          <TextInput value={node.title} />
+          <TextInput value={node.title} onChange={v => handleUpdate({ title: v })} />
         </FieldRow>
         <FieldRow label="Description">
-          <TextInput value={node.subtitle} />
+          <TextInput value={node.subtitle} onChange={v => handleUpdate({ subtitle: v })} />
         </FieldRow>
 
         {/* Type-specific fields */}
         {(node.type === 'greeting' || node.type === 'playback') && (
           <FieldRow label="Audio File">
-            <SelectInput options={['welcome_hospital.wav', 'afterhours_msg.wav', 'hold_music.wav', 'beep.wav']} value="welcome_hospital.wav" />
+            <SelectInput
+              options={['welcome_hospital.wav', 'afterhours_msg.wav', 'hold_music.wav', 'beep.wav']}
+              value={node.subtitle || 'welcome_hospital.wav'}
+              onChange={v => handleUpdate({ subtitle: v })}
+            />
           </FieldRow>
         )}
         {node.type === 'tts' && (
           <>
             <FieldRow label="Text / Template">
-              <textarea className="w-full px-2.5 py-2 rounded-lg border border-[#E5E7EB] bg-white text-xs text-[#1F2937] outline-none focus:border-[#2563EB] resize-none" rows={3}
-                defaultValue="Thank you for calling {{hospital.name}}. Please hold." />
+              <textarea
+                className="w-full px-2.5 py-2 rounded-lg border border-[#E5E7EB] bg-white text-xs text-[#1F2937] outline-none focus:border-[#2563EB] resize-none"
+                rows={3}
+                value={node.subtitle || 'Thank you for calling. Please stay on the line.'}
+                onChange={e => handleUpdate({ subtitle: e.target.value })}
+              />
             </FieldRow>
             <FieldRow label="Voice">
               <SelectInput options={['Polly.Joanna (en-US)', 'Polly.Matthew (en-US)', 'Polly.Amy (en-GB)']} />
@@ -115,30 +150,16 @@ function NodePropsContent({ node }: { node: FlowNode }) {
             <FieldRow label="Timeout (sec)">
               <TextInput value="5" />
             </FieldRow>
-            <div className="space-y-2">
-              <label className="block text-[#9CA3AF] text-[10px] font-semibold uppercase tracking-wider">Key Mappings</label>
-              {[['1', 'Appointments'], ['2', 'Emergency'], ['3', 'Billing'], ['0', 'Agent']].map(([k, v]) => (
-                <div key={k} className="flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-lg bg-[#EDE9FE] text-[#6D28D9] text-xs font-bold flex items-center justify-center flex-shrink-0">{k}</span>
-                  <input defaultValue={v} className="flex-1 h-7 px-2 rounded-lg border border-[#E5E7EB] text-xs text-[#1F2937] outline-none focus:border-[#2563EB] transition-all" />
-                </div>
-              ))}
-            </div>
           </>
         )}
         {node.type === 'queue' && (
           <>
-            <FieldRow label="Queue">
+            <FieldRow label="Queue Name">
               <SelectInput options={['appt-queue', 'billing-queue', 'support-queue', 'vip-queue']} value="appt-queue" />
             </FieldRow>
             <FieldRow label="Max Wait Time (sec)">
               <TextInput value="300" />
             </FieldRow>
-            <FieldRow label="Music on Hold">
-              <SelectInput options={['default-moh', 'jazz-moh', 'classical-moh']} />
-            </FieldRow>
-            <Toggle label="Announce Position" defaultChecked />
-            <Toggle label="Announce Wait Time" defaultChecked />
           </>
         )}
         {node.type === 'api' && (
@@ -146,107 +167,179 @@ function NodePropsContent({ node }: { node: FlowNode }) {
             <FieldRow label="Method">
               <SelectInput options={['GET', 'POST', 'PUT', 'DELETE']} value="GET" />
             </FieldRow>
-            <FieldRow label="URL">
-              <TextInput value="https://api.meridian.io/check-patient" />
-            </FieldRow>
-            <FieldRow label="Auth Type">
-              <SelectInput options={['Bearer Token', 'API Key', 'Basic Auth', 'None']} />
-            </FieldRow>
-            <Toggle label="Include Call Variables" defaultChecked />
-            <FieldRow label="Timeout (sec)">
-              <TextInput value="10" />
+            <FieldRow label="Endpoint URL">
+              <TextInput value={node.subtitle?.startsWith('http') ? node.subtitle : 'https://api.nexusivr.com/verify'} onChange={v => handleUpdate({ subtitle: v })} />
             </FieldRow>
           </>
         )}
         {node.type === 'ai' && (
           <>
             <FieldRow label="AI Model">
-              <SelectInput options={['GPT-4o', 'GPT-4 Turbo', 'Claude 3.5 Sonnet', 'Gemini Pro']} />
+              <SelectInput options={['llama-3.3-70b-versatile', 'granite3.2:2b']} />
             </FieldRow>
             <FieldRow label="System Prompt">
-              <textarea className="w-full px-2.5 py-2 rounded-lg border border-[#E5E7EB] bg-white text-xs text-[#1F2937] outline-none focus:border-[#2563EB] resize-none" rows={3}
-                defaultValue="You are a hospital support assistant. Be empathetic and helpful." />
+              <textarea
+                className="w-full px-2.5 py-2 rounded-lg border border-[#E5E7EB] bg-white text-xs text-[#1F2937] outline-none focus:border-[#2563EB] resize-none"
+                rows={3}
+                value={node.subtitle || 'You are an AI IVR assistant. Assist callers clearly.'}
+                onChange={e => handleUpdate({ subtitle: e.target.value })}
+              />
             </FieldRow>
-            <FieldRow label="Max Turns">
-              <TextInput value="5" />
-            </FieldRow>
-            <Toggle label="Sentiment Analysis" defaultChecked />
-            <Toggle label="Auto-Escalate on Frustration" defaultChecked />
           </>
-        )}
-        {node.type === 'hours' && (
-          <div className="space-y-2">
-            <label className="block text-[#9CA3AF] text-[10px] font-semibold uppercase tracking-wider">Schedule</label>
-            {[
-              { day: 'Mon–Fri', open: '08:00', close: '18:00', active: true },
-              { day: 'Saturday', open: '09:00', close: '14:00', active: true },
-              { day: 'Sunday', open: '—', close: '—', active: false },
-            ].map(row => (
-              <div key={row.day} className="flex items-center gap-2">
-                <span className="text-[#374151] text-xs w-16 flex-shrink-0">{row.day}</span>
-                {row.active
-                  ? <><TextInput value={row.open} /><span className="text-[#9CA3AF] text-xs">–</span><TextInput value={row.close} /></>
-                  : <span className="text-[#9CA3AF] text-xs italic">Closed</span>}
-              </div>
-            ))}
-          </div>
         )}
       </section>
 
       {/* Advanced */}
       <section className="space-y-2.5">
         <h4 className="text-[#9CA3AF] text-[10px] font-semibold uppercase tracking-wider">Advanced</h4>
-        <Toggle label="Log Execution" defaultChecked />
-        <Toggle label="Retry on Failure" />
-        <Toggle label="Node Disabled" defaultChecked={node.disabled} />
-        {node.type !== 'start' && node.type !== 'end' && (
-          <FieldRow label="On Error Goto">
-            <SelectInput options={['End Call', 'Voicemail', 'Transfer to Agent']} />
-          </FieldRow>
-        )}
+        <Toggle label="Node Disabled" checked={node.disabled} onChange={val => handleUpdate({ disabled: val })} />
       </section>
 
-      {/* Save */}
-      <button className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-[#2563EB] text-white text-xs font-semibold hover:bg-[#1E40AF] transition-colors shadow-md shadow-[#2563EB]/20">
-        <Save className="w-3.5 h-3.5" /> Apply Changes
+      {/* Action */}
+      <button
+        onClick={() => handleUpdate({ status: 'valid' })}
+        className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-[#2563EB] text-white text-xs font-semibold hover:bg-[#1E40AF] transition-colors shadow-md shadow-[#2563EB]/20"
+      >
+        <Save className="w-3.5 h-3.5" /> Apply Node Changes
       </button>
     </div>
   )
 }
 
-function VersionsContent({ versions }: { versions: FlowVersion[] }) {
+function VersionsContent({
+  versions,
+  onRestoreVersion,
+  onSaveVersion,
+  selectedVersionId,
+  onSelectVersion,
+  currentNodes = [],
+}: {
+  versions: FlowVersion[]
+  onRestoreVersion?: (v: FlowVersion) => void
+  onSaveVersion?: () => void
+  selectedVersionId?: string | null
+  onSelectVersion?: (version: FlowVersion | null) => void
+  currentNodes?: FlowNode[]
+}) {
+  const [comparingVer, setComparingVer] = useState<FlowVersion | null>(null)
+
   const tagConfig = {
     draft: { cls: 'bg-[#FEF9C3] text-[#A16207]', icon: <Clock className="w-3 h-3" /> },
     published: { cls: 'bg-[#DCFCE7] text-[#15803D]', icon: <CheckCircle className="w-3 h-3" /> },
     archived: { cls: 'bg-[#F3F4F6] text-[#6B7280]', icon: <Archive className="w-3 h-3" /> },
   }
+
+  const getDiffs = (ver: FlowVersion) => {
+    const activeNodesMap = new Map(currentNodes.map(n => [n.id, n]))
+    const verNodesMap = new Map((ver.nodes || []).map(n => [n.id, n]))
+
+    const added: string[] = []
+    const deleted: string[] = []
+    const modified: string[] = []
+
+    currentNodes.forEach(n => {
+      const oldNode = verNodesMap.get(n.id)
+      if (!oldNode) {
+        added.push(n.title || n.id)
+      } else if (oldNode.title !== n.title || oldNode.subtitle !== n.subtitle || oldNode.disabled !== n.disabled) {
+        modified.push(n.title || n.id)
+      }
+    })
+
+    ;(ver.nodes || []).forEach(n => {
+      if (!activeNodesMap.has(n.id)) {
+        deleted.push(n.title || n.id)
+      }
+    })
+
+    return { added, deleted, modified }
+  }
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h4 className="text-[#9CA3AF] text-[10px] font-semibold uppercase tracking-wider">Flow Versions</h4>
-        <button className="flex items-center gap-1 text-[#2563EB] text-[10px] font-medium hover:underline">
-          <GitBranch className="w-3 h-3" /> New Version
+        <button onClick={onSaveVersion} className="flex items-center gap-1 text-[#2563EB] text-[10px] font-medium hover:underline">
+          <GitBranch className="w-3 h-3" /> Create Version
         </button>
       </div>
+
+      {comparingVer && (() => {
+        const diffs = getDiffs(comparingVer)
+        const totalDiffs = diffs.added.length + diffs.deleted.length + diffs.modified.length
+        return (
+          <div className="p-3 rounded-xl border border-[#2563EB] bg-[#EFF6FF] space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-[#2563EB]">Comparing {comparingVer.label}</span>
+              <button onClick={() => setComparingVer(null)} className="text-[#9CA3AF] hover:text-[#1F2937] text-xs">Close</button>
+            </div>
+            
+            <div className="space-y-1.5 text-[11px] text-[#374151]">
+              {totalDiffs === 0 ? (
+                <p className="text-xs text-[#22C55E] font-medium">Flow structure is identical to current draft.</p>
+              ) : (
+                <>
+                  {diffs.added.length > 0 && (
+                    <div>
+                      <span className="font-semibold text-[#15803D]">+ Added ({diffs.added.length}):</span>
+                      <p className="text-[#6B7280] pl-2">{diffs.added.join(', ')}</p>
+                    </div>
+                  )}
+                  {diffs.deleted.length > 0 && (
+                    <div>
+                      <span className="font-semibold text-[#B91C1C]">- Deleted ({diffs.deleted.length}):</span>
+                      <p className="text-[#6B7280] pl-2">{diffs.deleted.join(', ')}</p>
+                    </div>
+                  )}
+                  {diffs.modified.length > 0 && (
+                    <div>
+                      <span className="font-semibold text-[#B45309]">~ Modified ({diffs.modified.length}):</span>
+                      <p className="text-[#6B7280] pl-2">{diffs.modified.join(', ')}</p>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            <button
+              onClick={() => { onRestoreVersion?.(comparingVer); setComparingVer(null); }}
+              className="w-full py-1 rounded bg-[#2563EB] text-white text-[11px] font-semibold hover:bg-[#1E40AF]"
+            >
+              Restore This Version
+            </button>
+          </div>
+        )
+      })()}
+
       <div className="space-y-2">
-        {versions.map((v, i) => {
-          const tc = tagConfig[v.tag]
+        {versions.map((v) => {
+          const tc = tagConfig[v.tag] || tagConfig.draft
+          const isSelected = selectedVersionId === v.id
           return (
-            <div key={v.id} className={`p-3 rounded-xl border transition-all ${i === 0 ? 'border-[#2563EB] bg-[#EFF6FF]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'}`}>
+            <div
+              key={v.id}
+              onClick={() => onSelectVersion?.(isSelected ? null : v)}
+              className={`p-3 rounded-xl border transition-all cursor-pointer ${
+                isSelected ? 'border-[#2563EB] bg-[#EFF6FF]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+              }`}
+            >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <p className={`text-xs font-semibold ${i === 0 ? 'text-[#2563EB]' : 'text-[#1F2937]'}`}>{v.label}</p>
+                  <p className={`text-xs font-semibold ${isSelected ? 'text-[#2563EB]' : 'text-[#1F2937]'}`}>{v.label}</p>
                   <p className="text-[#9CA3AF] text-[10px] mt-0.5">{v.savedAt} · {v.author}</p>
                 </div>
                 <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold flex-shrink-0 ${tc.cls}`}>
                   {tc.icon}{v.tag}
                 </span>
               </div>
-              {i !== 0 && (
-                <button className="mt-2 flex items-center gap-1 text-[#6B7280] text-[10px] hover:text-[#2563EB] transition-colors">
-                  <RotateCcw className="w-3 h-3" /> Restore this version
+              <div className="mt-2 flex items-center gap-3" onClick={e => e.stopPropagation()}>
+                <button onClick={() => onRestoreVersion?.(v)} className="flex items-center gap-1 text-[#6B7280] text-[10px] hover:text-[#2563EB] transition-colors">
+                  <RotateCcw className="w-3 h-3" /> Restore
                 </button>
-              )}
+                <button onClick={() => setComparingVer(v)} className="flex items-center gap-1 text-[#6B7280] text-[10px] hover:text-[#2563EB] transition-colors">
+                  <Eye className="w-3 h-3" /> Compare
+                </button>
+              </div>
             </div>
           )
         })}
@@ -255,7 +348,7 @@ function VersionsContent({ versions }: { versions: FlowVersion[] }) {
   )
 }
 
-function ValidationContent({ items }: { items: ValidationItem[] }) {
+function ValidationContent({ items, onSelectNode }: { items: ValidationItem[]; onSelectNode?: (id?: string) => void }) {
   const errors = items.filter(i => i.type === 'error')
   const warnings = items.filter(i => i.type === 'warning')
   const info = items.filter(i => i.type === 'info')
@@ -293,9 +386,23 @@ function ValidationContent({ items }: { items: ValidationItem[] }) {
           <h4 className="text-[#9CA3AF] text-[10px] font-semibold uppercase tracking-wider">{group.label}</h4>
           <div className="space-y-1.5">
             {group.items.map((item, i) => (
-              <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg border border-[#F3F4F6] hover:border-[#E5E7EB] bg-white transition-colors">
+              <div
+                key={i}
+                onClick={() => item.nodeId && onSelectNode?.(item.nodeId)}
+                className="flex items-start gap-2 p-2.5 rounded-lg border border-[#F3F4F6] hover:border-[#2563EB] bg-white transition-colors cursor-pointer"
+              >
                 <span className="flex-shrink-0 mt-0.5">{iconMap[item.type]}</span>
-                <p className="text-[#374151] text-xs">{item.message}</p>
+                <div className="flex-1">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {item.code && (
+                      <span className="px-1.5 py-0.5 rounded bg-[#F3F4F6] text-[#4B5563] text-[9px] font-mono font-bold uppercase border border-[#E5E7EB]">
+                        {item.code}
+                      </span>
+                    )}
+                    <span className="text-[#374151] text-xs font-medium">{item.message}</span>
+                  </div>
+                  {item.nodeId && <span className="text-[10px] text-[#2563EB] block mt-0.5">Focus Node: {item.nodeId}</span>}
+                </div>
               </div>
             ))}
           </div>
@@ -305,7 +412,23 @@ function ValidationContent({ items }: { items: ValidationItem[] }) {
   )
 }
 
-export default function PropertiesPanel({ selectedNode, versions, validationItems, activeTab, onTabChange }: Props) {
+export default function PropertiesPanel({
+  selectedNode,
+  flowName,
+  nodesCount,
+  edgesCount,
+  versions,
+  validationItems,
+  activeTab,
+  onTabChange,
+  onNodeChange,
+  onRestoreVersion,
+  onSelectNode,
+  onSaveVersion,
+  selectedVersionId,
+  onSelectVersion,
+  nodes = [],
+}: Props) {
   const errCount = validationItems.filter(i => i.type === 'error').length
   const warnCount = validationItems.filter(i => i.type === 'warning').length
 
@@ -338,19 +461,48 @@ export default function PropertiesPanel({ selectedNode, versions, validationItem
       <div className="flex-1 overflow-y-auto p-4">
         {activeTab === 'props' && (
           selectedNode
-            ? <NodePropsContent node={selectedNode} />
+            ? <NodePropsContent node={selectedNode} onNodeChange={onNodeChange} />
             : (
-              <div className="flex flex-col items-center justify-center h-full py-16 text-center">
-                <div className="w-12 h-12 rounded-2xl bg-[#F3F4F6] flex items-center justify-center mb-4">
-                  <span className="text-2xl">☰</span>
+              <div className="space-y-4">
+                <div className="p-3 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB]">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Layers className="w-4 h-4 text-[#2563EB]" />
+                    <p className="text-[#1F2937] font-semibold text-sm">{flowName || 'IVR Flow'}</p>
+                  </div>
+                  <p className="text-[#9CA3AF] text-xs">Active Flow Overview</p>
                 </div>
-                <p className="text-[#374151] font-medium text-sm">No node selected</p>
-                <p className="text-[#9CA3AF] text-xs mt-1">Click a node to view and edit its properties</p>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2.5 rounded-lg border border-[#F3F4F6] bg-white">
+                    <div className="text-sm font-bold text-[#2563EB]">{nodesCount}</div>
+                    <div className="text-[#9CA3AF] text-[10px]">Total Nodes</div>
+                  </div>
+                  <div className="p-2.5 rounded-lg border border-[#F3F4F6] bg-white">
+                    <div className="text-sm font-bold text-[#8B5CF6]">{edgesCount}</div>
+                    <div className="text-[#9CA3AF] text-[10px]">Connections</div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-center justify-center py-8 text-center border-t border-[#F3F4F6]">
+                  <p className="text-[#374151] font-medium text-xs">No node selected</p>
+                  <p className="text-[#9CA3AF] text-[11px] mt-1">Click a node on the canvas to inspect and edit its properties.</p>
+                </div>
               </div>
             )
         )}
-        {activeTab === 'versions' && <VersionsContent versions={versions} />}
-        {activeTab === 'validation' && <ValidationContent items={validationItems} />}
+        {activeTab === 'versions' && (
+          <VersionsContent
+            versions={versions}
+            onRestoreVersion={onRestoreVersion}
+            onSaveVersion={onSaveVersion}
+            selectedVersionId={selectedVersionId}
+            onSelectVersion={onSelectVersion}
+            currentNodes={nodes}
+          />
+        )}
+        {activeTab === 'validation' && (
+          <ValidationContent items={validationItems} onSelectNode={onSelectNode} />
+        )}
       </div>
     </div>
   )

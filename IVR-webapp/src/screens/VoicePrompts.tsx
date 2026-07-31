@@ -9,14 +9,14 @@ import {
 } from 'lucide-react'
 
 const prompts = [
-  { id: 1, name: 'welcome_hospital.wav', language: 'English (US)', duration: '0:08', type: 'AI Generated', createdBy: 'AI · GPT-4o', status: 'Active', size: '64KB', usedIn: ['Hospital Main IVR'] },
-  { id: 2, name: 'menu_main.wav', language: 'English (US)', duration: '0:22', type: 'AI Generated', createdBy: 'AI · GPT-4o', status: 'Active', size: '176KB', usedIn: ['Hospital Main IVR', 'After-Hours IVR'] },
+  { id: 1, name: 'welcome_hospital.wav', language: 'English (US)', duration: '0:08', type: 'AI Generated', createdBy: 'AI · Groq', status: 'Active', size: '64KB', usedIn: ['Hospital Main IVR'] },
+  { id: 2, name: 'menu_main.wav', language: 'English (US)', duration: '0:22', type: 'AI Generated', createdBy: 'AI · Groq', status: 'Active', size: '176KB', usedIn: ['Hospital Main IVR', 'After-Hours IVR'] },
   { id: 3, name: 'afterhours_msg.wav', language: 'English (US)', duration: '0:15', type: 'Uploaded', createdBy: 'Marcus Webb', status: 'Active', size: '120KB', usedIn: ['Hospital Main IVR'] },
   { id: 4, name: 'billing_hold.wav', language: 'English (US)', duration: '2:30', type: 'Uploaded', createdBy: 'Natalie R.', status: 'Active', size: '1.2MB', usedIn: ['Billing Queue'] },
   { id: 5, name: 'bienvenida_hospital.wav', language: 'Spanish (US)', duration: '0:09', type: 'AI Generated', createdBy: 'AI · Polly.Lucia', status: 'Active', size: '72KB', usedIn: ['Hospital Main IVR'] },
   { id: 6, name: 'menu_principal.wav', language: 'Spanish (US)', duration: '0:24', type: 'AI Generated', createdBy: 'AI · Polly.Lucia', status: 'Active', size: '192KB', usedIn: ['Hospital Main IVR'] },
   { id: 7, name: 'emergency_prompt.wav', language: 'English (US)', duration: '0:06', type: 'Uploaded', createdBy: 'Priya Nair', status: 'Draft', size: '48KB', usedIn: [] },
-  { id: 8, name: 'voicemail_greeting.wav', language: 'English (US)', duration: '0:12', type: 'AI Generated', createdBy: 'AI · GPT-4o', status: 'Archived', size: '96KB', usedIn: [] },
+  { id: 8, name: 'voicemail_greeting.wav', language: 'English (US)', duration: '0:12', type: 'AI Generated', createdBy: 'AI · Groq', status: 'Archived', size: '96KB', usedIn: [] },
 ]
 
 // Fake waveform bars

@@ -12,11 +12,18 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    port: parseInt(process.env.PORT || '8443'),
+    port: 5173,
     strictPort: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '/nexusivr-ai-engine/api'),
+      },
+    },
   },
   preview: {
     host: '0.0.0.0',
-    port: parseInt(process.env.PORT || '8443'),
+    port: 5173,
   },
 })

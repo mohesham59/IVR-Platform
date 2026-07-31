@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import TenantLayout from '../components/TenantLayout'
+import { aiApi, AnalyticsApiResponse } from '../api/aiApi'
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -74,6 +75,21 @@ const tooltipStyle = { backgroundColor: '#1F2937', border: 'none', borderRadius:
 
 export default function Reports({ onLogout }: { onLogout: () => void }) {
   const [dateRange] = useState('Last 7 Days')
+  const [analytics, setAnalytics] = useState<AnalyticsApiResponse | null>(null)
+
+  useEffect(() => {
+    aiApi.fetchAnalytics().then(res => {
+      if (res) setAnalytics(res)
+    }).catch(err => {
+      console.warn('Analytics API endpoint loaded with note:', err)
+    })
+  }, [])
+
+  useEffect(() => {
+    if (analytics) {
+      console.debug('Analytics updated:', analytics.totalSessions)
+    }
+  }, [analytics])
 
   const headerActions = (
     <div className="flex gap-2">

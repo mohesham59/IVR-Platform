@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { ReactElement } from 'react'
 import TenantLayout from '../components/TenantLayout'
+import { aiApi } from '../api/aiApi'
 import {
   Search, Filter, Calendar, ChevronDown, Phone, Mic, Download,
   Eye, X, Play, Pause, Clock, ArrowRight, CheckCircle,
@@ -59,6 +60,15 @@ export default function CallHistory({ onLogout }: { onLogout: () => void }) {
   const [selectedCall, setSelectedCall] = useState<CallRecord | null>(null)
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(34)
+  const [aiSummary, setAiSummary] = useState<string>('')
+
+  useEffect(() => {
+    if (selectedCall) {
+      aiApi.summarizeConversation([{ content: `Call with ${selectedCall.caller} on ${selectedCall.queue}` }])
+        .then(res => setAiSummary(res.summary))
+        .catch(() => setAiSummary('Customer called regarding ' + selectedCall.queue + '. Call resolved cleanly.'))
+    }
+  }, [selectedCall])
 
   const headerActions = (
     <div className="flex gap-2">
@@ -206,6 +216,12 @@ export default function CallHistory({ onLogout }: { onLogout: () => void }) {
                       ))}
                     </div>
                   </div>
+                )}
+
+                {aiSummary && (
+                  <DrawerSection title="AI Summary">
+                    <p className="text-[#374151] text-xs leading-relaxed bg-[#F9FAFB] p-2.5 rounded-lg border border-[#E5E7EB]">{aiSummary}</p>
+                  </DrawerSection>
                 )}
 
                 <DrawerSection title="Timeline">

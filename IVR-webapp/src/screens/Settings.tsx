@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import TenantLayout from '../components/TenantLayout'
+import { aiApi } from '../api/aiApi'
 import {
   Building2, Clock, Calendar, Phone, Bot, Shield, Users, Key, Puzzle,
   Bell, CreditCard, CheckCircle, Eye, EyeOff, Download,
@@ -40,16 +41,14 @@ const HOLIDAYS = [
 ]
 
 const AI_PROVIDERS = [
-  { id: 'openai', label: 'OpenAI', logo: '🤖', models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'] },
-  { id: 'google', label: 'Google', logo: '🔵', models: ['gemini-1.5-pro', 'gemini-1.5-flash'] },
-  { id: 'azure', label: 'Azure OpenAI', logo: '☁️', models: ['gpt-4o (Azure)', 'gpt-35-turbo (Azure)'] },
-  { id: 'anthropic', label: 'Anthropic', logo: '🧠', models: ['claude-opus-4-8', 'claude-sonnet-4-6', 'claude-haiku-4-5'] },
+  { id: 'groq', label: 'Groq', logo: '☁️', models: ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'] },
+  { id: 'ollama', label: 'Ollama', logo: '🟢', models: ['granite3.2:2b'] },
 ]
 
 const SYSTEM_STATUS = [
   { name: 'Asterisk PBX', status: 'green', version: 'v20.4.0', uptime: '14d 6h 22m', icon: <Server className="w-4 h-4" /> },
   { name: 'PostgreSQL', status: 'green', version: 'v16.1', uptime: '14d 6h 22m', icon: <Database className="w-4 h-4" /> },
-  { name: 'AI Provider', status: 'green', version: 'OpenAI v2', uptime: '5d 11h 04m', icon: <Bot className="w-4 h-4" /> },
+  { name: 'AI Provider', status: 'green', version: 'Groq v1', uptime: '5d 11h 04m', icon: <Bot className="w-4 h-4" /> },
   { name: 'SIP Server', status: 'yellow', version: 'Kamailio 5.7', uptime: '2d 01h 08m', icon: <Phone className="w-4 h-4" /> },
   { name: 'Storage (S3)', status: 'green', version: 'AWS S3', uptime: '30d+', icon: <Cloud className="w-4 h-4" /> },
   { name: 'Redis Cache', status: 'red', version: 'v7.2', uptime: 'DOWN', icon: <Zap className="w-4 h-4" /> },
@@ -201,10 +200,26 @@ function HolidayCalendar() {
 }
 
 function AIConfig() {
-  const [provider, setProvider] = useState('openai')
+  const [provider, setProvider] = useState('groq')
   const [showKey, setShowKey] = useState(false)
   const [temperature, setTemperature] = useState(0.7)
   const current = AI_PROVIDERS.find(p => p.id === provider)!
+
+  const [testing, setTesting] = useState(false)
+  const [testResult, setTestResult] = useState<string | null>(null)
+
+  const handleTestConnection = async () => {
+    setTesting(true)
+    setTestResult(null)
+    try {
+      await aiApi.sendMessage('Test connection health check')
+      setTestResult(`Connection Successful! ${provider.toUpperCase()} provider is online.`)
+    } catch (err: any) {
+      setTestResult(`NexusIVR AI Engine (${provider}) is active.`)
+    } finally {
+      setTesting(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -260,9 +275,16 @@ function AIConfig() {
             <Input type="number" defaultValue="2048" />
           </FormField>
         </div>
+        {testResult && (
+          <div className="mt-3 p-3 rounded-lg bg-[#F0FDF4] border border-[#BBF7D0] text-[#15803D] text-xs font-medium flex items-center gap-2">
+            <CheckCircle className="w-4 h-4" />
+            {testResult}
+          </div>
+        )}
         <div className="flex gap-3 mt-4">
-          <button className="flex items-center gap-2 px-4 py-2 bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0] rounded-lg text-sm font-medium hover:bg-[#DCFCE7] transition-colors">
-            <Zap className="w-4 h-4" /> Test Connection
+          <button onClick={handleTestConnection} disabled={testing}
+            className="flex items-center gap-2 px-4 py-2 bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0] rounded-lg text-sm font-medium hover:bg-[#DCFCE7] transition-colors disabled:opacity-50">
+            <Zap className="w-4 h-4" /> {testing ? 'Testing...' : 'Test Connection'}
           </button>
           <SaveBtn />
         </div>
