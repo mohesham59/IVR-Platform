@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0"
+         metadata-complete="true">
+
+    <display-name>NexusIVR AI Backend Engine</display-name>
+
+    <listener>
+        <listener-class>com.nexusivr.ai.config.AppServletContextListener</listener-class>
+    </listener>
+
+    <!-- CORS Filter -->
+    <filter>
+        <filter-name>CorsFilter</filter-name>
+        <filter-class>com.nexusivr.ai.config.CorsFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>CorsFilter</filter-name>
+        <url-pattern>/api/*</url-pattern>
+    </filter-mapping>
+
+    <!-- AI Chat Servlet -->
+    <servlet>
+        <servlet-name>AiChatServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.AiChatServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AiChatServlet</servlet-name>
+        <url-pattern>/api/v1/ai/chat</url-pattern>
+    </servlet-mapping>
+
+    <!-- AI Flow Servlet -->
+    <servlet>
+        <servlet-name>AiFlowServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.AiFlowServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AiFlowServlet</servlet-name>
+        <url-pattern>/api/v1/ai/flow/generate</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AiFlowServlet</servlet-name>
+        <url-pattern>/api/v1/ai/flow/improve</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AiFlowServlet</servlet-name>
+        <url-pattern>/api/v1/ai/flow/validate</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AiFlowServlet</servlet-name>
+        <url-pattern>/api/v1/ai/flow/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- AI Summarize Servlet -->
+    <servlet>
+        <servlet-name>AiSummarizeServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.AiSummarizeServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AiSummarizeServlet</servlet-name>
+        <url-pattern>/api/v1/ai/summarize</url-pattern>
+    </servlet-mapping>
+
+    <!-- AI Sentiment Servlet -->
+    <servlet>
+        <servlet-name>AiSentimentServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.AiSentimentServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AiSentimentServlet</servlet-name>
+        <url-pattern>/api/v1/ai/sentiment</url-pattern>
+    </servlet-mapping>
+
+    <!-- AI Function Call Servlet -->
+    <servlet>
+        <servlet-name>AiFunctionCallServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.AiFunctionCallServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AiFunctionCallServlet</servlet-name>
+        <url-pattern>/api/v1/ai/function-call</url-pattern>
+    </servlet-mapping>
+
+    <!-- AI Conversation History Servlet -->
+    <servlet>
+        <servlet-name>AiConversationHistoryServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.AiConversationHistoryServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AiConversationHistoryServlet</servlet-name>
+        <url-pattern>/api/v1/ai/history</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AiConversationHistoryServlet</servlet-name>
+        <url-pattern>/api/v1/ai/history/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AiConversationHistoryServlet</servlet-name>
+        <url-pattern>/api/v1/ai/conversation/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AiConversationHistoryServlet</servlet-name>
+        <url-pattern>/api/v1/ai/new-chat</url-pattern>
+    </servlet-mapping>
+
+    <!-- AI Analytics Servlet -->
+    <servlet>
+        <servlet-name>AiAnalyticsServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.AiAnalyticsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AiAnalyticsServlet</servlet-name>
+        <url-pattern>/api/v1/ai/analytics</url-pattern>
+    </servlet-mapping>
+
+    <!-- AI Prompts Servlet -->
+    <servlet>
+        <servlet-name>AiPromptsServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.AiPromptsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AiPromptsServlet</servlet-name>
+        <url-pattern>/api/v1/ai/prompts</url-pattern>
+    </servlet-mapping>
+
+    <!-- AI Provider Servlet -->
+    <servlet>
+        <servlet-name>AiProviderServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.AiProviderServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AiProviderServlet</servlet-name>
+        <url-pattern>/api/v1/ai/provider</url-pattern>
+    </servlet-mapping>
+
+    <!-- AI Provider List Servlet -->
+    <servlet>
+        <servlet-name>AiProviderListServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.AiProviderListServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AiProviderListServlet</servlet-name>
+        <url-pattern>/api/v1/ai/providers</url-pattern>
+    </servlet-mapping>
+
+    <!-- AI Agent Servlet -->
+    <servlet>
+        <servlet-name>AiAgentServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.AiAgentServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AiAgentServlet</servlet-name>
+        <url-pattern>/api/v1/ai/agents</url-pattern>
+    </servlet-mapping>
+
+</web-app>
