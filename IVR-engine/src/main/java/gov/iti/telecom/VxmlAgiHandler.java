@@ -20,20 +20,22 @@ import java.nio.file.Paths;
  *
  * <h2>HOW IT WORKS</h2>
  * <ol>
- *   <li>Receives FastAGI call from Asterisk (e.g., agi://127.0.0.1:4573/hello)</li>
- *   <li>Extracts VXML name from:
- *       <ul>
- *         <li>VXML_FILE Asterisk variable (if set)</li>
- *         <li>AGI request path (e.g., "/hello" → "hello.vxml")</li>
- *         <li>Default fallback: "hello.vxml"</li>
- *       </ul>
- *   </li>
- *   <li>Loads the VXML using VxmlLoader</li>
- *   <li>Executes it via VxmlScenarioEngine</li>
- *   <li>Collects results (DTMF input, form data) back to Asterisk variables</li>
+ * <li>Receives FastAGI call from Asterisk (e.g.,
+ * agi://127.0.0.1:4573/hello)</li>
+ * <li>Extracts VXML name from:
+ * <ul>
+ * <li>VXML_FILE Asterisk variable (if set)</li>
+ * <li>AGI request path (e.g., "/hello" → "hello.vxml")</li>
+ * <li>Default fallback: "hello.vxml"</li>
+ * </ul>
+ * </li>
+ * <li>Loads the VXML using VxmlLoader</li>
+ * <li>Executes it via VxmlScenarioEngine</li>
+ * <li>Collects results (DTMF input, form data) back to Asterisk variables</li>
  * </ol>
  *
  * <h2>USAGE FROM ASTERISK</h2>
+ * 
  * <pre>
  * ; Simple: use path as VXML name
  * exten => 500,1,NoOp(Call hello.vxml)
@@ -50,13 +52,14 @@ import java.nio.file.Paths;
  * <h2>ASTERISK VARIABLES SET BY THIS HANDLER</h2>
  * After execution, these variables are available for use in the dialplan:
  * <ul>
- *   <li>VXML_SESSION_ID: Unique session identifier</li>
- *   <li>VXML_STATE: Final session state (COMPLETED, ERROR, etc.)</li>
- *   <li>VXML_ERROR: Error message (if any)</li>
- *   <li>VXML_RESULT_*: Form results (e.g., VXML_RESULT_user_choice)</li>
+ * <li>VXML_SESSION_ID: Unique session identifier</li>
+ * <li>VXML_STATE: Final session state (COMPLETED, ERROR, etc.)</li>
+ * <li>VXML_ERROR: Error message (if any)</li>
+ * <li>VXML_RESULT_*: Form results (e.g., VXML_RESULT_user_choice)</li>
  * </ul>
  *
  * <h2>EXAMPLE DIALPLAN USAGE</h2>
+ * 
  * <pre>
  * exten => 500,1,Set(VXML_FILE=hello)
  * same  => n,AGI(agi://127.0.0.1:4573/hello)
@@ -75,8 +78,7 @@ import java.nio.file.Paths;
  */
 public class VxmlAgiHandler extends BaseAgiScript {
 
-    private static final org.slf4j.Logger logger = 
-            org.slf4j.LoggerFactory.getLogger(VxmlAgiHandler.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(VxmlAgiHandler.class);
 
     // Shared VxmlScenarioEngine instance (initialized once)
     private static volatile VxmlScenarioEngine vxmlEngine;
@@ -85,13 +87,12 @@ public class VxmlAgiHandler extends BaseAgiScript {
     @Override
     public void service(AgiRequest request, AgiChannel channel) throws AgiException {
         String callerId = "unknown";
-        String vxmlName = "hello";  // Default VXML
+        String vxmlName = "hello"; // Default VXML
         String sessionId = null;
 
         try {
             // Extract caller information
-            callerId = request.getCallerId() != null ? 
-                    request.getCallerId() : request.getCallerIdName();
+            callerId = request.getCallerId() != null ? request.getCallerId() : request.getCallerIdName();
             System.out.println("\n[VxmlAgiHandler] *** New Call from: " + callerId + " ***");
 
             // Step 1: Determine which VXML to execute
@@ -138,9 +139,9 @@ public class VxmlAgiHandler extends BaseAgiScript {
      * @param channel AGI channel
      * @return VXML name without extension (e.g., "hello", "menu-example")
      */
-    private String determineVxmlName(AgiRequest request, AgiChannel channel) 
+    private String determineVxmlName(AgiRequest request, AgiChannel channel)
             throws AgiException {
-        
+
         // Check for VXML_FILE variable first (highest priority)
         try {
             String vxmlFile = channel.getVariable("VXML_FILE");
@@ -153,7 +154,7 @@ public class VxmlAgiHandler extends BaseAgiScript {
         }
 
         // Extract from AGI request path
-        String requestPath = request.getRequestURL();  // e.g., "agi://127.0.0.1:4573/hello"
+        String requestPath = request.getRequestURL(); // e.g., "agi://127.0.0.1:4573/hello"
         if (requestPath != null) {
             // Extract path after last slash
             int lastSlash = requestPath.lastIndexOf('/');
@@ -167,7 +168,7 @@ public class VxmlAgiHandler extends BaseAgiScript {
         }
 
         // Check request path from AGI
-        String script = request.getScript();  // May also contain path info
+        String script = request.getScript(); // May also contain path info
         if (script != null && !script.isEmpty()) {
             System.out.println("[VxmlAgiHandler] Using script path: " + script);
             return script;
@@ -185,7 +186,7 @@ public class VxmlAgiHandler extends BaseAgiScript {
      * Example: 1001_1719239400_8371
      *
      * @param callerId caller's extension/number
-     * @param request AGI request
+     * @param request  AGI request
      * @return session ID
      */
     private String createSessionId(String callerId, AgiRequest request) {
@@ -198,21 +199,21 @@ public class VxmlAgiHandler extends BaseAgiScript {
     /**
      * Creates connection information for JVoiceXML.
      *
-     * @param request AGI request
+     * @param request  AGI request
      * @param callerId caller identifier
      * @return ConnectionInformation for VXML execution
      */
     private ConnectionInformation createConnectionInfo(AgiRequest request, String callerId) {
         try {
             return new gov.iti.telecom.platform.AsteriskConnectionInformation(
-                    "default",                          // profile
-                    "asterisk-output",                  // system output
-                    "asterisk-input",                   // user input
-                    "asterisk-call-control",            // call control
-                    new URI("sip:" + callerId),          // called device (caller)
-                    new URI("sip:ivr@asterisk"),         // calling device (IVR)
-                    "SIP",                              // protocol
-                    "2.0"                               // protocol version
+                    "default", // profile
+                    "asterisk-output", // system output
+                    "asterisk-input", // user input
+                    "asterisk-call-control", // call control
+                    new URI("sip:" + callerId), // called device (caller)
+                    new URI("sip:ivr@asterisk"), // calling device (IVR)
+                    "SIP", // protocol
+                    "2.0" // protocol version
             );
         } catch (Exception e) {
             throw new RuntimeException("Failed to create connection info", e);
@@ -240,16 +241,17 @@ public class VxmlAgiHandler extends BaseAgiScript {
     }
 
     /**
-     * Executes a VXML scenario and renders prompts & DTMF interactions interactively to the channel.
+     * Executes a VXML scenario and renders prompts & DTMF interactions
+     * interactively to the channel.
      */
-    private VxmlSession executeVxmlScenario(String vxmlName, 
-                                            ConnectionInformation connInfo,
-                                            String sessionId,
-                                            AgiChannel channel) throws Exception {
+    private VxmlSession executeVxmlScenario(String vxmlName,
+            ConnectionInformation connInfo,
+            String sessionId,
+            AgiChannel channel) throws Exception {
         try {
             System.out.println("[VxmlAgiHandler] Starting VXML execution: " + vxmlName);
             VxmlSession session = vxmlEngine.executeVxml(vxmlName, connInfo);
-            
+
             if (session != null) {
                 session.setVariable("agi_session_id", sessionId);
             }
@@ -267,15 +269,12 @@ public class VxmlAgiHandler extends BaseAgiScript {
                     org.w3c.dom.NodeList prompts = menu.getElementsByTagName("prompt");
                     char choice = 0;
                     for (int p = 0; p < prompts.getLength(); p++) {
-                        String promptText = prompts.item(p).getTextContent().trim();
-                        if (!promptText.isEmpty()) {
-                            choice = speakPromptAndGetDigit(channel, promptText);
-                            if (choice != 0 && choice != '\0') {
-                                break;
-                            }
+                        choice = processPromptElementAndGetDigit((org.w3c.dom.Element) prompts.item(p), channel, session);
+                        if (choice != 0 && choice != '\0') {
+                            break;
                         }
                     }
-                    
+
                     if (choice == 0 || choice == '\0') {
                         choice = channel.waitForDigit(10000);
                     }
@@ -311,7 +310,7 @@ public class VxmlAgiHandler extends BaseAgiScript {
             } catch (Exception e) {
                 System.out.println("[VxmlAgiHandler] Note rendering VXML: " + e.getMessage());
             }
-            
+
             return session;
         } catch (Exception e) {
             System.err.println("[VxmlAgiHandler] VXML execution error: " + e.getMessage());
@@ -319,7 +318,8 @@ public class VxmlAgiHandler extends BaseAgiScript {
         }
     }
 
-    private void renderFormById(org.w3c.dom.Document doc, String formId, AgiChannel channel, VxmlSession session) throws Exception {
+    private void renderFormById(org.w3c.dom.Document doc, String formId, AgiChannel channel, VxmlSession session)
+            throws Exception {
         org.w3c.dom.NodeList forms = doc.getElementsByTagName("form");
         for (int i = 0; i < forms.getLength(); i++) {
             org.w3c.dom.Element form = (org.w3c.dom.Element) forms.item(i);
@@ -331,126 +331,203 @@ public class VxmlAgiHandler extends BaseAgiScript {
     }
 
     private void renderFormElement(org.w3c.dom.Element form, AgiChannel channel, VxmlSession session) throws Exception {
-        org.w3c.dom.NodeList blocks = form.getElementsByTagName("block");
-        for (int b = 0; b < blocks.getLength(); b++) {
-            org.w3c.dom.Element block = (org.w3c.dom.Element) blocks.item(b);
-            org.w3c.dom.NodeList prompts = block.getElementsByTagName("prompt");
-            for (int p = 0; p < prompts.getLength(); p++) {
-                String text = prompts.item(p).getTextContent().trim();
-                if (!text.isEmpty()) {
-                    speakPrompt(channel, text);
-                }
+        org.w3c.dom.NodeList children = form.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            org.w3c.dom.Node node = children.item(i);
+            if (node.getNodeType() != org.w3c.dom.Node.ELEMENT_NODE) {
+                continue;
             }
-        }
+            org.w3c.dom.Element child = (org.w3c.dom.Element) node;
+            String tagName = child.getTagName();
 
-        org.w3c.dom.NodeList fields = form.getElementsByTagName("field");
-        for (int f = 0; f < fields.getLength(); f++) {
-            org.w3c.dom.Element field = (org.w3c.dom.Element) fields.item(f);
-            String fieldName = field.getAttribute("name");
-            org.w3c.dom.NodeList fieldPrompts = field.getElementsByTagName("prompt");
-            char digit = 0;
-            for (int fp = 0; fp < fieldPrompts.getLength(); fp++) {
-                String promptText = fieldPrompts.item(fp).getTextContent().trim();
-                if (!promptText.isEmpty()) {
-                    digit = speakPromptAndGetDigit(channel, promptText);
-                    if (digit != 0 && digit != '\0') {
+            if ("block".equals(tagName)) {
+                org.w3c.dom.NodeList prompts = child.getElementsByTagName("prompt");
+                for (int p = 0; p < prompts.getLength(); p++) {
+                    processPromptElement((org.w3c.dom.Element) prompts.item(p), channel, session);
+                }
+            } else if ("assign".equals(tagName)) {
+                String name = child.getAttribute("name");
+                String expr = child.getAttribute("expr");
+                if (name != null && !name.isEmpty() && expr != null && session != null) {
+                    if (expr.startsWith("'") && expr.endsWith("'")) {
+                        expr = expr.substring(1, expr.length() - 1);
+                    }
+                    session.setVariable(name, expr);
+                    System.out.println("[VxmlAgiHandler] <assign> " + name + " = " + expr);
+                }
+            } else if ("api".equals(tagName)) {
+                String url = child.getAttribute("url");
+                String varName = child.getAttribute("var");
+                String saveResultAs = child.getAttribute("saveResultAs");
+                String jsonPath = child.getAttribute("jsonPath"); // Optional: for extracting a specific field
+
+                try {
+                    String fullUrl = url;
+                    if (varName != null && !varName.isEmpty() && session != null) {
+                        Object val = session.getVariable(varName);
+                        if (val != null) {
+                            fullUrl += (url.contains("?") ? "&" : "?") + varName + "=" + val.toString();
+                        }
+                    }
+
+                    System.out.println("[VxmlAgiHandler] <api> Calling URL: " + fullUrl);
+                    java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+                    java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder()
+                            .uri(URI.create(fullUrl))
+                            .GET()
+                            .build();
+                    java.net.http.HttpResponse<String> response = client.send(req,
+                            java.net.http.HttpResponse.BodyHandlers.ofString());
+                    String responseBody = response.body();
+                    System.out.println("[VxmlAgiHandler] <api> Response: " + responseBody);
+
+                    String extractedResult = responseBody;
+                    if (jsonPath != null && !jsonPath.isEmpty()) {
+                        try {
+                            com.google.gson.JsonObject jsonResponse = com.google.gson.JsonParser
+                                    .parseString(responseBody).getAsJsonObject();
+                            if (jsonResponse.has(jsonPath)) {
+                                extractedResult = jsonResponse.get(jsonPath).getAsString();
+                            }
+                        } catch (Exception e) {
+                            System.err.println("[VxmlAgiHandler] <api> Failed to parse JSON path: " + jsonPath);
+                        }
+                    }
+
+                    if (saveResultAs != null && !saveResultAs.isEmpty() && session != null) {
+                        session.setVariable(saveResultAs, extractedResult);
+                        System.out.println("[VxmlAgiHandler] <api> Saved " + saveResultAs + " = " + extractedResult);
+                    }
+                } catch (Exception e) {
+                    System.err.println("[VxmlAgiHandler] <api> request failed: " + e.getMessage());
+                }
+            } else if ("field".equals(tagName)) {
+                String fieldName = child.getAttribute("name");
+                org.w3c.dom.NodeList fieldPrompts = child.getElementsByTagName("prompt");
+
+                StringBuilder inputStr = new StringBuilder();
+                char firstDigit = 0;
+                for (int fp = 0; fp < fieldPrompts.getLength(); fp++) {
+                    firstDigit = processPromptElementAndGetDigit((org.w3c.dom.Element) fieldPrompts.item(fp), channel, session);
+                    if (firstDigit != 0 && firstDigit != '\0') {
+                        if (firstDigit != '#')
+                            inputStr.append(firstDigit);
                         break;
                     }
                 }
-            }
-            if (digit == 0 || digit == '\0') {
-                digit = channel.waitForDigit(10000);
-            }
-            if (digit != 0 && digit != '\0') {
-                String varKey = (fieldName != null && !fieldName.isEmpty()) ? fieldName : "user_input";
-                if (session != null) {
-                    session.setVariable(varKey, String.valueOf(digit));
-                }
-                System.out.println("[VxmlAgiHandler] Field " + varKey + " input: " + digit);
-            }
-        }
 
-        // Handle <ai> tags
-        org.w3c.dom.NodeList aiNodes = form.getElementsByTagName("ai");
-        for (int a = 0; a < aiNodes.getLength(); a++) {
-            org.w3c.dom.Element aiNode = (org.w3c.dom.Element) aiNodes.item(a);
-            String role = aiNode.getAttribute("role");
-            String options = aiNode.getAttribute("options");
-            
-            String systemPrompt = role + " You must help the user choose one of these options: " + options + ". " +
-                "You must ask for confirmation before making a final decision. " +
-                "Respond ONLY in valid JSON format: {\"status\": \"CONFIRMING\" or \"FINAL\", \"reply\": \"What you say to user\", \"action\": \"The exact destination ID (the part after the colon) if FINAL\"}";
-                
-            String conversationHistory = "";
-            boolean isFinal = false;
-            String finalAction = null;
-            
-            // 1. Play initial prompts inside <ai>
-            org.w3c.dom.NodeList aiPrompts = aiNode.getElementsByTagName("prompt");
-            for (int p = 0; p < aiPrompts.getLength(); p++) {
-                String text = aiPrompts.item(p).getTextContent().trim();
-                if (!text.isEmpty()) {
-                    speakPrompt(channel, text);
-                    conversationHistory += "AI: " + text + "\n";
+                if (firstDigit == 0 || firstDigit == '\0') {
+                    firstDigit = channel.waitForDigit(10000);
+                    if (firstDigit != 0 && firstDigit != '\0' && firstDigit != '#') {
+                        inputStr.append(firstDigit);
+                    }
                 }
-            }
-            
-            while (!isFinal) {
-                // Beep before recording
-                channel.streamFile("beep");
-                
-                // Record audio in /dev/shm to bypass systemd PrivateTmp isolation
-                String recordPath = "/dev/shm/ai_audio_" + System.currentTimeMillis();
-                channel.recordFile(recordPath, "wav", "#", 5000, 0, false, 2000);
-                
-                // Convert to text
-                String text = convertAudioToText(recordPath + ".wav");
-                System.out.println("[VxmlAgiHandler] <ai> User said: " + text);
-                
-                if (text == null || text.trim().isEmpty()) {
-                    speakPrompt(channel, "I didn't hear anything. Let's try again.");
-                    continue;
+
+                if (inputStr.length() > 0 || firstDigit == '#') {
+                    while (true) {
+                        char nextDigit = channel.waitForDigit(5000); // 5 seconds timeout between digits
+                        if (nextDigit == 0 || nextDigit == '\0' || nextDigit == '#') {
+                            break;
+                        }
+                        inputStr.append(nextDigit);
+                    }
                 }
-                
-                conversationHistory += "User: " + text + "\n";
-                
-                // Get decision from Ollama
-                com.google.gson.JsonObject llmResponse = OllamaAgent.chatJson(systemPrompt, conversationHistory);
-                String status = llmResponse.has("status") ? llmResponse.get("status").getAsString() : "CONFIRMING";
-                String reply = llmResponse.has("reply") ? llmResponse.get("reply").getAsString() : "I am not sure.";
-                
-                System.out.println("[VxmlAgiHandler] <ai> LLM Response: " + llmResponse.toString());
-                
-                speakPrompt(channel, reply);
-                conversationHistory += "AI: " + reply + "\n";
-                
-                if ("FINAL".equalsIgnoreCase(status)) {
-                    isFinal = true;
-                    finalAction = llmResponse.has("action") ? llmResponse.get("action").getAsString() : null;
+
+                if (inputStr.length() > 0) {
+                    String varKey = (fieldName != null && !fieldName.isEmpty()) ? fieldName : "user_input";
+                    if (session != null) {
+                        session.setVariable(varKey, inputStr.toString());
+                    }
+                    System.out.println("[VxmlAgiHandler] Field " + varKey + " input: " + inputStr.toString());
                 }
-            }
-            
-            if (finalAction != null && !finalAction.trim().isEmpty()) {
-                if (finalAction.contains(":")) {
-                    finalAction = finalAction.split(":")[1].trim();
+            } else if ("ai".equals(tagName)) {
+                String role = child.getAttribute("role");
+                String options = child.getAttribute("options");
+
+                String systemPrompt = role + " You must help the user choose one of these options: " + options + ". " +
+                        "If the user's choice is clear, make a final decision immediately without asking for additional confirmation. If their choice is unclear, ask them to clarify. "
+                        +
+                        "Respond ONLY in valid JSON format: {\"status\": \"CONFIRMING\" or \"FINAL\", \"reply\": \"What you say to user\", \"action\": \"The exact destination ID (the part after the colon) if FINAL\"}";
+
+                String conversationHistory = "";
+                boolean isFinal = false;
+                String finalAction = null;
+
+                // 1. Play initial prompts inside <ai>
+                org.w3c.dom.NodeList aiPrompts = child.getElementsByTagName("prompt");
+                for (int p = 0; p < aiPrompts.getLength(); p++) {
+                    String text = aiPrompts.item(p).getTextContent().trim();
+                    processPromptElement((org.w3c.dom.Element) aiPrompts.item(p), channel, session);
+                    if (!text.isEmpty()) {
+                        conversationHistory += "AI: " + text + "\n";
+                    }
                 }
-                System.out.println("[VxmlAgiHandler] <ai> Jumping to form: " + finalAction);
-                renderFormById(form.getOwnerDocument(), finalAction, channel, session);
-            } else {
-                System.out.println("[VxmlAgiHandler] <ai> No final action, ending session.");
-                // You could optionally jump to a default form here.
+
+                while (!isFinal) {
+                    // Beep before recording
+                    channel.streamFile("beep");
+
+                    // Record audio in /dev/shm to bypass systemd PrivateTmp isolation
+                    String recordPath = "/dev/shm/ai_audio_" + System.currentTimeMillis();
+                    channel.recordFile(recordPath, "wav", "#", 5000, 0, false, 2000);
+
+                    // Convert to text
+                    String lang = resolveSessionLanguage(session);
+                    String text = convertAudioToText(recordPath + ".wav", lang);
+                    System.out.println("[VxmlAgiHandler] <ai> User said: " + text);
+
+                    if (text == null || text.trim().isEmpty()) {
+                        speakPrompt(channel, "I didn't hear anything. Let's try again.", session);
+                        continue;
+                    }
+
+                    conversationHistory += "User: " + text + "\n";
+
+                    // Get decision from Ollama
+                    com.google.gson.JsonObject llmResponse = OllamaAgent.chatJson(systemPrompt, conversationHistory);
+                    String status = llmResponse.has("status") ? llmResponse.get("status").getAsString() : "CONFIRMING";
+                    String reply = llmResponse.has("reply") ? llmResponse.get("reply").getAsString() : "I am not sure.";
+
+                    System.out.println("[VxmlAgiHandler] <ai> LLM Response: " + llmResponse.toString());
+
+                    speakPrompt(channel, reply, session);
+                    conversationHistory += "AI: " + reply + "\n";
+
+                    if ("FINAL".equalsIgnoreCase(status)) {
+                        isFinal = true;
+                        finalAction = llmResponse.has("action") ? llmResponse.get("action").getAsString() : null;
+                    }
+                }
+
+                if (finalAction != null && !finalAction.trim().isEmpty()) {
+                    if (finalAction.contains(":")) {
+                        finalAction = finalAction.split(":")[1].trim();
+                    }
+                    System.out.println("[VxmlAgiHandler] <ai> Jumping to form: " + finalAction);
+                    renderFormById(form.getOwnerDocument(), finalAction, channel, session);
+                } else {
+                    System.out.println("[VxmlAgiHandler] <ai> No final action, ending session.");
+                    // You could optionally jump to a default form here.
+                }
             }
         }
     }
 
-    private String convertAudioToText(String wavFilePath) throws Exception {
+    private String convertAudioToText(String wavFilePath, String langCode) throws Exception {
+        String googleLang = "en-US";
+        if (langCode != null && langCode.startsWith("ar")) {
+            googleLang = "ar-EG";
+        } else if (langCode != null && !langCode.trim().isEmpty() && !langCode.equals("en")) {
+            googleLang = langCode;
+        }
+
         String pythonScript = "import speech_recognition as sr\n" +
                 "import sys\n" +
                 "r = sr.Recognizer()\n" +
                 "with sr.AudioFile(sys.argv[1]) as source:\n" +
                 "    audio = r.record(source)\n" +
                 "try:\n" +
-                "    print(r.recognize_google(audio))\n" +
+                "    print(r.recognize_google(audio, language='" + googleLang + "'))\n" +
                 "except Exception as e:\n" +
                 "    import traceback\n" +
                 "    traceback.print_exc(file=sys.stderr)\n" +
@@ -462,7 +539,7 @@ public class VxmlAgiHandler extends BaseAgiScript {
         ProcessBuilder pb = new ProcessBuilder("python3", "/dev/shm/asr.py", wavFilePath);
         pb.redirectErrorStream(true); // capture stderr with stdout
         Process p = pb.start();
-        
+
         java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream()));
         StringBuilder sb = new StringBuilder();
         String line;
@@ -471,22 +548,47 @@ public class VxmlAgiHandler extends BaseAgiScript {
         }
         int exitCode = p.waitFor();
         String output = sb.toString().trim();
-        
+
         if (exitCode != 0) {
-            System.err.println("[VxmlAgiHandler] Python ASR failed with exit code " + exitCode + ". Output:\n" + output);
+            System.err
+                    .println("[VxmlAgiHandler] Python ASR failed with exit code " + exitCode + ". Output:\n" + output);
             return "";
         }
-        
+
         return output;
     }
 
-    private char speakPromptAndGetDigit(AgiChannel channel, String text) {
+    private String substituteVariables(String text, VxmlSession session) {
+        if (session == null || text == null || !text.contains("${"))
+            return text;
+        for (Map.Entry<String, Object> entry : session.getAllVariables().entrySet()) {
+            String placeholder = "${" + entry.getKey() + "}";
+            if (text.contains(placeholder) && entry.getValue() != null) {
+                text = text.replace(placeholder, entry.getValue().toString());
+            }
+        }
+        return text;
+    }
+
+    private String resolveSessionLanguage(VxmlSession session) {
+        if (session != null) {
+            Object lang = session.getVariable("language");
+            if (lang != null && !lang.toString().trim().isEmpty()) {
+                return lang.toString();
+            }
+        }
+        return VxmlConfig.loadFromClasspath().getTtsLanguage();
+    }
+
+    private char speakPromptAndGetDigit(AgiChannel channel, String text, VxmlSession session) {
         if (text == null || text.trim().isEmpty()) {
             return 0;
         }
+        text = substituteVariables(text, session);
         try {
             System.out.println("[VxmlAgiHandler] Speaking prompt with DTMF listen: " + text);
-            String streamPath = TtsEngine.getOrSynthesizeAudio(text);
+            String lang = resolveSessionLanguage(session);
+            String streamPath = TtsEngine.getOrSynthesizeAudio(text, lang);
             if (streamPath != null) {
                 char digit = channel.streamFile(streamPath, "0123456789*#");
                 if (digit != 0 && digit != '\0') {
@@ -500,24 +602,160 @@ public class VxmlAgiHandler extends BaseAgiScript {
         return 0;
     }
 
-    private void speakPrompt(AgiChannel channel, String text) {
+    private void speakPrompt(AgiChannel channel, String text, VxmlSession session) {
         if (text == null || text.trim().isEmpty()) {
             return;
         }
+        text = substituteVariables(text, session);
         try {
             System.out.println("[VxmlAgiHandler] Speaking prompt: " + text);
-            TtsEngine.sayText(channel, text);
+            String lang = resolveSessionLanguage(session);
+            TtsEngine.sayText(channel, text, lang);
         } catch (Exception e) {
             System.err.println("[VxmlAgiHandler] Audio playback exception: " + e.getMessage());
         }
     }
 
     /**
+     * Processes a {@code <prompt>} element, handling both plain text and {@code <audio>} tags.
+     *
+     * <p>VXML usage:</p>
+     * <pre>{@code
+     * <prompt>
+     *   <audio src="welcome.wav">Fallback TTS text if file not found</audio>
+     *   Additional text rendered via TTS.
+     * </prompt>
+     * }</pre>
+     *
+     * <p>Audio files are resolved from {@code /var/lib/asterisk/sounds/ivr-custom/}.
+     * If the audio file is not found, the inner text of the {@code <audio>} tag is
+     * used as fallback for TTS synthesis.</p>
+     *
+     * @param promptElement the {@code <prompt>} DOM element
+     * @param channel       Asterisk AGI channel for audio playback
+     * @param session       current VXML session for variable substitution
+     */
+    private void processPromptElement(org.w3c.dom.Element promptElement, AgiChannel channel, VxmlSession session) {
+        org.w3c.dom.NodeList children = promptElement.getChildNodes();
+        StringBuilder textBuffer = new StringBuilder();
+
+        for (int i = 0; i < children.getLength(); i++) {
+            org.w3c.dom.Node child = children.item(i);
+
+            if (child.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
+                textBuffer.append(child.getTextContent());
+            } else if (child.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE
+                    && "audio".equals(child.getNodeName())) {
+                // Flush any accumulated text before playing audio
+                String accumulatedText = textBuffer.toString().trim();
+                if (!accumulatedText.isEmpty()) {
+                    speakPrompt(channel, accumulatedText, session);
+                    textBuffer.setLength(0);
+                }
+
+                org.w3c.dom.Element audioEl = (org.w3c.dom.Element) child;
+                String src = audioEl.getAttribute("src");
+                String streamPath = TtsEngine.resolveAudioSrc(src);
+
+                if (streamPath != null) {
+                    try {
+                        System.out.println("[VxmlAgiHandler] Playing custom audio: " + streamPath);
+                        channel.streamFile(streamPath);
+                    } catch (Exception e) {
+                        System.err.println("[VxmlAgiHandler] Error playing custom audio '" + src + "': " + e.getMessage());
+                    }
+                } else {
+                    // Fallback: use inner text content for TTS
+                    String fallbackText = audioEl.getTextContent().trim();
+                    if (!fallbackText.isEmpty()) {
+                        System.out.println("[VxmlAgiHandler] Audio file not found, using TTS fallback for: " + src);
+                        speakPrompt(channel, fallbackText, session);
+                    } else {
+                        System.err.println("[VxmlAgiHandler] <audio src=\"" + src + "\"> not found and no fallback text");
+                    }
+                }
+            }
+        }
+
+        // Flush remaining text
+        String remainingText = textBuffer.toString().trim();
+        if (!remainingText.isEmpty()) {
+            speakPrompt(channel, remainingText, session);
+        }
+    }
+
+    /**
+     * Processes a {@code <prompt>} element with DTMF listening,
+     * handling both plain text and {@code <audio>} tags.
+     *
+     * <p>Returns the first DTMF digit pressed during any segment of the prompt.
+     * Each segment (text or audio) is played with DTMF interruptibility.</p>
+     *
+     * @param promptElement the {@code <prompt>} DOM element
+     * @param channel       Asterisk AGI channel for audio playback
+     * @param session       current VXML session for variable substitution
+     * @return the DTMF digit pressed, or 0 if no digit was pressed
+     */
+    private char processPromptElementAndGetDigit(org.w3c.dom.Element promptElement, AgiChannel channel, VxmlSession session) {
+        org.w3c.dom.NodeList children = promptElement.getChildNodes();
+        StringBuilder textBuffer = new StringBuilder();
+
+        for (int i = 0; i < children.getLength(); i++) {
+            org.w3c.dom.Node child = children.item(i);
+
+            if (child.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
+                textBuffer.append(child.getTextContent());
+            } else if (child.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE
+                    && "audio".equals(child.getNodeName())) {
+                // Flush any accumulated text before playing audio
+                String accumulatedText = textBuffer.toString().trim();
+                if (!accumulatedText.isEmpty()) {
+                    char digit = speakPromptAndGetDigit(channel, accumulatedText, session);
+                    if (digit != 0 && digit != '\0') return digit;
+                    textBuffer.setLength(0);
+                }
+
+                org.w3c.dom.Element audioEl = (org.w3c.dom.Element) child;
+                String src = audioEl.getAttribute("src");
+                String streamPath = TtsEngine.resolveAudioSrc(src);
+
+                if (streamPath != null) {
+                    try {
+                        System.out.println("[VxmlAgiHandler] Playing custom audio (DTMF-aware): " + streamPath);
+                        char digit = channel.streamFile(streamPath, "0123456789*#");
+                        if (digit != 0 && digit != '\0') return digit;
+                    } catch (Exception e) {
+                        System.err.println("[VxmlAgiHandler] Error playing custom audio '" + src + "': " + e.getMessage());
+                    }
+                } else {
+                    // Fallback: use inner text content for TTS
+                    String fallbackText = audioEl.getTextContent().trim();
+                    if (!fallbackText.isEmpty()) {
+                        System.out.println("[VxmlAgiHandler] Audio file not found, using TTS fallback for: " + src);
+                        char digit = speakPromptAndGetDigit(channel, fallbackText, session);
+                        if (digit != 0 && digit != '\0') return digit;
+                    } else {
+                        System.err.println("[VxmlAgiHandler] <audio src=\"" + src + "\"> not found and no fallback text");
+                    }
+                }
+            }
+        }
+
+        // Flush remaining text
+        String remainingText = textBuffer.toString().trim();
+        if (!remainingText.isEmpty()) {
+            return speakPromptAndGetDigit(channel, remainingText, session);
+        }
+
+        return 0;
+    }
+
+    /**
      * Sets Asterisk variables with VXML execution results.
      */
-    private void setAsteriskVariables(AgiChannel channel, VxmlSession vxmlSession) 
+    private void setAsteriskVariables(AgiChannel channel, VxmlSession vxmlSession)
             throws AgiException {
-        
+
         if (vxmlSession == null) {
             return;
         }
@@ -525,7 +763,7 @@ public class VxmlAgiHandler extends BaseAgiScript {
         try {
             channel.setVariable("VXML_SESSION_ID", vxmlSession.getSessionId());
             channel.setVariable("VXML_STATE", vxmlSession.getState().toString());
-            
+
             if (vxmlSession.getLastError() != null) {
                 channel.setVariable("VXML_ERROR", vxmlSession.getLastError());
             }
@@ -548,7 +786,7 @@ public class VxmlAgiHandler extends BaseAgiScript {
     /**
      * Handles post-execution logic.
      */
-    private void handlePostExecution(AgiChannel channel, VxmlSession vxmlSession) 
+    private void handlePostExecution(AgiChannel channel, VxmlSession vxmlSession)
             throws AgiException {
         if (vxmlSession == null) {
             return;
@@ -575,9 +813,9 @@ public class VxmlAgiHandler extends BaseAgiScript {
     /**
      * Handles execution errors gracefully.
      *
-     * @param channel AGI channel
+     * @param channel   AGI channel
      * @param sessionId session identifier
-     * @param error exception that occurred
+     * @param error     exception that occurred
      */
     private void handleError(AgiChannel channel, String sessionId, Exception error) {
         try {
