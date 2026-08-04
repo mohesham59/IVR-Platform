@@ -52,12 +52,17 @@ Adding a new IVR menu is incredibly simple and requires no Java code changes.
    Place your new script (e.g., `my-scenario.vxml`) inside the `IVR-engine/scenarios/` directory.
 
 2. **Map the Extension:**
-   Use the provided helper script to inject the extension into Asterisk's dialplan. For example, to map extension `700` to `my-scenario.vxml`:
+   For the `add_extension.sh` script to write to the Asterisk configuration without requiring `sudo`, you must first make the file writable by your user account. Run this command once:
+   ```bash
+   sudo chown $USER:$USER /etc/asterisk/extensions.conf
+   ```
+   
+   Then, use the provided helper script to inject the extension into Asterisk's dialplan. For example, to map extension `700` to `my-scenario.vxml`:
    ```bash
    cd IVR-engine
    ./add_extension.sh 700 my-scenario
    ```
-   *(Note: The script automatically handles adding the `Answer()` command, setting the variables, injecting the FastAGI mapping into the `[default]` context, and reloading the dialplan!)*
+   *(Note: The script automatically handles adding the `Answer()` command, setting the variables, injecting the FastAGI mapping into the `[default]` context, deleting old redundant entries, and reloading the dialplan!)*
 
 3. **Call the Extension:**
    Open your SIP Softphone and dial `700`. Asterisk will instantly forward the call to the Java FastAGI server, which will parse your `.vxml`, synthesize the audio, and interact with the caller.
