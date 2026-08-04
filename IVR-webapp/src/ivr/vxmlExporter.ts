@@ -1,29 +1,30 @@
 /**
  * vxmlExporter.ts
  * ───────────────
- * Converts a NexusIVR FlowNode/FlowEdge graph into a well-formed VoiceXML 2.1
- * document suitable for download as a .vxml file.
+ * Converts a NexusIVR FlowNode/FlowEdge graph into a VoiceXML 2.1
+ * document compatible with the AGI handler (VxmlAgiHandler.java).
  *
  * Mapping strategy (node type → VoiceXML construct):
  *   start        → root <vxml> application declaration + initial <form>
  *   greeting     → <form> with <block><prompt> (TTS or audio src)
  *   playback     → <form> with <block><prompt><audio src="…"/>
  *   tts          → <form> with <block><prompt> (TTS text)
- *   dtmf_menu    → <form> with <field><grammar> + <filled>/<noinput>/<nomatch>
- *   dtmf_input   → <form> with <field type="digits"><grammar>
- *   queue        → <form> with <block><transfer type="blind">
- *   transfer     → <form> with <block><transfer type="bridge">
+ *   dtmf_menu    → <form> with <menu><prompt><choice …>…</choice></menu>
+ *   dtmf_input   → <form> with <field type="digits"><prompt>…</prompt><filled>…</filled><noinput>…</noinput><nomatch>…</nomatch></field>
+ *   queue        → <form> with <block><transfer type="blind">…</transfer></block>
+ *   transfer     → <form> with <block><transfer type="bridge">…</transfer></block>
  *   extension    → <form> with <block><transfer type="blind" dest="…">
- *   voicemail    → <form> with <record>
- *   record       → <form> with <record beep="true" finalsilence="…">
+ *   voicemail    → <form> with <block><prompt>…</prompt><goto/></block> (no <record> — AGI does not support it)
+ *   record       → <form> with <block><prompt>…</prompt><goto/></block>
  *   hours        → <form> with <block><if cond="…"><goto> open/closed
  *   holiday      → <form> with <block><if cond="…"><goto> holiday/normal
  *   condition    → <form> with <block><if cond="…">
  *   variable     → <form> with <block><assign>
- *   api/webhook  → <form> with <block><submit> or comment annotation
- *   database     → <form> with <block> comment annotation
- *   ai           → <form> with <block> comment annotation
- *   end          → <form> with <block><disconnect/>
+ *   api          → <form> with <block><api url="…" var="…" saveResultAs="…"/>
+ *   database     → <form> with <block><api url="…" var="…" saveResultAs="…"/>
+ *   webhook      → <form> with <block><api url="…" var="…" saveResultAs="…"/>
+ *   ai           → <form> with <block><ai role="…" options="…">…</ai></block>
+ *   end          → <form> with <block><prompt>…</prompt><disconnect/></block>
  */
 
 import type { FlowNode, FlowEdge } from './types'
@@ -278,38 +279,32 @@ function renderExtension(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): 
 }
 
 function renderVoicemail(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): string {
-  const next = firstTarget(node.id, edges)
-  const nextId = gotoId(next, nodes)
-  const dest = node.subtitle || 'voicemail.wav'
+   const next = firstTarget(node.id, edges)
+   const nextId = gotoId(next, nodes)
 
-  return `
-  <!-- ════════════════════════════ VOICEMAIL ════════════════════════════════ -->
-  <form id="${toFormId(node)}">
-    <record name="voicemail_recording" beep="true" maxtime="120s" finalsilence="4s"
-            dtmfterm="true" dest="${esc(dest)}">
-      <prompt>Please leave your message after the beep. Press any key when done.</prompt>
-    </record>
-    <block>
-      <prompt>Thank you. Your message has been recorded.</prompt>
-      <goto next="#${nextId}"/>
-    </block>
-  </form>`
-}
+   return `
+   <!-- ════════════════════════════ VOICEMAIL ════════════════════════════════ -->
+   <form id="${toFormId(node)}">
+     <block>
+       <prompt>Please leave your message after the beep. Press any key when done.</prompt>
+       <goto next="#${nextId}"/>
+     </block>
+   </form>`
+ }
 
 function renderRecord(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): string {
-  const next = firstTarget(node.id, edges)
-  const nextId = gotoId(next, nodes)
+   const next = firstTarget(node.id, edges)
+   const nextId = gotoId(next, nodes)
 
-  return `
-  <!-- ══════════════════════════ RECORD CALL ════════════════════════════════ -->
-  <form id="${toFormId(node)}">
-    <block>
-      <!-- Call recording started: ${esc(toLabel(node))} -->
-      <!-- In production, trigger recording via platform-specific VoiceXML extension -->
-      <goto next="#${nextId}"/>
-    </block>
-  </form>`
-}
+   return `
+   <!-- ══════════════════════════ RECORD CALL ════════════════════════════════ -->
+   <form id="${toFormId(node)}">
+     <block>
+       <prompt>Call recording started. ${esc(toLabel(node))}</prompt>
+       <goto next="#${nextId}"/>
+     </block>
+   </form>`
+ }
 
 function renderHours(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): string {
   const openEdge   = edges.find(e => e.sourceId === node.id && e.sourcePort === 'open')
@@ -390,98 +385,85 @@ function renderVariable(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): s
 }
 
 function renderApi(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): string {
-  const successEdge = edges.find(e => e.sourceId === node.id && e.sourcePort === 'success')
-  const errorEdge   = edges.find(e => e.sourceId === node.id && e.sourcePort === 'error')
+   const successEdge = edges.find(e => e.sourceId === node.id && e.sourcePort === 'success')
+   const errorEdge   = edges.find(e => e.sourceId === node.id && e.sourcePort === 'error')
+   const url = node.subtitle || 'https://api.example.com/endpoint'
+   const varName = `api_result_${node.id.replace(/[^a-zA-Z0-9]/g, '_')}`
 
-  return `
-  <!-- ════════════════════════════ API REQUEST ═════════════════════════════ -->
-  <form id="${toFormId(node)}">
-    <block>
-      <!--
-        API call: ${esc(node.subtitle || toLabel(node))}
-        Use <submit> or <data> to call the endpoint; handle result in ECMAScript.
-      -->
-      <data name="api_result" src="https://api.example.com/endpoint" method="post"/>
-    </block>
-    <block>
-      <if cond="api_result.status == 'success'">
-        <goto next="#${gotoId(successEdge?.targetId, nodes)}"/>
-      <else/>
-        <goto next="#${gotoId(errorEdge?.targetId, nodes)}"/>
-      </if>
-    </block>
-  </form>`
-}
+   return `
+   <!-- ════════════════════════════ API REQUEST ═════════════════════════════ -->
+   <form id="${toFormId(node)}">
+     <block>
+       <api url="${esc(url)}" var="${varName}" saveResultAs="${varName}"/>
+     </block>
+     <block>
+       <if cond="${varName} != null &amp;&amp; ${varName}.status == 'success'">
+         <goto next="#${gotoId(successEdge?.targetId, nodes)}"/>
+       <else/>
+         <goto next="#${gotoId(errorEdge?.targetId, nodes)}"/>
+       </if>
+     </block>
+   </form>`
+ }
 
 function renderDatabase(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): string {
-  const foundEdge    = edges.find(e => e.sourceId === node.id && e.sourcePort === 'found')
-  const notFoundEdge = edges.find(e => e.sourceId === node.id && e.sourcePort === 'notfound')
+   const foundEdge    = edges.find(e => e.sourceId === node.id && e.sourcePort === 'found')
+   const notFoundEdge = edges.find(e => e.sourceId === node.id && e.sourcePort === 'notfound')
+   const varName = `db_result_${node.id.replace(/[^a-zA-Z0-9]/g, '_')}`
 
-  return `
-  <!-- ══════════════════════════ DATABASE LOOKUP ═══════════════════════════ -->
-  <form id="${toFormId(node)}">
-    <block>
-      <!-- Database lookup: ${esc(node.subtitle || toLabel(node))} -->
-      <data name="db_result" src="https://db.example.com/lookup" method="get"/>
-    </block>
-    <block>
-      <if cond="db_result != null">
-        <goto next="#${gotoId(foundEdge?.targetId, nodes)}"/>
-      <else/>
-        <goto next="#${gotoId(notFoundEdge?.targetId, nodes)}"/>
-      </if>
-    </block>
-  </form>`
-}
+   return `
+   <!-- ══════════════════════════ DATABASE LOOKUP ═══════════════════════════ -->
+   <form id="${toFormId(node)}">
+     <block>
+       <api url="https://db.example.com/lookup" var="${varName}" saveResultAs="${varName}"/>
+     </block>
+     <block>
+       <if cond="${varName} != null">
+         <goto next="#${gotoId(foundEdge?.targetId, nodes)}"/>
+       <else/>
+         <goto next="#${gotoId(notFoundEdge?.targetId, nodes)}"/>
+       </if>
+     </block>
+   </form>`
+ }
 
 function renderWebhook(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): string {
-  const successEdge = edges.find(e => e.sourceId === node.id && e.sourcePort === 'success')
-  const errorEdge   = edges.find(e => e.sourceId === node.id && e.sourcePort === 'error')
+   const successEdge = edges.find(e => e.sourceId === node.id && e.sourcePort === 'success')
+   const errorEdge   = edges.find(e => e.sourceId === node.id && e.sourcePort === 'error')
+   const url = node.subtitle || 'https://webhook.example.com/trigger'
+   const varName = `webhook_result_${node.id.replace(/[^a-zA-Z0-9]/g, '_')}`
 
-  return `
-  <!-- ═════════════════════════════ WEBHOOK ════════════════════════════════ -->
-  <form id="${toFormId(node)}">
-    <block>
-      <!-- Webhook: ${esc(node.subtitle || toLabel(node))} -->
-      <submit next="https://webhook.example.com/trigger" method="post" namelist="session.sessionid"/>
-    </block>
-    <block>
-      <if cond="true /* webhook sent successfully */">
-        <goto next="#${gotoId(successEdge?.targetId, nodes)}"/>
-      <else/>
-        <goto next="#${gotoId(errorEdge?.targetId, nodes)}"/>
-      </if>
-    </block>
-  </form>`
-}
+   return `
+   <!-- ═════════════════════════════ WEBHOOK ════════════════════════════════ -->
+   <form id="${toFormId(node)}">
+     <block>
+       <api url="${esc(url)}" var="${varName}" saveResultAs="${varName}"/>
+     </block>
+     <block>
+       <if cond="${varName} != null">
+         <goto next="#${gotoId(successEdge?.targetId, nodes)}"/>
+       <else/>
+         <goto next="#${gotoId(errorEdge?.targetId, nodes)}"/>
+       </if>
+     </block>
+   </form>`
+ }
 
 function renderAi(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): string {
-  const resolvedEdge = edges.find(e => e.sourceId === node.id && e.sourcePort === 'resolved')
-  const escalateEdge = edges.find(e => e.sourceId === node.id && e.sourcePort === 'escalate')
+   const resolvedEdge = edges.find(e => e.sourceId === node.id && e.sourcePort === 'resolved')
+   const escalateEdge = edges.find(e => e.sourceId === node.id && e.sourcePort === 'escalate')
+   const options = 'transfer:transfer_form, mobile balance:balance_form, complaint:complaint_form'
 
-  return `
-  <!-- ══════════════════════════ AI ASSISTANT ══════════════════════════════ -->
-  <form id="${toFormId(node)}">
-    <field name="ai_intent" type="string">
-      <grammar src="ai_grammar.grxml" type="application/srgs+xml"/>
-      <prompt>${esc(node.subtitle || 'How can I help you today?')}</prompt>
-      <filled>
-        <!--
-          Pass ai_intent to your NLP/AI backend here.
-          For now routing on a placeholder condition.
-        -->
-        <if cond="ai_intent != null &amp;&amp; ai_intent != ''">
-          <goto next="#${gotoId(resolvedEdge?.targetId, nodes)}"/>
-        <else/>
-          <goto next="#${gotoId(escalateEdge?.targetId, nodes)}"/>
-        </if>
-      </filled>
-      <noinput>
-        <goto next="#${gotoId(escalateEdge?.targetId, nodes)}"/>
-      </noinput>
-    </field>
-  </form>`
-}
+   return `
+   <!-- ══════════════════════════ AI ASSISTANT ══════════════════════════════ -->
+   <form id="${toFormId(node)}">
+     <block>
+       <ai role="You are a polite assistant." options="${esc(options)}">
+         <prompt>${esc(node.subtitle || 'How can I help you today?')}</prompt>
+       </ai>
+     </block>
+   </form>`
+ }
 
 function renderEnd(node: FlowNode): string {
   return `
@@ -603,12 +585,6 @@ export function exportAsVxml(
       xsi:schemaLocation="http://www.w3.org/2001/vxml
                           http://www.w3.org/TR/voicexml21/vxml.xsd"
       application="root.vxml">
-
-  <!-- ══════════════════════════ GLOBAL VARIABLES ════════════════════════ -->
-  <var name="session_id"   expr="session.sessionid"/>
-  <var name="caller_id"    expr="session.telephone.ani"/>
-  <var name="called_number" expr="session.telephone.dnis"/>
-  <meta name="flowname" content="${esc(name)}"/>
 ${forms}
 </vxml>`
 

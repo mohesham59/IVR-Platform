@@ -425,7 +425,26 @@ public class VxmlAgiHandler extends BaseAgiScript {
                 }
             } else if ("field".equals(tagName)) {
                 String fieldName = child.getAttribute("name");
+                String fieldType = child.getAttribute("type");
                 org.w3c.dom.NodeList fieldPrompts = child.getElementsByTagName("prompt");
+
+                // Parse <grammar> children for DTMF tokens
+                java.util.List<String> grammarTokens = new java.util.ArrayList<>();
+                org.w3c.dom.NodeList grammars = child.getElementsByTagName("grammar");
+                for (int g = 0; g < grammars.getLength(); g++) {
+                    org.w3c.dom.Element grammarEl = (org.w3c.dom.Element) grammars.item(g);
+                    org.w3c.dom.NodeList items = grammarEl.getElementsByTagName("item");
+                    for (int i = 0; i < items.getLength(); i++) {
+                        grammarTokens.add(items.item(i).getTextContent().trim());
+                    }
+                    // Also check for inline text content
+                    if (items.getLength() == 0) {
+                        String grammarText = grammarEl.getTextContent().trim();
+                        if (!grammarText.isEmpty()) {
+                            grammarTokens.add(grammarText);
+                        }
+                    }
+                }
 
                 StringBuilder inputStr = new StringBuilder();
                 char firstDigit = 0;
@@ -531,6 +550,45 @@ public class VxmlAgiHandler extends BaseAgiScript {
                 } else {
                     System.out.println("[VxmlAgiHandler] <ai> No final action, ending session.");
                     // You could optionally jump to a default form here.
+                }
+            } else if ("record".equals(tagName)) {
+                String recordName = child.getAttribute("name");
+                String maxTime = child.getAttribute("maxtime");
+                String beep = child.getAttribute("beep");
+                String dtmfterm = child.getAttribute("dtmfterm");
+                String dest = child.getAttribute("dest");
+
+                System.out.println("[VxmlAgiHandler] <record> Recording started: name=" + recordName
+                        + " maxtime=" + maxTime + " beep=" + beep + " dtmfterm=" + dtmfterm);
+
+                String recordPath = "/dev/shm/voicemail_" + System.currentTimeMillis();
+                if (beep != null && beep.equalsIgnoreCase("true")) {
+                    channel.streamFile("beep");
+                }
+
+                channel.recordFile(recordPath, "wav", "#",
+                        maxTime != null && !maxTime.isEmpty() ? Integer.parseInt(maxTime.replaceAll("[^0-9]", "")) : 120,
+                        0, false, 2000);
+
+                if (session != null && recordName != null && !recordName.isEmpty()) {
+                    session.setVariable(recordName, recordPath + ".wav");
+                }
+
+                if (dest != null && !dest.isEmpty()) {
+                    System.out.println("[VxmlAgiHandler] <record> Saving voicemail to: " + dest);
+                }
+
+                speakPrompt(channel, "Your message has been recorded.", session);
+            } else if ("var".equals(tagName)) {
+                String varName = child.getAttribute("name");
+                String expr = child.getAttribute("expr");
+                if (varName != null && !varName.isEmpty() && expr != null && session != null) {
+                    String value = expr;
+                    if (value.startsWith("'") && value.endsWith("'")) {
+                        value = value.substring(1, value.length() - 1);
+                    }
+                    session.setVariable(varName, value);
+                    System.out.println("[VxmlAgiHandler] <var> " + varName + " = " + value);
                 }
             }
         }
