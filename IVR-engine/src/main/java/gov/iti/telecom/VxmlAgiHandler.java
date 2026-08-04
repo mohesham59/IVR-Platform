@@ -434,9 +434,9 @@ public class VxmlAgiHandler extends BaseAgiScript {
                 for (int g = 0; g < grammars.getLength(); g++) {
                     org.w3c.dom.Element grammarEl = (org.w3c.dom.Element) grammars.item(g);
                     org.w3c.dom.NodeList items = grammarEl.getElementsByTagName("item");
-                    for (int i = 0; i < items.getLength(); i++) {
-                        grammarTokens.add(items.item(i).getTextContent().trim());
-                    }
+                for (int j = 0; j < items.getLength(); j++) {
+                    grammarTokens.add(items.item(j).getTextContent().trim());
+                }
                     // Also check for inline text content
                     if (items.getLength() == 0) {
                         String grammarText = grammarEl.getTextContent().trim();

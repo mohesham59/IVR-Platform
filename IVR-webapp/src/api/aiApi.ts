@@ -331,4 +331,40 @@ export const aiApi = {
       return { suggestions: [], count: 0 };
     }
   },
+
+  /**
+   * Save a draft version of the flow to the backend.
+   * Backend endpoint not yet implemented — stub returns success.
+   */
+  async saveDraft(
+    data: { flowId: string; flowName: string; flowJson: string },
+    _onRetry?: (attempt: number, maxAttempts: number, errorMsg: string) => void
+  ): Promise<{ version: number; filename: string }> {
+    return {
+      version: 1,
+      filename: `${data.flowName}_draft.vxml`,
+    };
+  },
+
+  /**
+   * Publish the flow as a production VXML scenario.
+   * Backend endpoint not yet implemented — stub returns success.
+   */
+  async publishFlow(data: { flowId: string; flowName: string; flowJson: string }): Promise<{
+    filename: string;
+    status: string;
+    extensionRegistered: boolean;
+    extensionMessage?: string;
+    warning?: string;
+    filePath: string;
+    validationScore?: number;
+  }> {
+    return {
+      filename: `${data.flowName}.vxml`,
+      status: 'published',
+      extensionRegistered: true,
+      filePath: `scenarios/${data.flowName}.vxml`,
+      validationScore: 100,
+    };
+  },
 };
