@@ -38,7 +38,10 @@ export interface FlowNode {
   collapsed: boolean
   disabled: boolean
   ports: NodePort[]
+  transferDestination?: string
+  dest?: string
 }
+
 
 export interface FlowEdge {
   id: string

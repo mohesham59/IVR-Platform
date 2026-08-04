@@ -10,6 +10,16 @@ export interface ValidationItem {
   nodeId?: string
 }
 
+export function isPlaceholderDestination(dest?: string): boolean {
+  if (!dest || !dest.trim()) return true
+  const d = dest.trim().toLowerCase()
+  if (d === 'transfer_target_placeholder' || d === 'unconfigured' || d === 'placeholder') return true
+  if (/^\+?[0-9*#]{2,15}$/.test(dest.trim())) return false
+  if (/^(sip|sips|tel):/i.test(dest.trim())) return false
+  if (d === 'agent_queue' || d === 'fraud_hotline') return false
+  return true
+}
+
 interface Props {
   selectedNode: FlowNode | null
   flowName: string
@@ -152,6 +162,33 @@ function NodePropsContent({ node, onNodeChange }: { node: FlowNode; onNodeChange
             </FieldRow>
           </>
         )}
+        {(node.type === 'transfer' || node.type === 'extension') && (() => {
+          const currentDest = node.transferDestination ?? node.dest ?? ''
+          const isPlaceholder = isPlaceholderDestination(currentDest)
+          return (
+            <>
+              <FieldRow label="Destination Extension / Target">
+                <TextInput
+                  placeholder="e.g. +1003, 1001, or sip:agent@company.com"
+                  value={currentDest}
+                  onChange={v => handleUpdate({ transferDestination: v, dest: v })}
+                />
+              </FieldRow>
+              {isPlaceholder && (
+                <div className="p-2.5 rounded-lg bg-[#FEF3C7] border border-[#FDE68A] text-[#B45309] text-xs flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-[#F59E0B] flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-[11px]">Unconfigured Transfer Target</p>
+                    <p className="text-[10px] text-[#92400E] mt-0.5">
+                      This node currently has a placeholder target ('{currentDest || 'None'}'). Please enter a dialable extension or SIP URI before publishing.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </>
+          )
+        })()}
+
         {node.type === 'queue' && (
           <>
             <FieldRow label="Queue Name">

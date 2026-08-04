@@ -42,6 +42,8 @@ const HOLIDAYS = [
 
 const AI_PROVIDERS = [
   { id: 'groq', label: 'Groq', logo: '☁️', models: ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'] },
+  { id: 'gemini', label: 'Gemini', logo: '✨', models: ['gemini-2.0-flash', 'gemini-1.5-flash'] },
+  { id: 'openrouter', label: 'OpenRouter', logo: '🌐', models: ['openai/gpt-oss-20b'] },
   { id: 'ollama', label: 'Ollama', logo: '🟢', models: ['granite3.2:2b'] },
 ]
 

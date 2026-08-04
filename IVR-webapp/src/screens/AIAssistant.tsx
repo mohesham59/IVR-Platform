@@ -1,20 +1,22 @@
+import { useState, useRef } from 'react'
 import TenantLayout from '../components/TenantLayout'
 import QuotaWarningBanner from '../components/QuotaWarningBanner'
 import {
-  Send, Bot, Clock, Plus, Trash2,
+  Send, Square, Bot, Clock, Plus, Trash2,
   ChevronRight, GitBranch, Mic, Paperclip, RefreshCw,
-  Wand2, FileText, CheckCircle, AlertTriangle, XCircle, Copy,
-  ExternalLink,
+  Download, CheckCircle, AlertTriangle, XCircle, Copy,
+  ExternalLink, X,
 } from 'lucide-react'
 import {
   useAIAssistant,
   type Message,
   extractVoicePrompts,
 } from '../hooks/useAIAssistant'
+import { exportAsVxml } from '../ivr/vxmlExporter'
+import { GenerationStepper } from '../components/GenerationStepper'
 
 function FlowPreviewCard({
   extra,
-  onApplyFlow,
   onOpenInBuilder,
 }: {
   extra: {
@@ -28,9 +30,23 @@ function FlowPreviewCard({
     flowEdges?: any[]
     flowName?: string
   }
-  onApplyFlow?: () => void
   onOpenInBuilder?: () => void
 }) {
+  const [vxmlCopied, setVxmlCopied] = useState(false)
+
+  const handleCopyVxml = () => {
+    const nodes = extra.flowNodes ?? []
+    const edges = extra.flowEdges ?? []
+    const name  = extra.flowName  ?? 'IVR Flow'
+    const { vxml } = exportAsVxml(name, nodes, edges)
+    navigator.clipboard.writeText(vxml).then(() => {
+      setVxmlCopied(true)
+      setTimeout(() => setVxmlCopied(false), 2000)
+    }).catch(() => {
+      // clipboard unavailable (e.g. non-https) — silently ignore
+    })
+  }
+
   return (
     <div className="mt-3 rounded-xl border border-[#E5E7EB] bg-white overflow-hidden shadow-sm">
       <div className="flex items-center gap-2.5 px-4 py-3 border-b border-[#F3F4F6] bg-gradient-to-r from-[#EFF6FF] to-[#F5F3FF]">
@@ -77,15 +93,21 @@ function FlowPreviewCard({
         </div>
       </div>
       <div className="flex gap-2 px-4 py-3 border-t border-[#F3F4F6] bg-[#F9FAFB]">
-        <button onClick={onApplyFlow} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-[#2563EB] text-white text-xs font-semibold hover:bg-[#1E40AF] transition-colors shadow-md shadow-[#2563EB]/20">
-          <CheckCircle className="w-3.5 h-3.5" /> Use This Flow
-        </button>
-        <button onClick={onOpenInBuilder} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-[#E5E7EB] text-[#374151] text-xs font-medium hover:border-[#2563EB] hover:text-[#2563EB] transition-all">
+        <button onClick={onOpenInBuilder}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-[#2563EB] text-white text-xs font-semibold hover:bg-[#1E40AF] transition-colors shadow-md shadow-[#2563EB]/20">
           <ExternalLink className="w-3.5 h-3.5" /> Open in Builder
         </button>
-        <button onClick={() => navigator.clipboard.writeText(JSON.stringify({ flowName: extra.flowName, nodes: extra.flowNodes }, null, 2))}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-[#E5E7EB] text-[#374151] text-xs font-medium hover:border-[#2563EB] hover:text-[#2563EB] transition-all">
-          <Copy className="w-3.5 h-3.5" /> Copy
+        <button
+          onClick={handleCopyVxml}
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-medium transition-all ${
+            vxmlCopied
+              ? 'bg-[#F0FDF4] border-[#BBF7D0] text-[#15803D]'
+              : 'bg-white border-[#E5E7EB] text-[#374151] hover:border-[#2563EB] hover:text-[#2563EB]'
+          }`}
+        >
+          {vxmlCopied
+            ? <><CheckCircle className="w-3.5 h-3.5" /> Copied!</>
+            : <><Copy className="w-3.5 h-3.5" /> Copy VXML</>}
         </button>
       </div>
     </div>
@@ -94,13 +116,11 @@ function FlowPreviewCard({
 
 function ChatBubble({
   msg,
-  onApplyFlow,
   onOpenInBuilder,
   onInspect,
   isSelected,
 }: {
   msg: Message
-  onApplyFlow?: (flow?: any) => void
   onOpenInBuilder?: (flow?: any) => void
   onInspect?: () => void
   isSelected?: boolean
@@ -142,10 +162,6 @@ function ChatBubble({
           <div className="w-full">
             <FlowPreviewCard
               extra={msg.extra as any}
-              onApplyFlow={() => {
-                const ex = msg.extra as any
-                onApplyFlow?.({ nodes: ex.flowNodes, edges: ex.flowEdges, flowName: ex.flowName })
-              }}
               onOpenInBuilder={() => {
                 const ex = msg.extra as any
                 onOpenInBuilder?.({ nodes: ex.flowNodes, edges: ex.flowEdges, flowName: ex.flowName })
@@ -254,6 +270,7 @@ export default function AIAssistant({ onLogout }: { onLogout: () => void }) {
     validationResult,
     selectedMessageId,
     selectedVersion,
+    generationStage,
     messagesEndRef,
     sendMessage,
     handleNewChat,
@@ -262,14 +279,19 @@ export default function AIAssistant({ onLogout }: { onLogout: () => void }) {
     handleInspectMessage,
     handleResetToCurrentCanvas,
     handleOpenInBuilder,
-    handleApplyFlow,
-    handleImproveFlow,
-    handleExportJson,
+    handleExportVxml,
     setSelectedProvider,
-    enhancePrompt,
-    setEnhancePrompt,
     historyError,
+    isListening,
+    voiceError,
+    toggleVoiceInput,
+    handleFileUpload,
+    attachedFileName,
+    clearAttachedFile,
+    stopGeneration,
   } = useAIAssistant()
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const rightPanel = (
     <div className="w-72 bg-white border-l border-[#E5E7EB] flex-shrink-0 flex flex-col">
@@ -283,7 +305,7 @@ export default function AIAssistant({ onLogout }: { onLogout: () => void }) {
             { label: 'Nodes', value: latestFlow ? `${latestFlow.nodes.length}` : '0', color: '#2563EB', bg: '#EFF6FF' },
             { label: 'Complexity', value: latestFlow ? (latestFlow.nodes.length > 8 ? 'High' : 'Medium') : 'None', color: '#F59E0B', bg: '#FFFBEB' },
             { label: 'Avg Duration', value: '2–4 min', color: '#22C55E', bg: '#F0FDF4' },
-            { label: 'Valid. Score', value: validationResult ? (validationResult.valid ? '100%' : `${Math.max(50, 100 - validationResult.issues.length * 10)}%`) : '95%', color: '#8B5CF6', bg: '#F5F3FF' },
+            { label: 'Valid. Score', value: validationResult ? (validationResult.score !== undefined ? `${validationResult.score}%` : (validationResult.valid ? '100%' : `${Math.max(50, 100 - validationResult.issues.length * 10)}%`)) : 'N/A', color: '#8B5CF6', bg: '#F5F3FF' },
           ].map(s => (
             <div key={s.label} className="p-3 rounded-xl border border-[#F3F4F6] bg-[#F9FAFB]">
               <div className="text-base font-bold" style={{ color: s.color }}>{s.value}</div>
@@ -332,13 +354,9 @@ export default function AIAssistant({ onLogout }: { onLogout: () => void }) {
             className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-[#2563EB] text-white text-xs font-semibold hover:bg-[#1E40AF] disabled:opacity-50 transition-colors shadow-md shadow-[#2563EB]/20">
             <ExternalLink className="w-3.5 h-3.5" /> Open in IVR Builder
           </button>
-          <button onClick={handleImproveFlow} disabled={!latestFlow}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-gradient-to-r from-[#8B5CF6] to-[#2563EB] text-white text-xs font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity">
-            <Wand2 className="w-3.5 h-3.5" /> Improve Flow
-          </button>
-          <button onClick={handleExportJson} disabled={!latestFlow}
+          <button onClick={handleExportVxml} disabled={!latestFlow}
             className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-white border border-[#E5E7EB] text-[#374151] text-xs font-medium hover:border-[#2563EB] hover:text-[#2563EB] disabled:opacity-50 transition-all">
-            <FileText className="w-3.5 h-3.5" /> Export as JSON
+            <Download className="w-3.5 h-3.5" /> Download VXML
           </button>
         </section>
       </div>
@@ -427,7 +445,7 @@ export default function AIAssistant({ onLogout }: { onLogout: () => void }) {
                   onChange={e => setSelectedProvider(e.target.value)}
                   className="bg-transparent text-xs font-semibold text-[#374151] outline-none cursor-pointer capitalize"
                 >
-                  {Object.keys(providers).map(prov => (
+                  {Object.keys(providers).filter(p => p.toLowerCase() !== 'mock').map(prov => (
                     <option key={prov} value={prov}>{prov}</option>
                   ))}
                 </select>
@@ -464,7 +482,6 @@ export default function AIAssistant({ onLogout }: { onLogout: () => void }) {
               <ChatBubble
                 key={msg.id}
                 msg={msg}
-                onApplyFlow={(flow) => handleApplyFlow(flow)}
                 onOpenInBuilder={(flow) => handleOpenInBuilder(flow)}
                 onInspect={() => handleInspectMessage(msg)}
                 isSelected={selectedMessageId === msg.id}
@@ -472,15 +489,21 @@ export default function AIAssistant({ onLogout }: { onLogout: () => void }) {
             ))}
             {isTyping && (
               <div className="flex gap-3">
-                <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#8B5CF6] to-[#2563EB] flex items-center justify-center flex-shrink-0">
+                <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#8B5CF6] to-[#2563EB] flex items-center justify-center flex-shrink-0 mt-1">
                   <Bot className="w-4 h-4 text-white" />
                 </div>
-                <div className="bg-white border border-[#E5E7EB] rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm flex items-center gap-1.5">
-                  {[0, 1, 2].map(d => (
-                    <span key={d} className="w-2 h-2 rounded-full bg-[#9CA3AF] animate-bounce"
-                      style={{ animationDelay: `${d * 0.15}s` }} />
-                  ))}
-                </div>
+                {generationStage !== 'idle' ? (
+                  <div className="max-w-[80%]">
+                    <GenerationStepper stage={generationStage} />
+                  </div>
+                ) : (
+                  <div className="bg-white border border-[#E5E7EB] rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm flex items-center gap-1.5">
+                    {[0, 1, 2].map(d => (
+                      <span key={d} className="w-2 h-2 rounded-full bg-[#9CA3AF] animate-bounce"
+                        style={{ animationDelay: `${d * 0.15}s` }} />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
             <div ref={messagesEndRef as any} />
@@ -502,38 +525,106 @@ export default function AIAssistant({ onLogout }: { onLogout: () => void }) {
                   </button>
                 ))}
               </div>
-              <button
-                onClick={() => setEnhancePrompt(!enhancePrompt)}
-                title={enhancePrompt ? "Pass 1 Prompt Refinement enabled: turns rough inputs into structured specs" : "Pass 1 Prompt Refinement disabled: sends raw text directly"}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all flex items-center gap-1.5 ${
-                  enhancePrompt
-                    ? 'bg-[#F3E8FF] text-[#7E22CE] border-[#D8B4FE] shadow-xs'
-                    : 'bg-[#F3F4F6] text-[#6B7280] border-[#E5E7EB]'
-                }`}
-              >
-                <span>✨ Enhance Prompt:</span>
-                <span className={enhancePrompt ? 'font-bold text-[#6B21A8]' : 'text-[#9CA3AF]'}>{enhancePrompt ? 'ON' : 'OFF'}</span>
-              </button>
             </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".txt,.json,.xml,.vxml,.md,.csv"
+              className="hidden"
+              onChange={e => {
+                const file = e.target.files?.[0]
+                if (file) {
+                  handleFileUpload(file)
+                  e.target.value = ''
+                }
+              }}
+            />
+            {attachedFileName && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE] text-[#1D4ED8] text-xs mb-2 w-fit">
+                <Paperclip className="w-3.5 h-3.5 flex-shrink-0" />
+                <span className="truncate max-w-[250px] font-medium">{attachedFileName} attached</span>
+                <button
+                  type="button"
+                  onClick={clearAttachedFile}
+                  className="ml-1 text-[#1D4ED8]/70 hover:text-[#1D4ED8]"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+            {isListening && (
+              <div className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-[#FEF2F2] border border-[#FCA5A5] text-[#DC2626] text-xs mb-2 w-fit animate-pulse">
+                <span className="w-2 h-2 rounded-full bg-[#EF4444]" />
+                <span className="font-medium">Listening... Speak into your microphone</span>
+              </div>
+            )}
             <div className="flex items-end gap-2">
               <div className="flex-1 relative">
                 <textarea
                   value={input}
                   onChange={e => setInput(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && !e.shiftKey && !isTyping) {
+                      e.preventDefault()
+                      sendMessage()
+                    }
+                  }}
                   placeholder="Describe an IVR flow, ask for improvements, or generate voice prompts…"
                   rows={2}
-                  className="w-full px-4 py-3 pr-12 rounded-xl border border-[#E5E7EB] bg-white text-sm text-[#1F2937] placeholder-[#9CA3AF] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition-all resize-none"
+                  className="w-full px-4 py-3 pr-16 rounded-xl border border-[#E5E7EB] bg-white text-sm text-[#1F2937] placeholder-[#9CA3AF] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition-all resize-none"
                 />
                 <div className="absolute right-3 bottom-3 flex gap-1.5">
-                  <button className="text-[#9CA3AF] hover:text-[#374151] transition-colors"><Paperclip className="w-4 h-4" /></button>
-                  <button className="text-[#9CA3AF] hover:text-[#374151] transition-colors"><Mic className="w-4 h-4" /></button>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    title="Attach flow spec file (.json, .vxml, .txt, .md, .csv)"
+                    className={`transition-colors p-1 rounded-md ${
+                      attachedFileName
+                        ? 'text-[#2563EB] bg-[#EFF6FF]'
+                        : 'text-[#9CA3AF] hover:text-[#374151] hover:bg-[#F3F4F6]'
+                    }`}
+                  >
+                    <Paperclip className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={toggleVoiceInput}
+                    title={
+                      isListening
+                        ? 'Listening... Click to stop'
+                        : voiceError
+                        ? voiceError
+                        : 'Voice Input (Speech to Text)'
+                    }
+                    className={`transition-colors p-1 rounded-md ${
+                      isListening
+                        ? 'text-[#EF4444] bg-[#FEF2F2] animate-pulse ring-2 ring-[#EF4444]/30'
+                        : 'text-[#9CA3AF] hover:text-[#374151] hover:bg-[#F3F4F6]'
+                    }`}
+                  >
+                    <Mic className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
-              <button onClick={() => sendMessage()}
-                className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#8B5CF6] to-[#2563EB] flex items-center justify-center text-white hover:opacity-90 transition-opacity shadow-lg flex-shrink-0">
-                <Send className="w-4 h-4" />
-              </button>
+              {isTyping ? (
+                <button
+                  id="stop-generation-btn"
+                  onClick={stopGeneration}
+                  title="Stop generating"
+                  className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#EF4444] to-[#DC2626] flex items-center justify-center text-white hover:opacity-90 transition-opacity shadow-lg flex-shrink-0 ring-2 ring-[#EF4444]/30"
+                >
+                  <Square className="w-4 h-4 fill-white" />
+                </button>
+              ) : (
+                <button
+                  id="send-message-btn"
+                  onClick={() => sendMessage()}
+                  title="Send message"
+                  className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#8B5CF6] to-[#2563EB] flex items-center justify-center text-white hover:opacity-90 transition-opacity shadow-lg flex-shrink-0"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              )}
             </div>
             <p className="text-[#9CA3AF] text-[10px] mt-1.5 text-center">Press Enter to send · Shift+Enter for new line</p>
           </div>

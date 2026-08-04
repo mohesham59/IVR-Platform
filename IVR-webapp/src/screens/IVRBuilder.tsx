@@ -1,22 +1,24 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { aiApi } from '../api/aiApi'
 import QuotaWarningBanner from '../components/QuotaWarningBanner'
 import {
   Undo2, Redo2, ShieldCheck, Save, Upload, Download,
   Sparkles, LogOut, Phone, Play, Square, ChevronUp, ChevronDown,
   Copy, Scissors, Trash2, EyeOff, Pencil, Group,
-  CheckCircle, Info, GitBranch, Zap, Maximize2, Minimize2, Terminal, ZoomIn, ZoomOut, Move, PanelLeftClose
+  CheckCircle, Info, GitBranch, Zap, Maximize2, Minimize2, Terminal, ZoomIn, ZoomOut, Move, PanelLeftClose,
+  ArrowLeft,
 } from 'lucide-react'
 import FlowCanvas from '../ivr/FlowCanvas'
 import NodeLibrary from '../ivr/NodeLibrary'
-import PropertiesPanel, { type ValidationItem } from '../ivr/PropertiesPanel'
+import PropertiesPanel, { type ValidationItem, isPlaceholderDestination } from '../ivr/PropertiesPanel'
 import { INITIAL_NODES, INITIAL_EDGES, VERSIONS as INITIAL_VERSIONS } from '../ivr/initialFlow'
 import { NODE_DEFS } from '../ivr/nodeConfig'
 import { sanitizeFlow, generateUniqueId } from '../ivr/flowParser'
 import { validateGraph, analyzeGraph, reconnectAfterDelete, optimizeFlow } from '../ivr/graphEngine'
 import type { FlowNode, FlowEdge, NodeType, FlowVersion } from '../ivr/types'
 import AiAssistantPanel from '../components/AiAssistantPanel'
+import { downloadVxml } from '../ivr/vxmlExporter'
 
 interface LogEntry {
   id: string
@@ -74,6 +76,7 @@ export function _hasGreetingEquivalent(nodes: FlowNode[]): boolean {
 }
 
 export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
+  const navigate = useNavigate()
   const location = useLocation()
   const passedFlow = location.state as { nodes?: FlowNode[]; edges?: FlowEdge[]; flowName?: string; sessionId?: string } | null
 
@@ -148,6 +151,9 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
   const [isPublished, setIsPublished] = useState(false)
   const [aiPanelOpen, setAiPanelOpen] = useState(true)
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId: string } | null>(null)
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
+  const [editingTitleValue, setEditingTitleValue] = useState('')
+  const titleInputRef = useRef<HTMLInputElement>(null)
   const [versionsList, setVersionsList] = useState<FlowVersion[]>(() => {
     const saved = localStorage.getItem(`nexus_builder_versions_${sessionId}`)
     if (saved) {
@@ -211,25 +217,6 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
     const timer = setTimeout(() => { runValidation() }, 100)
     return () => { active = false; clearTimeout(timer) }
   }, [nodes, edges, addLog])
-
-  const [llmSuggestions, setLlmSuggestions] = useState<any[]>([])
-
-  useEffect(() => {
-    let active = true
-    const fetchLlmSuggestions = async () => {
-      try {
-        const res = await aiApi.getAiSuggestions({ flow: { nodes, edges }, issues: backendValidationIssues })
-        if (active && res && Array.isArray(res.suggestions)) {
-          setLlmSuggestions(res.suggestions)
-        }
-      } catch (err) {
-        console.warn('[IVRBuilder] LLM suggestion fetch failed:', err)
-      }
-    }
-    const timer = setTimeout(() => { fetchLlmSuggestions() }, 300)
-    return () => { active = false; clearTimeout(timer) }
-  }, [nodes, edges, backendValidationIssues])
-
   const [clipboardNode, setClipboardNode] = useState<FlowNode | null>(null)
   const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null)
   const [draftNodes, setDraftNodes] = useState<FlowNode[] | null>(null)
@@ -1256,30 +1243,6 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
       }
     })
 
-    llmSuggestions.forEach(s => {
-      const suggId = s.id || `sugg_llm_${s.nodeId || 'gen'}`
-      if (!list.some(item => item.id === suggId)) {
-        list.push({
-          id: suggId,
-          text: s.text,
-          icon: s.icon || '💡',
-          severity: s.severity || 'warning',
-          nodeId: s.nodeId,
-          suggestionType: 'llm_advice',
-          applyAction: () => {
-            setIgnoredSuggestionIds(prev => new Set(prev).add(suggId))
-            if (s.nodeId) {
-              const res = applyReinsertMenuForNode(s.nodeId)
-              if (res) addLog(`Applied AI Suggestion: ${s.text}`, 'info')
-              return res
-            }
-            addLog(`Applied AI Suggestion: ${s.text}`, 'info')
-            return true
-          },
-        })
-      }
-    })
-
     const severityRank: Record<string, number> = { error: 0, warning: 1, info: 2 }
     const filtered = list.filter(s => !ignoredSuggestionIds.has(s.id))
 
@@ -1309,7 +1272,7 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
     }
 
     return deduplicatedSuggestions.sort((a, b) => (severityRank[a.severity] ?? 9) - (severityRank[b.severity] ?? 9))
-  }, [nodes, edges, diagnostics, ignoredSuggestionIds, pushHistory, addLog, backendValidationIssues, validateAndFixSuggestionApply, applyReinsertMenuForNode, llmSuggestions])
+  }, [nodes, edges, diagnostics, ignoredSuggestionIds, pushHistory, addLog, backendValidationIssues, validateAndFixSuggestionApply, applyReinsertMenuForNode])
 
   const handleApplyAllSuggestions = useCallback(() => {
     if (currentSuggestions.length === 0) return
@@ -1416,32 +1379,145 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
     addLog(`Applied Flow Optimization: ${result.summary}`, 'info')
   }, [nodes, edges, pushHistory, addLog])
 
-  const handleExport = () => {
-    const data = JSON.stringify({ flowName, nodes, edges }, null, 2)
-    const blob = new Blob([data], { type: 'application/json' })
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = `${flowName.toLowerCase().replace(/\s+/g, '_')}_flow.json`
-    a.click()
-    addLog('Exported flow JSON schema', 'info')
+  const handleExportVxml = () => {
+    downloadVxml(flowName, nodes, edges)
+    addLog('Exported flow as VoiceXML (.vxml)', 'info')
   }
+
+
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+
+    // Reset file input so the same file can be re-imported later
+    e.target.value = ''
+
     const reader = new FileReader()
-    reader.onload = (event) => {
-      try {
-        const parsed = JSON.parse(event.target?.result as string)
-        if (parsed.nodes && Array.isArray(parsed.nodes)) {
-          const validated = validateGraph(parsed.nodes, parsed.edges || [])
-          setNodes(validated.nodes)
-          setEdges(validated.edges)
-          if (parsed.flowName) setFlowName(parsed.flowName)
-          pushHistory(validated.nodes, validated.edges)
-          addLog(`Imported flow schema "${parsed.flowName || 'Flow'}"`, 'info')
+    reader.onload = async (event) => {
+      const rawText = event.target?.result as string
+      if (!rawText) return
+
+      // Detect file type: VXML if the filename ends in .vxml OR content starts with XML declaration
+      const isVxml = file.name.toLowerCase().endsWith('.vxml') || rawText.trimStart().startsWith('<?xml')
+
+      if (isVxml) {
+        // ── VXML path: send to backend VxmlToModelConverter ──────────────────
+        addLog(`Importing VoiceXML file "${file.name}" via backend converter…`, 'info')
+        try {
+          const result = await aiApi.importVxml(rawText)
+          console.log('[IVRBuilder] IMPORT_VXML API response payload:', result)
+
+          if (result.nodes && Array.isArray(result.nodes) && result.nodes.length > 0) {
+            addLog(`Received ${result.nodes.length} node(s) and ${(result.edges || []).length} edge(s) from VXML converter`, 'info')
+
+            const hasValidPositions = result.nodes.every(
+              n => typeof n.x === 'number' && typeof n.y === 'number' && (n.x !== 0 || n.y !== 0)
+            )
+
+            let renderableNodes = result.nodes.map((n, idx) => ({
+              ...n,
+              x: typeof n.x === 'number' && n.x !== 0 ? n.x : 100 + (idx % 4) * 260,
+              y: typeof n.y === 'number' && n.y !== 0 ? n.y : 100 + Math.floor(idx / 4) * 160,
+              status: n.status || 'valid',
+              collapsed: n.collapsed || false,
+              disabled: n.disabled || false,
+              ports: n.ports || []
+            }))
+
+            let renderableEdges = result.edges || []
+
+            // Automatically run auto-layout if nodes lack non-zero positions (freshly imported VXML nodes)
+            if (!hasValidPositions) {
+              addLog('Auto-arranging imported flow layout...', 'info')
+              const layoutResult = optimizeFlow(renderableNodes, renderableEdges)
+              renderableNodes = layoutResult.nodes
+              renderableEdges = layoutResult.edges
+            }
+
+            const validated = validateGraph(renderableNodes, renderableEdges)
+            setNodes(validated.nodes)
+            setEdges(validated.edges)
+            const importedFlowName = result.flowName || file.name.replace(/\.[^/.]+$/, '')
+            setFlowName(importedFlowName)
+            pushHistory(validated.nodes, validated.edges)
+            syncFlowToSession(importedFlowName, validated.nodes, validated.edges)
+
+            if (validated.nodes.length === 0) {
+              console.warn('[IVRBuilder] Warning: Canvas rendered 0 nodes despite import response reporting nodes:', result)
+              addLog(`Warning: Imported flow has 0 renderable nodes on canvas`, 'warn')
+            } else {
+              addLog(
+                `Imported VoiceXML flow "${importedFlowName}" — ${validated.nodes.length} node(s) and ${validated.edges.length} connection(s) rendered on canvas.`,
+                'info'
+              )
+            }
+          } else {
+            console.warn('[IVRBuilder] IMPORT_VXML API returned empty or invalid nodes array:', result)
+            addLog(
+              `Import failed: Backend returned no nodes for "${file.name}". The file may be empty or incompatible.`,
+              'error'
+            )
+          }
+        } catch (err: any) {
+          const msg = err?.message || String(err)
+          addLog(
+            `Import failed for "${file.name}": ${msg}. Ensure the file is a valid VoiceXML 2.1 document exported from this application.`,
+            'error'
+          )
         }
-      } catch (err) { console.error('Failed to parse flow JSON', err) }
+      } else {
+        // ── JSON path: client-side parse ─────────────────────────────
+        try {
+          const parsed = JSON.parse(rawText)
+          if (parsed.nodes && Array.isArray(parsed.nodes) && parsed.nodes.length > 0) {
+            const hasValidPositions = parsed.nodes.some(
+              (n: any) => typeof n.x === 'number' && typeof n.y === 'number' && (n.x !== 0 || n.y !== 0)
+            )
+
+            let renderableNodes = parsed.nodes.map((n: any, idx: number) => ({
+              ...n,
+              x: typeof n.x === 'number' ? n.x : 100 + (idx % 4) * 260,
+              y: typeof n.y === 'number' ? n.y : 100 + Math.floor(idx / 4) * 160,
+              status: n.status || 'valid',
+              collapsed: n.collapsed || false,
+              disabled: n.disabled || false,
+              ports: n.ports || []
+            }))
+
+            let renderableEdges = parsed.edges || []
+
+            if (!hasValidPositions) {
+              const layoutResult = optimizeFlow(renderableNodes, renderableEdges)
+              renderableNodes = layoutResult.nodes
+              renderableEdges = layoutResult.edges
+            }
+
+
+            const validated = validateGraph(renderableNodes, renderableEdges)
+            setNodes(validated.nodes)
+            setEdges(validated.edges)
+            const importedFlowName = parsed.flowName || file.name.replace(/\.[^/.]+$/, '')
+            setFlowName(importedFlowName)
+            pushHistory(validated.nodes, validated.edges)
+            syncFlowToSession(importedFlowName, validated.nodes, validated.edges)
+
+            addLog(`Imported flow schema "${importedFlowName}" — ${validated.nodes.length} node(s) loaded.`, 'info')
+          } else {
+            addLog(
+              `Import failed for "${file.name}": JSON does not contain a valid flow (missing "nodes" array).`,
+              'error'
+            )
+          }
+        } catch (err: any) {
+          addLog(
+            `Import failed for "${file.name}": Not valid JSON or VoiceXML. Only .json flow exports and .vxml files are supported.`,
+            'error'
+          )
+          console.error('Failed to parse flow JSON', err)
+        }
+      }
+
     }
     reader.readAsText(file)
   }
@@ -1549,7 +1625,7 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
     return true
   })
 
-  const handlePublish = useCallback(() => {
+  const handlePublish = useCallback(async () => {
     const btn = document.activeElement as HTMLButtonElement
     if (btn) btn.blur()
     const errors = validationItems.filter(i => i.type === 'error')
@@ -1558,34 +1634,121 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
       alert(`Cannot publish: Please fix the ${errors.length} validation error(s) first.`)
       return
     }
-    setIsPublished(true)
-    const timestamp = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-    const newVer: FlowVersion = {
-      id: `v_${Date.now()}`, versionId: `v_${Date.now()}`, sessionId, createdAt: timestamp, savedAt: timestamp,
-      label: `${flowName} — Production v${versionsList.length + 1}`, tag: 'published', author: 'Mohamed H.',
-      flow: { nodes: [...nodes], edges: [...edges] }, nodes: [...nodes], edges: [...edges],
-      summary: `Published production version for "${flowName}"`, prompt: '', score: 100
+
+    const unconfiguredTransfers = nodes.filter(n =>
+      (n.type === 'transfer' || n.type === 'extension') &&
+      isPlaceholderDestination(n.transferDestination ?? n.dest ?? '')
+    )
+
+    if (unconfiguredTransfers.length > 0) {
+      const firstRole = unconfiguredTransfers[0].transferDestination ?? unconfiguredTransfers[0].dest ?? 'placeholder'
+      addLog(`Publish blocked: ${unconfiguredTransfers.length} Transfer node(s) have unconfigured destinations (e.g. '${firstRole}').`, 'error')
+      alert(`Cannot publish: ${unconfiguredTransfers.length} Transfer node(s) have unconfigured placeholder destinations (e.g. '${firstRole}'). Please enter dialable extension numbers in the node properties panel before publishing.`)
+
+      setRightTab('props')
+      setSelectedId(unconfiguredTransfers[0].id)
+      return
     }
-    setVersionsList(v => [newVer, ...v])
-    addLog(`Published production version v${versionsList.length + 1}`, 'info')
-    setTimeout(() => setIsPublished(false), 2500)
+
+    addLog(`Publishing scenario "${flowName}" to backend...`, 'info')
+
+    try {
+      const result = await aiApi.publishFlow({
+        flowId: sessionId || `flow_${Date.now()}`,
+        flowName,
+        flowJson: JSON.stringify({ nodes, edges }),
+      })
+
+      setIsPublished(true)
+      const timestamp = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+      const newVer: FlowVersion = {
+        id: `v_${Date.now()}`, versionId: `v_${Date.now()}`, sessionId, createdAt: timestamp, savedAt: timestamp,
+        label: `${flowName} — Production v${versionsList.length + 1}`, tag: 'published', author: 'Mohamed H.',
+        flow: { nodes: [...nodes], edges: [...edges] }, nodes: [...nodes], edges: [...edges],
+        summary: `Published VXML scenario to ${result.filename}`, prompt: '', score: result.validationScore || 100
+      }
+      setVersionsList(v => [newVer, ...v])
+
+      if (result.status === 'partially_published' || result.extensionRegistered === false) {
+        const msg = result.extensionMessage || result.warning || 'Extension registration failed'
+        addLog(`Flow published to ${result.filePath}, but extension registration failed: ${msg}`, 'warn')
+        alert(`Flow VXML scenario published successfully to ${result.filePath}, but extension registration encountered an issue:\n\n${msg}`)
+      } else {
+        const extMsg = result.extensionMessage ? ` (${result.extensionMessage})` : ''
+        addLog(`Published production version v${versionsList.length + 1} to ${result.filePath}${extMsg}`, 'info')
+      }
+
+      setTimeout(() => setIsPublished(false), 2500)
+    } catch (err: any) {
+      addLog(`Failed to publish flow to backend: ${err.message}`, 'error')
+      alert(`Publish failed: ${err.message}`)
+    }
   }, [validationItems, addLog, flowName, versionsList, sessionId, nodes, edges])
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     const btn = document.activeElement as HTMLButtonElement
     if (btn) btn.blur()
-    setIsSaved(true)
-    const timestamp = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-    const newVer: FlowVersion = {
-      id: `v_${Date.now()}`, versionId: `v_${Date.now()}`, sessionId, createdAt: timestamp, savedAt: timestamp,
-      label: `${flowName} — Draft v${versionsList.length + 1}`, tag: 'draft', author: 'Mohamed H.',
-      flow: { nodes: [...nodes], edges: [...edges] }, nodes: [...nodes], edges: [...edges],
-      summary: `Manual draft saved for "${flowName}"`, prompt: '', score: 95
+
+    const flowJson = JSON.stringify({ nodes, edges })
+
+    try {
+
+      const result = await aiApi.saveDraft(
+        {
+          flowId: sessionId || `flow_${Date.now()}`,
+          flowName,
+          flowJson,
+        },
+        (attempt, maxAttempts, errorMsg) => {
+          addLog(`Save draft attempt ${attempt}/${maxAttempts} failed (${errorMsg}). Retrying...`, 'warn')
+        }
+      )
+
+      // Only reach here if the backend confirmed the file exists on disk
+      setIsSaved(true)
+      const timestamp = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+      const newVer: FlowVersion = {
+        id: `v_${Date.now()}`, versionId: `v_${Date.now()}`, sessionId, createdAt: timestamp, savedAt: timestamp,
+        label: `${flowName} — Draft v${result.version}`, tag: 'draft', author: 'Mohamed H.',
+        flow: { nodes: [...nodes], edges: [...edges] }, nodes: [...nodes], edges: [...edges],
+        summary: `Draft v${result.version} saved to ${result.filename}`, prompt: '', score: 95
+      }
+      setVersionsList(v => [newVer, ...v])
+      addLog(`Saved draft version v${result.version} → ${result.filename}`, 'info')
+      setTimeout(() => setIsSaved(false), 2000)
+    } catch (err: any) {
+      addLog(`Save failed: ${err.message || 'Backend draft write did not confirm success'}`, 'error')
     }
-    setVersionsList(v => [newVer, ...v])
-    addLog(`Saved draft version v${versionsList.length + 1}`, 'info')
-    setTimeout(() => setIsSaved(false), 2000)
   }, [flowName, versionsList, sessionId, nodes, edges, addLog])
+
+  const handleTitleEditStart = useCallback(() => {
+    setEditingTitleValue(flowName)
+    setIsEditingTitle(true)
+    setTimeout(() => {
+      titleInputRef.current?.focus()
+      titleInputRef.current?.select()
+    }, 10)
+  }, [flowName])
+
+  const handleTitleEditCommit = useCallback(async () => {
+    const trimmed = editingTitleValue.trim()
+    setIsEditingTitle(false)
+    if (!trimmed) return // blank → discard
+    if (trimmed === flowName) return // no change
+    setFlowName(trimmed)
+    addLog(`Flow renamed to "${trimmed}"`, 'info')
+    // Sync to AI session conversation title
+    try {
+      await aiApi.renameConversation(sessionId, trimmed)
+    } catch {
+      // Non-critical: session rename failure doesn't affect the local canvas
+    }
+  }, [editingTitleValue, flowName, sessionId, addLog])
+
+  const handleTitleEditCancel = useCallback(() => {
+    setIsEditingTitle(false)
+    setEditingTitleValue('') // discard
+  }, [])
 
   const handleRestoreVersion = useCallback((version: FlowVersion) => {
     if (version.nodes && version.nodes.length > 0) {
@@ -1643,13 +1806,30 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
     return () => { delete (window as any).__nexusOpenInBuilder }
   }, [pushHistory, addLog])
 
+  const handleBack = useCallback(() => {
+    if (historyIndex > 0) {
+      const confirmLeave = window.confirm('You have unsaved changes in your IVR flow. Are you sure you want to leave?')
+      if (!confirmLeave) return
+    }
+    navigate('/tenant/ai-assistant')
+  }, [historyIndex, navigate])
+
   return (
     <div className="flex flex-col h-screen bg-[#F8FAFC] overflow-hidden" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
       onClick={() => { setContextMenu(null) }}>
-      <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
+      <input ref={fileInputRef} type="file" accept=".json,.vxml,.xml,application/json,text/xml,application/xml" className="hidden" onChange={handleImport} />
 
       {/* ── TOP BAR ─────────────────────────────────────────── */}
       <header className="h-12 bg-white border-b border-[#E5E7EB] flex items-center px-4 gap-2 flex-shrink-0 z-30">
+        <button
+          onClick={handleBack}
+          title="Back to AI Assistant"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[#374151] hover:bg-[#F3F4F6] border border-[#E5E7EB] text-xs font-semibold transition-colors mr-1"
+        >
+          <ArrowLeft className="w-3.5 h-3.5 text-[#6B7280]" />
+          <span className="hidden sm:inline">Back</span>
+        </button>
+
         <div className="flex items-center gap-2.5 pr-4 border-r border-[#E5E7EB]">
           <div className="w-7 h-7 rounded-lg bg-[#2563EB] flex items-center justify-center flex-shrink-0">
             <Phone className="w-3.5 h-3.5 text-white" />
@@ -1660,10 +1840,41 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 px-3">
-          <GitBranch className="w-3.5 h-3.5 text-[#9CA3AF]" />
-          <span className="text-[#1F2937] font-semibold text-xs">{flowName}</span>
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold bg-[#FEF9C3] text-[#A16207]">DRAFT</span>
+        <div className="flex items-center gap-1.5 px-3">
+          <GitBranch className="w-3.5 h-3.5 text-[#9CA3AF] flex-shrink-0" />
+          {isEditingTitle ? (
+            <input
+              ref={titleInputRef}
+              id="flow-title-input"
+              type="text"
+              value={editingTitleValue}
+              maxLength={80}
+              onChange={e => setEditingTitleValue(e.target.value)}
+              onBlur={handleTitleEditCommit}
+              onKeyDown={e => {
+                if (e.key === 'Enter') { e.preventDefault(); handleTitleEditCommit() }
+                if (e.key === 'Escape') { e.preventDefault(); handleTitleEditCancel() }
+              }}
+              className="text-[#1F2937] font-semibold text-xs bg-white border border-[#2563EB] rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-[#2563EB] min-w-[120px] max-w-[240px]"
+            />
+          ) : (
+            <span
+              id="flow-title-display"
+              title="Click to rename flow"
+              onClick={handleTitleEditStart}
+              className="text-[#1F2937] font-semibold text-xs cursor-text hover:bg-[#F3F4F6] rounded px-1 py-0.5 transition-colors select-none max-w-[200px] truncate"
+            >
+              {flowName}
+            </span>
+          )}
+          {!isEditingTitle && (
+            <Pencil
+              className="w-3 h-3 text-[#9CA3AF] cursor-pointer hover:text-[#2563EB] flex-shrink-0 transition-colors"
+              onClick={handleTitleEditStart}
+              title="Rename flow"
+            />
+          )}
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold bg-[#FEF9C3] text-[#A16207] flex-shrink-0">DRAFT</span>
         </div>
 
         <div className="w-px h-5 bg-[#E5E7EB] mx-1" />
@@ -1715,12 +1926,12 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
 
         <div className="w-px h-5 bg-[#E5E7EB] mx-1" />
 
-        <button onClick={() => fileInputRef.current?.click()} title="Import JSON"
+        <button onClick={() => fileInputRef.current?.click()} title="Import flow (.json or .vxml)"
           className="flex items-center gap-1.5 h-7 px-2 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] text-xs font-medium">
           <Upload className="w-3.5 h-3.5" />
           <span className="hidden lg:inline">Import</span>
         </button>
-        <button onClick={handleExport} title="Export JSON"
+        <button onClick={handleExportVxml} title="Export VXML"
           className="flex items-center gap-1.5 h-7 px-2 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] text-xs font-medium">
           <Download className="w-3.5 h-3.5" />
           <span className="hidden lg:inline">Export</span>
@@ -1810,7 +2021,6 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
             <div className="flex items-center gap-0 h-9 border-b border-[#F3F4F6] px-2">
               {[
                 { id: 'logs' as const, label: 'Execution Logs', icon: <Info className="w-3.5 h-3.5" /> },
-                 {id: 'ai' as const, label: 'AI Suggestions', icon: <Sparkles className="w-3.5 h-3.5" />, badge: appliedSuggestionCount > 0 && currentSuggestions.length === 0 ? -1 : currentSuggestions.length },
                 { id: 'validation' as const, label: 'Validation', icon: <ShieldCheck className="w-3.5 h-3.5" />, badge: validationItems.length },
                 { id: 'console' as const, label: 'Console', icon: <Terminal className="w-3.5 h-3.5" /> },
               ].map(tab => (
