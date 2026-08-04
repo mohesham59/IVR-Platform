@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- FlowName: Frontend Flow -->
+<!--
+  ╔══════════════════════════════════════════════════════════════════╗
+  ║  NexusIVR — VoiceXML 2.1 Export                                 ║
+  ║  Flow   : Frontend Flow                                       ║
+  ║  Nodes  : 15                                                  ║
+  ║  Edges  : 43                                                  ║
+  ║  Exported: 2026-08-03T19:16:14.366342971Z                     ║
+  ╚══════════════════════════════════════════════════════════════════╝
+
+  IMPORTANT: This file requires platform-specific configuration:
+    • Replace all audio src="*.wav" paths with your media server URLs.
+    • Replace sip:*@pbx.example.com URIs with your PBX destinations.
+    • Replace all "/* TODO */" ECMAScript conditions with real logic.
+    • Validate with your VoiceXML platform before deploying.
+-->
+<vxml version="2.1"
+      xmlns="http://www.w3.org/2001/vxml"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.w3.org/2001/vxml
+                          http://www.w3.org/TR/voicexml21/vxml.xsd"
+      application="root.vxml">
+
+  <!-- ══════════════════════════ GLOBAL VARIABLES ════════════════════════ -->
+  <var name="session_id"   expr="session.sessionid"/>
+  <var name="caller_id"    expr="session.telephone.ani"/>
+  <var name="called_number" expr="session.telephone.dnis"/>
+  <meta name="flowname" content="Frontend Flow"/>
+
+  <!-- ══════════════════════════ START ════════════════════════ -->
+  <!-- Start (start) -->
+  <form id="start">
+    <!-- Type: start -->
+    <block>
+      <prompt>مرحبًا بكم في خط خدمة العميل الخاص بالتأمينات المصرية. كي...</prompt>
+      <goto next="#ai_routing"/>
+    </block>
+  </form>
+
+  <!-- ══════════════════════════ AI ROUTING ════════════════════════ -->
+  <!-- Ai routing (ai_routing) -->
+  <form id="ai_routing">
+    <!-- Type: ai -->
+    <block>
+      <prompt>ما الخدمة التي تحتاج إليها بالضبط؟</prompt>
+      <goto next="#health_insurance"/>
+    </block>
+  </form>
+
+  <!-- ══════════════════════════ MAIN MENU ════════════════════════ -->
+  <!-- Main menu (main_menu) -->
+  <menu id="main_menu" dtmf="true">
+    <prompt>الرجاء اختيار الخدمة المطلوبة: اضغط 1 لتأمين صحي، اضغط 2 ...</prompt>
+    <choice dtmf="1" next="#health_insurance">Key 1</choice>
+    <choice dtmf="2" next="#car_insurance">Key 2</choice>
+    <choice dtmf="3" next="#personal_accident">Key 3</choice>
+    <choice dtmf="0" next="#agent_transfer">Key 0</choice>
+    <choice dtmf="4" next="#end"/>
+    <noinput>
+      <goto next="#end"/>
+    </noinput>
+  </menu>
+
+  <!-- ══════════════════════════ HEALTH INSURANCE ════════════════════════ -->
+  <!-- Health insurance (health_insurance) -->
+  <form id="health_insurance">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#goodbye"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#main_menu"/>
+      </catch>
+    </transfer>
+  </form>
+
+  <!-- ══════════════════════════ CAR INSURANCE ════════════════════════ -->
+  <!-- Car insurance (car_insurance) -->
+  <form id="car_insurance">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#goodbye"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#main_menu"/>
+      </catch>
+    </transfer>
+  </form>
+
+  <!-- ══════════════════════════ PERSONAL ACCIDENT ════════════════════════ -->
+  <!-- Personal accident (personal_accident) -->
+  <form id="personal_accident">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#goodbye"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#main_menu"/>
+      </catch>
+    </transfer>
+  </form>
+
+  <!-- ══════════════════════════ TRAVEL INSURANCE ════════════════════════ -->
+  <!-- Travel insurance (travel_insurance) -->
+  <form id="travel_insurance">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#goodbye"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#main_menu"/>
+      </catch>
+    </transfer>
+  </form>
+
+  <!-- ══════════════════════════ CLAIMS ════════════════════════ -->
+  <!-- Claims (claims) -->
+  <form id="claims">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#goodbye"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#main_menu"/>
+      </catch>
+    </transfer>
+  </form>
+
+  <!-- ══════════════════════════ PAYMENTS ════════════════════════ -->
+  <!-- Payments (payments) -->
+  <form id="payments">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#goodbye"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#main_menu"/>
+      </catch>
+    </transfer>
+  </form>
+
+  <!-- ══════════════════════════ RENEWAL ════════════════════════ -->
+  <!-- Renewal (renewal) -->
+  <form id="renewal">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#goodbye"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#main_menu"/>
+      </catch>
+    </transfer>
+  </form>
+
+  <!-- ══════════════════════════ TECH SUPPORT ════════════════════════ -->
+  <!-- Tech support (tech_support) -->
+  <form id="tech_support">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#goodbye"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#main_menu"/>
+      </catch>
+    </transfer>
+  </form>
+
+  <!-- ══════════════════════════ GENERAL INQUIRIES ════════════════════════ -->
+  <!-- General inquiries (general_inquiries) -->
+  <form id="general_inquiries">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#goodbye"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#main_menu"/>
+      </catch>
+    </transfer>
+  </form>
+
+  <!-- ══════════════════════════ AGENT TRANSFER ════════════════════════ -->
+  <!-- Agent transfer (agent_transfer) -->
+  <form id="agent_transfer">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#goodbye"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#main_menu"/>
+      </catch>
+    </transfer>
+  </form>
+
+  <!-- ══════════════════════════ GOODBYE ════════════════════════ -->
+  <!-- Goodbye (goodbye) -->
+  <form id="goodbye">
+    <!-- Type: prompt -->
+    <block>
+      <prompt>شكرًا لاتصالكم معنا. نتطلع لخدمتكم دائمًا. مع السلامة!</prompt>
+      <goto next="#end"/>
+    </block>
+  </form>
+
+  <!-- ══════════════════════════ END CALL ════════════════════════ -->
+  <!-- End Call (end) -->
+  <form id="end">
+    <!-- Type: end -->
+    <block>
+      <prompt>Hang up</prompt>
+      <disconnect/>
+    </block>
+  </form>
+</vxml>

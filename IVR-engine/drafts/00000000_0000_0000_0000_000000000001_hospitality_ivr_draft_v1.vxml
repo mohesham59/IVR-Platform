@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- FlowName: Frontend Flow -->
+<!--
+  ╔══════════════════════════════════════════════════════════════════╗
+  ║  NexusIVR — VoiceXML 2.1 Export                                 ║
+  ║  Flow   : Frontend Flow                                       ║
+  ║  Nodes  : 9                                                   ║
+  ║  Edges  : 17                                                  ║
+  ║  Exported: 2026-08-03T19:16:21.938599751Z                     ║
+  ╚══════════════════════════════════════════════════════════════════╝
+
+  IMPORTANT: This file requires platform-specific configuration:
+    • Replace all audio src="*.wav" paths with your media server URLs.
+    • Replace sip:*@pbx.example.com URIs with your PBX destinations.
+    • Replace all "/* TODO */" ECMAScript conditions with real logic.
+    • Validate with your VoiceXML platform before deploying.
+-->
+<vxml version="2.1"
+      xmlns="http://www.w3.org/2001/vxml"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.w3.org/2001/vxml
+                          http://www.w3.org/TR/voicexml21/vxml.xsd"
+      application="root.vxml">
+
+  <!-- ══════════════════════════ GLOBAL VARIABLES ════════════════════════ -->
+  <var name="session_id"   expr="session.sessionid"/>
+  <var name="caller_id"    expr="session.telephone.ani"/>
+  <var name="called_number" expr="session.telephone.dnis"/>
+  <meta name="flowname" content="Frontend Flow"/>
+
+  <!-- ══════════════════════════ START ════════════════════════ -->
+  <!-- Start (start) -->
+  <form id="start">
+    <!-- Type: start -->
+    <block>
+      <prompt>Welcome to XYZ Hotel. For Reservations press 1, for Front...</prompt>
+      <goto next="#main_menu"/>
+    </block>
+  </form>
+
+  <!-- ══════════════════════════ MAIN MENU ════════════════════════ -->
+  <!-- Main menu (main_menu) -->
+  <menu id="main_menu" dtmf="true">
+    <prompt>Press 1 for Reservations, 2 for Front Desk, 3 for Room Se...</prompt>
+    <choice dtmf="1" next="#reservation_date">Key 1</choice>
+    <choice dtmf="2" next="#front_desk_transfer">Key 2</choice>
+    <choice dtmf="3" next="#room_service_transfer">Key 3</choice>
+    <choice dtmf="0" next="#concierge_transfer">Key 0</choice>
+    <choice dtmf="4" next="#reservation_date"/>
+  </menu>
+
+  <!-- ══════════════════════════ RESERVATION DATE ════════════════════════ -->
+  <!-- Reservation date (reservation_date) -->
+  <form id="reservation_date">
+    <!-- Type: input -->
+    <field name="reservation_date">
+      <prompt>Collect digit input</prompt>
+      <grammar mode="dtmf" version="1.0">
+        <rule id="digits"><one-of>
+          <item>0</item>
+          <item>1</item>
+          <item>2</item>
+          <item>3</item>
+          <item>4</item>
+          <item>5</item>
+          <item>6</item>
+          <item>7</item>
+          <item>8</item>
+          <item>9</item>
+        </one-of></rule>
+      </grammar>
+      <filled>
+        <goto next="#reservation_transfer"/>
+      </filled>
+    </field>
+  </form>
+
+  <!-- ══════════════════════════ RESERVATION TRANSFER ════════════════════════ -->
+  <!-- Reservation transfer (reservation_transfer) -->
+  <form id="reservation_transfer">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#end_call"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#main_menu"/>
+      </catch>
+    </transfer>
+  </form>
+
+  <!-- ══════════════════════════ FRONT DESK TRANSFER ════════════════════════ -->
+  <!-- Front desk transfer (front_desk_transfer) -->
+  <form id="front_desk_transfer">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#end_call"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#main_menu"/>
+      </catch>
+    </transfer>
+  </form>
+
+  <!-- ══════════════════════════ ROOM SERVICE TRANSFER ════════════════════════ -->
+  <!-- Room service transfer (room_service_transfer) -->
+  <form id="room_service_transfer">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#end_call"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#main_menu"/>
+      </catch>
+    </transfer>
+  </form>
+
+  <!-- ══════════════════════════ HOUSEKEEPING TRANSFER ════════════════════════ -->
+  <!-- Housekeeping transfer (housekeeping_transfer) -->
+  <form id="housekeeping_transfer">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#end_call"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#main_menu"/>
+      </catch>
+    </transfer>
+  </form>
+
+  <!-- ══════════════════════════ CONCIERGE TRANSFER ════════════════════════ -->
+  <!-- Concierge transfer (concierge_transfer) -->
+  <form id="concierge_transfer">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#end_call"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#main_menu"/>
+      </catch>
+    </transfer>
+  </form>
+
+  <!-- ══════════════════════════ END CALL ════════════════════════ -->
+  <!-- End call (end_call) -->
+  <form id="end_call">
+    <!-- Type: end -->
+    <block>
+      <prompt>Hang up</prompt>
+      <disconnect/>
+    </block>
+  </form>
+</vxml>
