@@ -6,13 +6,8 @@ dist/
 target/
 git 
 
-## ignoring alll frontend  
-
-src/*.tsx 
-src/index.css
-src/ivr/
-src/components/
-
-*.html
-
 .fuse_hidden*
+.kilo/
+
+
+IVR-AI-engine/logs.txt
