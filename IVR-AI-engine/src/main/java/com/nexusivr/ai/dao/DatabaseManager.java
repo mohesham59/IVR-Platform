@@ -26,9 +26,9 @@ public class DatabaseManager {
             return;
         }
 
-        String jdbcUrl = getEnvOrDefault("DB_URL", "jdbc:postgresql://localhost:5432/nexusivr");
-        String username = getEnvOrDefault("DB_USER", "postgres");
-        String password = getEnvOrDefault("DB_PASSWORD", "postgres");
+        String jdbcUrl = com.nexusivr.ai.config.LlmConfig.getDatabaseUrl();
+        String username = com.nexusivr.ai.config.LlmConfig.getDatabaseUser();
+        String password = com.nexusivr.ai.config.LlmConfig.getDatabasePassword();
         int maxPoolSize = Integer.parseInt(getEnvOrDefault("DB_MAX_POOL_SIZE", "10"));
         int minIdle = Integer.parseInt(getEnvOrDefault("DB_MIN_IDLE", "2"));
 

@@ -16,3 +16,4 @@ src/components/
 *.html
 
 .fuse_hidden*
+assets/
