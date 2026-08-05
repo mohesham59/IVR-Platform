@@ -75,7 +75,8 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
       .catch(err => console.error('Failed to load prompts', err))
   }, [])
 
-  const [modalConfig, setModalConfig] = useState<{ isOpen: boolean; mode: 'upload' | 'replace'; originalName?: string }>({ isOpen: false, mode: 'upload' })
+  const [modalConfig, setModalConfig] = useState<{ isOpen: boolean; mode: 'upload' | 'replace' | 'generate'; originalName?: string }>({ isOpen: false, mode: 'upload' })
+  const [generateText, setGenerateText] = useState('')
   const [modalFile, setModalFile] = useState<File | null>(null)
   const [modalFileName, setModalFileName] = useState('')
   const [modalLanguage, setModalLanguage] = useState('English (US)')
@@ -94,6 +95,14 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
     setModalLanguage('English (US)')
   }
 
+  const handleGenerateInit = () => {
+    setModalConfig({ isOpen: true, mode: 'generate' })
+    setModalFile(null)
+    setModalFileName('')
+    setModalLanguage('English (US)')
+    setGenerateText('')
+  }
+
   const handleModalFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -108,10 +117,6 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
   }
 
   const submitModal = async () => {
-    if (!modalFile && modalConfig.mode === 'upload') {
-      alert('Please select a file.')
-      return
-    }
     let finalName = modalFileName.trim()
     if (!finalName) {
       alert('Please enter a file name.')
@@ -119,6 +124,32 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
     }
     if (!finalName.toLowerCase().endsWith('.wav')) {
       finalName += '.wav'
+    }
+
+    if (modalConfig.mode === 'generate') {
+      if (!generateText.trim()) return alert('Please enter text to generate.')
+      if (promptsList.some(p => p.name.toLowerCase() === finalName.toLowerCase())) {
+        return alert(`A voice prompt named "${finalName}" already exists.`)
+      }
+      try {
+        const res = await fetch('/api/v1/voice-prompts/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileName: finalName, language: modalLanguage, text: generateText })
+        })
+        if (!res.ok) throw new Error('Generation failed')
+        const data = await res.json()
+        if (data.success) {
+          fetch('/api/v1/voice-prompts/upload').then(r => r.json()).then(d => { if (d.success) setPromptsList(d.prompts) })
+          setModalConfig({ isOpen: false, mode: 'upload' })
+        } else alert('Error: ' + data.message)
+      } catch (e: any) { alert(e.message) }
+      return
+    }
+
+    if (!modalFile && modalConfig.mode === 'upload') {
+      alert('Please select a file.')
+      return
     }
 
     if (modalConfig.mode === 'upload' || (modalConfig.mode === 'replace' && finalName !== modalConfig.originalName)) {
@@ -277,7 +308,7 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
       <button onClick={handleUploadInit} className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white border border-[#E5E7EB] text-[#374151] text-sm font-medium hover:border-[#2563EB] hover:text-[#2563EB] transition-all shadow-sm">
         <Upload className="w-4 h-4" /> Upload
       </button>
-      <button className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-gradient-to-r from-[#8B5CF6] to-[#2563EB] text-white text-sm font-medium hover:opacity-90 transition-opacity shadow-md">
+      <button onClick={handleGenerateInit} className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-gradient-to-r from-[#8B5CF6] to-[#2563EB] text-white text-sm font-medium hover:opacity-90 transition-opacity shadow-md">
         <Sparkles className="w-4 h-4" /> AI Generate
       </button>
 
@@ -501,23 +532,32 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-[#E5E7EB] overflow-hidden flex flex-col transform transition-all">
             <div className="p-5 border-b border-[#F3F4F6] flex justify-between items-center bg-white">
               <h3 className="text-lg font-bold text-[#1F2937] flex items-center gap-2">
-                {modalConfig.mode === 'upload' ? <Upload className="w-5 h-5 text-[#2563EB]" /> : <RefreshCw className="w-5 h-5 text-[#2563EB]" />}
-                {modalConfig.mode === 'upload' ? 'Upload Voice Prompt' : 'Replace Voice Prompt'}
+                {modalConfig.mode === 'upload' ? <Upload className="w-5 h-5 text-[#2563EB]" /> : modalConfig.mode === 'generate' ? <Sparkles className="w-5 h-5 text-[#8B5CF6]" /> : <RefreshCw className="w-5 h-5 text-[#2563EB]" />}
+                {modalConfig.mode === 'upload' ? 'Upload Voice Prompt' : modalConfig.mode === 'generate' ? 'Generate AI Prompt' : 'Replace Voice Prompt'}
               </h3>
               <button onClick={() => setModalConfig({ isOpen: false, mode: 'upload' })} className="text-[#9CA3AF] hover:bg-[#F3F4F6] hover:text-[#374151] p-1.5 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
             </div>
             
             <div className="p-6 space-y-5 bg-white">
-              <div>
-                <label className="block text-sm font-semibold text-[#374151] mb-2">Audio File (.wav)</label>
-                <div className="flex items-center gap-3">
-                  <button onClick={() => document.getElementById('modalFileInput')?.click()} className="px-4 py-2 bg-[#F9FAFB] text-[#374151] text-sm font-medium rounded-lg hover:bg-[#F3F4F6] hover:border-[#D1D5DB] transition-colors border border-[#E5E7EB] shadow-sm flex-shrink-0">
-                    Choose File
-                  </button>
-                  <span className="text-sm text-[#6B7280] truncate font-medium">{modalFile ? modalFile.name : 'No file chosen'}</span>
-                  <input id="modalFileInput" type="file" accept=".wav" className="hidden" onChange={handleModalFileChange} />
+              {modalConfig.mode === 'generate' ? (
+                <div>
+                  <label className="block text-sm font-semibold text-[#374151] mb-2">Prompt Text</label>
+                  <textarea value={generateText} onChange={e => setGenerateText(e.target.value)} rows={4}
+                    placeholder="Enter the text to synthesize..."
+                    className="w-full rounded-lg border border-[#D1D5DB] focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/10 outline-none p-3 text-sm transition-all resize-none" />
                 </div>
-              </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-semibold text-[#374151] mb-2">Audio File (.wav)</label>
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => document.getElementById('modalFileInput')?.click()} className="px-4 py-2 bg-[#F9FAFB] text-[#374151] text-sm font-medium rounded-lg hover:bg-[#F3F4F6] hover:border-[#D1D5DB] transition-colors border border-[#E5E7EB] shadow-sm flex-shrink-0">
+                      Choose File
+                    </button>
+                    <span className="text-sm text-[#6B7280] truncate font-medium">{modalFile ? modalFile.name : 'No file chosen'}</span>
+                    <input id="modalFileInput" type="file" accept=".wav" className="hidden" onChange={handleModalFileChange} />
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-semibold text-[#374151] mb-2">Prompt Name</label>
@@ -549,7 +589,7 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
             <div className="p-5 border-t border-[#F3F4F6] bg-[#F9FAFB] flex justify-end gap-3">
               <button onClick={() => setModalConfig({ isOpen: false, mode: 'upload' })} className="px-5 py-2 rounded-lg text-[#4B5563] bg-white border border-[#D1D5DB] text-sm font-medium hover:bg-[#F9FAFB] hover:text-[#111827] transition-all shadow-sm">Cancel</button>
               <button onClick={submitModal} className="px-5 py-2 rounded-lg bg-[#2563EB] text-white text-sm font-semibold hover:bg-[#1D4ED8] transition-all shadow-md shadow-[#2563EB]/20 flex items-center gap-2">
-                {modalConfig.mode === 'upload' ? 'Upload Prompt' : 'Replace Prompt'}
+                {modalConfig.mode === 'upload' ? 'Upload Prompt' : modalConfig.mode === 'generate' ? 'Generate Prompt' : 'Replace Prompt'}
               </button>
             </div>
           </div>
