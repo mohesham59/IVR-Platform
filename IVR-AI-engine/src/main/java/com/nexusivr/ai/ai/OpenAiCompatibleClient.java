@@ -101,7 +101,12 @@ public class OpenAiCompatibleClient implements LlmClient {
 
         try {
             JsonObject requestBody = new JsonObject();
-            requestBody.addProperty("model", model);
+            boolean isItiApi = baseUrl.contains("apiaccess.iti.net.eg");
+            if (isItiApi) {
+                requestBody.addProperty("model_id", model);
+            } else {
+                requestBody.addProperty("model", model);
+            }
             requestBody.addProperty("temperature", temperature);
 
             // Handle structured JSON output format
@@ -151,6 +156,8 @@ public class OpenAiCompatibleClient implements LlmClient {
                 endpointUrl += "/api/chat";
                 // Ollama expects stream: false
                 requestBody.addProperty("stream", false);
+            } else if (isItiApi) {
+                // The URL is already the full endpoint, do not append anything
             } else {
                 endpointUrl += "/chat/completions";
             }
@@ -177,7 +184,9 @@ public class OpenAiCompatibleClient implements LlmClient {
             JsonObject responseJson = JsonParser.parseString(response.body()).getAsJsonObject();
             String content = "";
 
-            if (responseJson.has("choices")) {
+            if (isItiApi && responseJson.has("output_text")) {
+                content = responseJson.get("output_text").getAsString();
+            } else if (responseJson.has("choices")) {
                 JsonArray choices = responseJson.getAsJsonArray("choices");
                 if (!choices.isEmpty()) {
                     JsonObject firstChoice = choices.get(0).getAsJsonObject();
@@ -197,8 +206,13 @@ public class OpenAiCompatibleClient implements LlmClient {
             int completionTokens = 0;
             if (responseJson.has("usage")) {
                 JsonObject usage = responseJson.getAsJsonObject("usage");
-                promptTokens = usage.has("prompt_tokens") ? usage.get("prompt_tokens").getAsInt() : 0;
-                completionTokens = usage.has("completion_tokens") ? usage.get("completion_tokens").getAsInt() : 0;
+                if (isItiApi) {
+                    promptTokens = usage.has("input_tokens") ? usage.get("input_tokens").getAsInt() : 0;
+                    completionTokens = usage.has("output_tokens") ? usage.get("output_tokens").getAsInt() : 0;
+                } else {
+                    promptTokens = usage.has("prompt_tokens") ? usage.get("prompt_tokens").getAsInt() : 0;
+                    completionTokens = usage.has("completion_tokens") ? usage.get("completion_tokens").getAsInt() : 0;
+                }
             } else if (responseJson.has("prompt_eval_count")) {
                 promptTokens = responseJson.get("prompt_eval_count").getAsInt();
                 completionTokens = responseJson.has("eval_count") ? responseJson.get("eval_count").getAsInt() : 0;
