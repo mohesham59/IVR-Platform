@@ -88,13 +88,18 @@ public class AiFlowServlet extends BaseAiServlet {
         double temp = extractTemperature(req);
         int timeout = extractTimeout(req);
         UUID sessionId = extractSessionId(req);
+        
+        String finalDescription = request.getDescription();
+        if (request.getLanguage() != null && !request.getLanguage().isBlank() && !"en".equalsIgnoreCase(request.getLanguage())) {
+            finalDescription += ". MUST USE LANGUAGE: " + request.getLanguage() + " for all prompts, texts, and user-facing messages.";
+        }
 
         Flow flow;
         if (flowService != null) {
-            flow = flowService.generateAndSaveFlow(tenantId, "Generated IVR Flow", request.getDescription());
+            flow = flowService.generateAndSaveFlow(tenantId, "Generated IVR Flow", finalDescription);
         } else {
             flow = (Flow) ServiceRegistry.getAiOperationRouter().route(
-                    com.nexusivr.ai.service.AiOperation.GENERATE_FLOW, sessionId, tenantId, request.getDescription(), null,
+                    com.nexusivr.ai.service.AiOperation.GENERATE_FLOW, sessionId, tenantId, finalDescription, null,
                     null, provider, model, temp, timeout
             );
         }

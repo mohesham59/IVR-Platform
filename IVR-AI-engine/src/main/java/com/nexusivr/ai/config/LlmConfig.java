@@ -239,6 +239,26 @@ public class LlmConfig {
     }
 
     // ----------------------------------------------------------------
+    // OpenRouter configuration
+    // ----------------------------------------------------------------
+
+    public static String getOpenrouterApiKey() {
+        return resolve("openrouter.apiKey", "OPENROUTER_API_KEY", "").trim();
+    }
+
+    public static String getOpenrouterModel() {
+        return resolve("openrouter.model", "OPENROUTER_MODEL", "openai/gpt-oss-20b").trim();
+    }
+
+    public static String getOpenrouterBaseUrl() {
+        return resolve("openrouter.baseUrl", "OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").trim();
+    }
+
+    public static int getOpenrouterTimeout() {
+        return parseIntOrDefault(resolve("openrouter.timeout", "OPENROUTER_TIMEOUT", "35"), 35);
+    }
+
+    // ----------------------------------------------------------------
     // Circuit Breaker configuration
     // ----------------------------------------------------------------
 

@@ -55,6 +55,7 @@ public class ProviderManager {
     // so it is never silently substituted when generation fails.
     private static final List<String> PROVIDER_PRIORITY = List.of(
             "groq",
+            "openrouter",
             "gemini",
             "ollama"
     );
@@ -68,8 +69,9 @@ public class ProviderManager {
         PROVIDER_MODELS.put("groq", List.of("llama-3.3-70b-versatile", "llama-3.1-8b-instant", "llama-3.1-70b", "mixtral"));
         PROVIDER_MODELS.put("gemini", List.of("gemini-2.0-flash", "gemini-1.5-flash"));
         PROVIDER_MODELS.put("ollama", List.of("granite3.2:2b", "llama3", "qwen", "mistral"));
+        PROVIDER_MODELS.put("openrouter", List.of("openai.gpt-oss-20b-1:0", "openai/gpt-oss-20b"));
         PROVIDER_MODELS.put("mock", List.of("mock-model"));
-        // NOTE: "openai" and "claude" providers removed — only gemini (default) and groq (fallback) are supported.
+        // NOTE: "openai" and "claude" providers removed — only openrouter, gemini (default) and groq (fallback) are supported.
     }
 
     /**
@@ -123,6 +125,7 @@ public class ProviderManager {
             case "gemini" -> com.nexusivr.ai.config.LlmConfig.getGeminiModel();
             case "groq"   -> com.nexusivr.ai.config.LlmConfig.getGroqModel();
             case "ollama"  -> com.nexusivr.ai.config.LlmConfig.getOllamaModel();
+            case "openrouter" -> com.nexusivr.ai.config.LlmConfig.getOpenrouterModel();
             default -> {
                 List<String> models = PROVIDER_MODELS.get(provider);
                 yield (models != null && !models.isEmpty()) ? models.get(0) : "default";
@@ -159,6 +162,14 @@ public class ProviderManager {
                     "ollama",
                     "", // Ollama doesn't require API Key normally
                     com.nexusivr.ai.config.LlmConfig.getOllamaBaseUrl(),
+                    model,
+                    timeoutSeconds,
+                    temperature
+            );
+            case "openrouter" -> new OpenAiCompatibleClient(
+                    "openrouter",
+                    com.nexusivr.ai.config.LlmConfig.getOpenrouterApiKey(),
+                    com.nexusivr.ai.config.LlmConfig.getOpenrouterBaseUrl(),
                     model,
                     timeoutSeconds,
                     temperature
