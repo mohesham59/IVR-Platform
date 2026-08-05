@@ -359,12 +359,9 @@ export const aiApi = {
     filePath: string;
     validationScore?: number;
   }> {
-    return {
-      filename: `${data.flowName}.vxml`,
-      status: 'published',
-      extensionRegistered: true,
-      filePath: `scenarios/${data.flowName}.vxml`,
-      validationScore: 100,
-    };
+    return request<any>('/flow/publish', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   },
 };

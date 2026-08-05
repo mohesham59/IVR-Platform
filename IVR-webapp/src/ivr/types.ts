@@ -40,6 +40,7 @@ export interface FlowNode {
   ports: NodePort[]
   transferDestination?: string
   dest?: string
+  prompt?: string
 }
 
 

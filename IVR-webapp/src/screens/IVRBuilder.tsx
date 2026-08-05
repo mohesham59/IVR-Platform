@@ -1578,7 +1578,7 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
   const syncFlowToSession = (resolvedFlowName: string, nodesList: any[], edgesList: any[]) => {
     const canonicalFlowContext = JSON.stringify({
       flowName: resolvedFlowName,
-      nodes: nodesList.map((n: any) => ({ id: n.id, type: n.type, label: n.title, title: n.title, name: n.title, description: n.subtitle })),
+      nodes: nodesList.map((n: any) => ({ id: n.id, type: n.type, label: n.title, title: n.title, name: n.title, description: n.subtitle, prompt: n.prompt })),
       edges: edgesList.map((e: any) => ({ id: e.id, source: e.sourceId, target: e.targetId, label: e.label })),
     })
     localStorage.setItem(`nexus_flow_${sessionId}`, JSON.stringify({ nodes: nodesList, edges: edgesList, flowName: resolvedFlowName }))

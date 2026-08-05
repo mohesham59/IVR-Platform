@@ -278,6 +278,22 @@ public class LlmConfig {
     }
 
     // ----------------------------------------------------------------
+    // IVR File System configuration
+    // ----------------------------------------------------------------
+
+    public static String getDraftsDir() {
+        return resolve("ivr.drafts.dir", "IVR_ENGINE_DRAFTS_DIR", "/var/lib/nexusivr/drafts").trim();
+    }
+
+    public static String getScenariosDir() {
+        return resolve("ivr.scenarios.dir", "IVR_ENGINE_SCENARIOS_DIR", "/var/lib/nexusivr/scenarios").trim();
+    }
+
+    public static String getAddExtensionScriptPath() {
+        return resolve("ivr.script.addExtension", "IVR_ADD_EXTENSION_SCRIPT", "/var/lib/nexusivr/scripts/add_extension.sh").trim();
+    }
+
+    // ----------------------------------------------------------------
     // Generic property resolution
     // ----------------------------------------------------------------
 

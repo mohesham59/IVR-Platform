@@ -201,6 +201,16 @@ public class FlowContextService {
                     if (nodeObj.has("subtitle")) {
                         node.setSubtitle(nodeObj.get("subtitle").getAsString());
                     }
+                    if (nodeObj.has("prompt")) {
+                        com.nexusivr.ai.model.flow.FlowPrompt prompt = new com.nexusivr.ai.model.flow.FlowPrompt();
+                        prompt.setText(nodeObj.get("prompt").getAsString());
+                        node.setPrompt(prompt);
+                    } else if (nodeObj.has("subtitle")) {
+                        com.nexusivr.ai.model.flow.FlowPrompt prompt = new com.nexusivr.ai.model.flow.FlowPrompt();
+                        prompt.setText(nodeObj.get("subtitle").getAsString());
+                        node.setPrompt(prompt);
+                    }
+
                     if (type == FlowNodeType.MENU && nodeObj.has("ports") && nodeObj.get("ports").isJsonArray()) {
                         com.google.gson.JsonArray ports = nodeObj.getAsJsonArray("ports");
                         com.nexusivr.ai.model.flow.FlowMenu menu = new com.nexusivr.ai.model.flow.FlowMenu();

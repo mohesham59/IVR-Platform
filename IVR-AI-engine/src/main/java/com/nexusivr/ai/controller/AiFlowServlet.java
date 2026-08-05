@@ -28,7 +28,8 @@ import java.util.stream.Collectors;
     "/api/v1/ai/flow/generate",
     "/api/v1/ai/flow/improve",
     "/api/v1/ai/flow/validate",
-    "/api/v1/ai/flow/suggestions"
+    "/api/v1/ai/flow/suggestions",
+    "/api/v1/ai/flow/publish"
 })
 public class AiFlowServlet extends BaseAiServlet {
 
@@ -66,6 +67,8 @@ public class AiFlowServlet extends BaseAiServlet {
                 handleValidateFlow(req, resp, provider);
             } else if (path.contains("/suggestions")) {
                 handleGetSuggestions(req, resp, provider);
+            } else if (path.contains("/publish")) {
+                handlePublishFlow(req, resp);
             } else {
                 sendJsonResponse(resp, HttpServletResponse.SC_NOT_FOUND, "Endpoint not found: " + path);
             }
@@ -280,5 +283,65 @@ public class AiFlowServlet extends BaseAiServlet {
         response.put("count", suggestions.size());
 
         sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
+    }
+
+    private void handlePublishFlow(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.info("[AiFlowServlet] Intent detected: PUBLISH_FLOW");
+
+        req.setCharacterEncoding("UTF-8");
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader reader = req.getReader()) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+        }
+        String body = sb.toString();
+
+        String flowId = null;
+        String flowName = null;
+        String flowJson = null;
+
+        if (body != null && !body.isBlank()) {
+            try {
+                com.google.gson.JsonObject requestJson = com.google.gson.JsonParser.parseString(body).getAsJsonObject();
+                if (requestJson.has("flowId")) flowId = requestJson.get("flowId").getAsString();
+                if (requestJson.has("flowName")) flowName = requestJson.get("flowName").getAsString();
+                if (requestJson.has("flowJson")) {
+                    com.google.gson.JsonElement el = requestJson.get("flowJson");
+                    flowJson = el.isJsonPrimitive() ? el.getAsString() : el.toString();
+                } else if (requestJson.has("flow")) {
+                    com.google.gson.JsonElement el = requestJson.get("flow");
+                    flowJson = el.isJsonPrimitive() ? el.getAsString() : el.toString();
+                }
+            } catch (Exception e) {
+                logger.error("[AiFlowServlet] Error parsing raw publish request JSON: {}", e.getMessage());
+            }
+        }
+
+        UUID tenantId = extractTenantId(req);
+
+        try {
+            com.nexusivr.ai.service.FlowPublishService.FlowPublishResult result = 
+                ServiceRegistry.getFlowPublishService().publishFlow(tenantId.toString(), flowId, null, flowName, flowJson);
+
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("success", result.isSuccess());
+            response.put("filename", result.getFilename());
+            response.put("status", "published");
+            response.put("extensionRegistered", result.isExtensionRegistered());
+            response.put("extensionMessage", result.getExtensionMessage());
+            response.put("filePath", result.getFilePath());
+            response.put("validationScore", result.getValidationScore());
+            if (result.getWarning() != null) response.put("warning", result.getWarning());
+
+            sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
+        } catch (Exception e) {
+            logger.error("[AiFlowServlet] Publish failed: {}", e.getMessage());
+            Map<String, Object> error = new LinkedHashMap<>();
+            error.put("errorCode", "PUBLISH_ERROR");
+            error.put("message", e.getMessage());
+            sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST, error);
+        }
     }
 }

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+
+    <!-- MAIN MENU -->
+    <menu id="main_menu">
+        <prompt>Welcome to the advanced IVR testing system.</prompt>
+        <prompt>Press 1 for Account Services.</prompt>
+        <prompt>Press 2 to speak with our AI assistant.</prompt>
+        <prompt>Press 3 to exit.</prompt>
+
+        <choice dtmf="1" next="#account_services"/>
+        <choice dtmf="2" next="#ai_assistant"/>
+        <choice dtmf="3" next="#exit_form"/>
+    </menu>
+
+    <!-- FORM: Traditional DTMF Collection -->
+    <form id="account_services">
+        <block>
+            <prompt>Welcome to Account Services.</prompt>
+        </block>
+        
+        <field name="account_number">
+            <prompt>Please enter your 4 digit account number.</prompt>
+            <!-- In the current engine, it collects a single digit or waits for timeout -->
+            <!-- The engine saves this to session variable 'account_number' -->
+        </field>
+        
+        <block>
+            <prompt>Thank you. Your account number has been recorded.</prompt>
+            <!-- Note: Current engine doesn't have a built-in <goto> parser in renderFormElement, so it finishes here -->
+        </block>
+    </form>
+
+    <!-- FORM: AI Assistant Interaction -->
+    <form id="ai_assistant">
+        <block>
+            <prompt>Transferring you to the intelligent assistant.</prompt>
+        </block>
+        
+        <!-- Custom AI Tag implemented in VxmlAgiHandler -->
+        <!-- role: system prompt context for Ollama -->
+        <!-- options: what options to offer -->
+        <ai role="You are a helpful banking assistant." 
+            options="Check Balance, Transfer Money, Speak to Agent">
+            <prompt>How can I help you today?</prompt>
+        </ai>
+    </form>
+
+    <!-- FORM: Exit -->
+    <form id="exit_form">
+        <block>
+            <prompt>Thank you for calling. Goodbye.</prompt>
+        </block>
+    </form>
+
+</vxml>

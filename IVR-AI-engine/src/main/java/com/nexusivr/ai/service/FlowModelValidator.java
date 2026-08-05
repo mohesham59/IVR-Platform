@@ -314,7 +314,7 @@ public class FlowModelValidator {
                 String target = conn.getTargetNodeId();
                 if (target == null || target.isBlank()) continue;
                 if (inStack.contains(target)) {
-                    issues.add(new ValidationIssueDto(ValidationSeverity.ERROR, "CYCLE_DETECTED",
+                    issues.add(new ValidationIssueDto(ValidationSeverity.WARNING, "CYCLE_DETECTED",
                             "Cycle detected involving node: " + target, target, conn.getId()));
                 } else if (!visited.contains(target)) {
                     detectCycles(target, adjacency, visited, inStack, issues);

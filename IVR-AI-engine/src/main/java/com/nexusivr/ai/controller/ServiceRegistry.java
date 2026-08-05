@@ -166,4 +166,13 @@ public class ServiceRegistry {
         }
         return flowSnapshotService;
     }
+
+    private static volatile com.nexusivr.ai.service.FlowPublishService flowPublishService;
+
+    public static synchronized com.nexusivr.ai.service.FlowPublishService getFlowPublishService() {
+        if (flowPublishService == null) {
+            flowPublishService = new com.nexusivr.ai.service.FlowPublishService();
+        }
+        return flowPublishService;
+    }
 }
