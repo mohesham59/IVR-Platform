@@ -170,4 +170,14 @@
         <url-pattern>/api/v1/voice-prompts/upload</url-pattern>
     </servlet-mapping>
 
+    <!-- Voice Prompts Generate Servlet -->
+    <servlet>
+        <servlet-name>VoicePromptsGenerateServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.VoicePromptsGenerateServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>VoicePromptsGenerateServlet</servlet-name>
+        <url-pattern>/api/v1/voice-prompts/generate</url-pattern>
+    </servlet-mapping>
+
 </web-app>

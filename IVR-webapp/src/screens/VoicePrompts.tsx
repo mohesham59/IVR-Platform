@@ -309,7 +309,7 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
         <Upload className="w-4 h-4" /> Upload
       </button>
       <button onClick={handleGenerateInit} className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-gradient-to-r from-[#8B5CF6] to-[#2563EB] text-white text-sm font-medium hover:opacity-90 transition-opacity shadow-md">
-        <Sparkles className="w-4 h-4" /> AI Generate
+        <Sparkles className="w-4 h-4" /> Generate
       </button>
 
     </div>

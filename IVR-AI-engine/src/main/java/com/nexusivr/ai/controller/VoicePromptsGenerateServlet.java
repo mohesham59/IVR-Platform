@@ -23,13 +23,17 @@ import com.google.gson.JsonObject;
 public class VoicePromptsGenerateServlet extends BaseAiServlet {
 
     private static final String[] TARGET_DIRS = {
-        "/home/seif/NetBeansProjects/IVR/assets/custom voice prompts"
+        "/home/seif/NetBeansProjects/IVR/assets/custom voice prompts",
+        "/var/lib/asterisk/sounds/en",
+        "/var/lib/asterisk/sounds",
+        "/tmp/nexusivr/sounds"
     };
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            String requestBody = new BufferedReader(new InputStreamReader(req.getInputStream())).lines().collect(Collectors.joining("\n"));
+            req.setCharacterEncoding("UTF-8");
+            String requestBody = new BufferedReader(new InputStreamReader(req.getInputStream(), java.nio.charset.StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));
             JsonObject json = new Gson().fromJson(requestBody, JsonObject.class);
             
             String fileName = json.has("fileName") ? json.get("fileName").getAsString().trim() : "";
@@ -47,12 +51,23 @@ public class VoicePromptsGenerateServlet extends BaseAiServlet {
 
             String langCode = language.equals("Arabic (AR)") ? "ar" : "en";
 
-            File targetDir = new File(TARGET_DIRS[0]);
-            if (!targetDir.exists()) {
-                targetDir.mkdirs();
+            Path targetDir = null;
+            for (String dirStr : TARGET_DIRS) {
+                File dir = new File(dirStr);
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                }
+                if (dir.exists() && dir.canWrite()) {
+                    targetDir = dir.toPath();
+                    break;
+                }
             }
 
-            Path targetWavFile = Paths.get(targetDir.getAbsolutePath(), fileName);
+            if (targetDir == null) {
+                throw new IOException("Could not find a writable directory for saving the audio file.");
+            }
+
+            Path targetWavFile = targetDir.resolve(fileName);
             String mp3File = targetWavFile.toString().replace(".wav", ".mp3");
 
             // Python TTS Generation
