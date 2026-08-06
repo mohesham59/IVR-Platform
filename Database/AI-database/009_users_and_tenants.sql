@@ -12,6 +12,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TABLE IF NOT EXISTS tenants (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name          VARCHAR(255) NOT NULL DEFAULT 'Default Tenant',
+    display_name  VARCHAR(255),
     owner_user_id UUID,
     status        VARCHAR(20) NOT NULL DEFAULT 'ACTIVE'
         CHECK (status IN ('ACTIVE', 'INACTIVE', 'SUSPENDED')),
@@ -54,14 +55,17 @@ CREATE TABLE IF NOT EXISTS user_tenants (
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_active_tenant ON users(active_tenant_id);
 
+-- Idempotently add display_name if it doesn't exist yet
+ALTER TABLE tenants ADD COLUMN IF NOT EXISTS display_name VARCHAR(255);
+
 -- ---------------------------------------------------------------------------
 -- Seed Data
 -- SuperAdmin password: admin ($2a$10$wT5dYcR/RkZ.4qFh0y34j.vV8V3p5.Q5uWfL8F.Sg2Y8o9m4Nq6qS -> BCrypt hash for 'admin')
 -- TenantUser password: user ($2a$10$4B9Y8gR5rE6S.7uT9vW8x.yZ1A2B3C4D5E6F7G8H9I0J1K2L3M4N5 -> BCrypt for 'user')
 -- ---------------------------------------------------------------------------
-INSERT INTO tenants (id, name, status, created_at, updated_at)
-VALUES ('11111111-1111-1111-1111-111111111111', 'Default Enterprise Tenant', 'ACTIVE', now(), now())
-ON CONFLICT (id) DO NOTHING;
+INSERT INTO tenants (id, name, display_name, status, created_at, updated_at)
+VALUES ('11111111-1111-1111-1111-111111111111', 'Default Enterprise Tenant', 'Default Enterprise Tenant', 'ACTIVE', now(), now())
+ON CONFLICT (id) DO UPDATE SET display_name = COALESCE(tenants.display_name, EXCLUDED.display_name);
 
 -- SuperAdmin user
 INSERT INTO users (id, active_tenant_id, email, password_hash, is_superadmin, username, status, created_at, updated_at)

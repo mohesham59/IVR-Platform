@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import LoginPage from './screens/LoginPage'
 import SuperAdminDashboard from './screens/SuperAdminDashboard'
 import SuperAdminUsers from './screens/SuperAdminUsers'
+import SuperAdminCompanies from './screens/SuperAdminCompanies'
 import TenantAdminDashboard from './screens/TenantAdminDashboard'
 import UserManagement from './screens/UserManagement'
 import PhoneNumbers from './screens/PhoneNumbers'
@@ -95,8 +96,9 @@ export default function App() {
     <Routes>
       <Route path="/" element={<LogoutRoute />} />
       <Route path="/super-admin/dashboard" element={<SuperAdminDashboard onLogout={logout} />} />
+      <Route path="/super-admin/companies" element={<SuperAdminCompanies onLogout={logout} />} />
       <Route path="/super-admin/users" element={<SuperAdminUsers onLogout={logout} />} />
-      {superAdminPages.filter(([slug]) => slug !== 'users').map(([slug, title]) => (
+      {superAdminPages.filter(([slug]) => slug !== 'users' && slug !== 'companies').map(([slug, title]) => (
         <Route key={slug} path={`/super-admin/${slug}`} element={<SuperAdminSection title={title} />} />
       ))}
       <Route path="/tenant/dashboard" element={<TenantAdminDashboard onLogout={logout} />} />

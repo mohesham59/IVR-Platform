@@ -53,6 +53,16 @@
         <url-pattern>/api/v1/super-admin/users/reset-password</url-pattern>
     </servlet-mapping>
 
+    <!-- SuperAdmin Tenants/Companies Servlet -->
+    <servlet>
+        <servlet-name>SuperAdminTenantsServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.SuperAdminTenantsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SuperAdminTenantsServlet</servlet-name>
+        <url-pattern>/api/v1/super-admin/companies</url-pattern>
+    </servlet-mapping>
+
     <!-- AI Chat Servlet -->
     <servlet>
         <servlet-name>AiChatServlet</servlet-name>
