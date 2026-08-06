@@ -268,6 +268,7 @@ public class FlowPublishService {
         }
 
         List<String> command = new ArrayList<>();
+        command.add("/usr/bin/sudo");
         command.add("/bin/bash");
         command.add(scriptPath.toAbsolutePath().toString());
         command.add(extToRegister);

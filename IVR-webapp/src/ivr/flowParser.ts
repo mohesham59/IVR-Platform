@@ -307,7 +307,11 @@ export function buildFlowFromResponse(response: {
       const type = safeNodeType(raw.type)
       const title = raw.title ?? raw.label ?? raw.name ?? NODE_DEFS[type].label
       const subtitle = raw.description ?? raw.subtitle ?? raw.prompt ?? NODE_DEFS[type].description
-      nodes.push(makeNode(nodeId, type, 0, 0, title, subtitle))
+      const node = makeNode(nodeId, type, 0, 0, title, subtitle)
+      if (raw.prompt) {
+        node.prompt = raw.prompt
+      }
+      nodes.push(node)
     })
 
     if (rawEdges && rawEdges.length > 0) {

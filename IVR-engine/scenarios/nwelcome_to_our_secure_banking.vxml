@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+  <!-- Start (n1) -->
+  <form id="n1">
+      <prompt>Start</prompt>
+      <goto next="#n2"/>
+  </form>
+  <!-- Authenticate (n2) -->
+  <form id="n2">
+    <field name="n2">
+      <prompt>Authenticate</prompt>
+      <grammar mode="dtmf" version="1.0">
+        <rule id="digits"><one-of>
+          <item>0</item>
+          <item>1</item>
+          <item>2</item>
+          <item>3</item>
+          <item>4</item>
+          <item>5</item>
+          <item>6</item>
+          <item>7</item>
+          <item>8</item>
+          <item>9</item>
+        </one-of></rule>
+      </grammar>
+      <filled>
+        <goto next="#n3"/>
+      </filled>
+    </field>
+  </form>
+  <!-- Pin (n3) -->
+  <form id="n3">
+    <field name="n3">
+      <prompt>Pin</prompt>
+      <grammar mode="dtmf" version="1.0">
+        <rule id="digits"><one-of>
+          <item>0</item>
+          <item>1</item>
+          <item>2</item>
+          <item>3</item>
+          <item>4</item>
+          <item>5</item>
+          <item>6</item>
+          <item>7</item>
+          <item>8</item>
+          <item>9</item>
+        </one-of></rule>
+      </grammar>
+      <filled>
+        <goto next="#n4"/>
+      </filled>
+    </field>
+  </form>
+  <!-- Main menu (n4) -->
+  <form id="n4">
+    <menu>
+      <prompt>Main menu</prompt>
+      <choice dtmf="1" next="#n5">Key 1</choice>
+      <choice dtmf="2" next="#n5">Key 2</choice>
+      <choice dtmf="3" next="#n5">Key 3</choice>
+      <choice dtmf="0" next="#n5">Key 0</choice>
+    </menu>
+  </form>
+  <!-- Balance (n5) -->
+  <form id="n5">
+      <prompt>Balance</prompt>
+      <goto next="#n4"/>
+  </form>
+  <!-- Cards (n6) -->
+  <form id="n6">
+    <menu>
+      <prompt>Cards</prompt>
+      <choice dtmf="1" next="#n7">Key 1</choice>
+      <choice dtmf="2" next="#n7">Key 2</choice>
+      <choice dtmf="3" next="#n7">Key 3</choice>
+      <choice dtmf="0" next="#n7">Key 0</choice>
+    </menu>
+  </form>
+  <!-- Card status (n7) -->
+  <form id="n7">
+      <prompt>Card status</prompt>
+      <goto next="#n4"/>
+  </form>
+  <!-- Report lost (n8) -->
+  <form id="n8">
+      <prompt>Report lost</prompt>
+      <goto next="#n4"/>
+  </form>
+  <!-- Loans (n9) -->
+  <form id="n9">
+      <prompt>Loans</prompt>
+      <goto next="#n4"/>
+  </form>
+  <!-- Agent (n10) -->
+  <form id="n10">
+      <prompt>Agent</prompt>
+      <goto next="#n11"/>
+  </form>
+  <!-- End Call (n11) -->
+  <form id="n11">
+    <block>
+      <prompt>End Call</prompt>
+      <disconnect/>
+    </block>
+  </form>
+  <!-- Timeout (n12) -->
+  <form id="n12">
+      <prompt>Timeout</prompt>
+      <goto next="#n11"/>
+  </form>
+  <!-- Fraud hotline (n13) -->
+  <form id="n13">
+      <prompt>Fraud hotline</prompt>
+      <goto next="#n11"/>
+  </form>
+</vxml>

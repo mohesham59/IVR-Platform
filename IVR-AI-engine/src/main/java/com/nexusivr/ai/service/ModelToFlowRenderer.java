@@ -82,6 +82,9 @@ public class ModelToFlowRenderer {
         json.addProperty("type", node.getType().getBuilderType());
         json.addProperty("title", node.getTitle() != null ? node.getTitle() : node.getId());
         json.addProperty("subtitle", node.getSubtitle() != null ? node.getSubtitle() : "");
+        if (node.getPrompt() != null && node.getPrompt().getText() != null && !node.getPrompt().getText().isBlank()) {
+            json.addProperty("prompt", node.getPrompt().getText());
+        }
 
         JsonArray ports = new JsonArray();
 

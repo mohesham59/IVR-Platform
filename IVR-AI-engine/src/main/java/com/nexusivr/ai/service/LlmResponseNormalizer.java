@@ -357,6 +357,7 @@ public class LlmResponseNormalizer {
                 String nodeType = nodeObj != null && nodeObj.has("type") ? nodeObj.get("type").getAsString() : "prompt";
                 String title = nodeObj != null ? (nodeObj.has("title") ? nodeObj.get("title").getAsString() :
                                   nodeObj.has("label") ? nodeObj.get("label").getAsString() : nodeId) : nodeId;
+                String promptText = nodeObj != null && nodeObj.has("prompt") ? nodeObj.get("prompt").getAsString() : title;
 
                 java.util.List<EdgeInfo> outgoing = edgesBySource.getOrDefault(nodeId, java.util.List.of());
 
@@ -374,7 +375,7 @@ public class LlmResponseNormalizer {
                     case "dtmf_menu", "menu" -> {
                         vxml.append("  <form id=\"").append(escapeXml(nodeId)).append("\">\n");
                         vxml.append("    <menu>\n");
-                        vxml.append("      <prompt>").append(escapeXml(title)).append("</prompt>\n");
+                        vxml.append("      <prompt>").append(escapeXml(promptText)).append("</prompt>\n");
                         if (outgoing.isEmpty()) {
                             droppedEdges.add("Menu node '" + nodeId + "' has no outgoing choices");
                         }
@@ -390,7 +391,7 @@ public class LlmResponseNormalizer {
                     case "dtmf_input", "input" -> {
                         vxml.append("  <form id=\"").append(escapeXml(nodeId)).append("\">\n");
                         vxml.append("    <field name=\"").append(escapeXml(nodeId)).append("\" type=\"1\">\n");
-                        vxml.append("      <prompt>").append(escapeXml(title)).append("</prompt>\n");
+                        vxml.append("      <prompt>").append(escapeXml(promptText)).append("</prompt>\n");
                         vxml.append("      <grammar mode=\"dtmf\" version=\"1.0\">\n");
                         vxml.append("        <rule id=\"digits\"><one-of>\n");
                         for (int d = 0; d <= 9; d++) {
@@ -451,7 +452,7 @@ public class LlmResponseNormalizer {
                     case "transfer" -> {
                         vxml.append("  <form id=\"").append(escapeXml(nodeId)).append("\">\n");
                         vxml.append("    <block>\n");
-                        vxml.append("      <prompt>").append(escapeXml(title)).append("</prompt>\n");
+                        vxml.append("      <prompt>").append(escapeXml(promptText)).append("</prompt>\n");
                         if (!outgoing.isEmpty()) {
                             vxml.append("      <transfer dest=\"#").append(escapeXml(outgoing.get(0).target)).append("\"/>\n");
                         } else {
@@ -463,7 +464,7 @@ public class LlmResponseNormalizer {
                     case "end" -> {
                         vxml.append("  <form id=\"").append(escapeXml(nodeId)).append("\">\n");
                         vxml.append("    <block>\n");
-                        vxml.append("      <prompt>").append(escapeXml(title)).append("</prompt>\n");
+                        vxml.append("      <prompt>").append(escapeXml(promptText)).append("</prompt>\n");
                         vxml.append("      <disconnect/>\n");
                         vxml.append("    </block>\n");
                         vxml.append("  </form>\n");
@@ -471,7 +472,7 @@ public class LlmResponseNormalizer {
                     default -> {
                         vxml.append("  <form id=\"").append(escapeXml(nodeId)).append("\">\n");
                         vxml.append("    <block>\n");
-                        vxml.append("      <prompt>").append(escapeXml(title)).append("</prompt>\n");
+                        vxml.append("      <prompt>").append(escapeXml(promptText)).append("</prompt>\n");
                         if (!outgoing.isEmpty()) {
                             vxml.append("      <goto next=\"#").append(escapeXml(outgoing.get(0).target)).append("\"/>\n");
                         } else {

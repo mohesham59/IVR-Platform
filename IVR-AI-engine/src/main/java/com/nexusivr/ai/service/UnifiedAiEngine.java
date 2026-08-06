@@ -408,7 +408,7 @@ public class UnifiedAiEngine {
         // Inject metadata into JSON
         try {
             JsonObject rootObj = JsonParser.parseString(finalFlowJson).getAsJsonObject();
-            rootObj.addProperty("name", finalModel.getName() != null ? finalModel.getName() : (description.length() > 30 ? description.substring(0, 30) + "..." : description));
+            rootObj.addProperty("name", finalModel.getName() != null ? finalModel.getName() : generateDescriptiveTitle(description, detectedDomain));
             rootObj.addProperty("description", finalModel.getDescription() != null ? finalModel.getDescription() : description);
             finalFlowJson = rootObj.toString();
         } catch (Exception e) {

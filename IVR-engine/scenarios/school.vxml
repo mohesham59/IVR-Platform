@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+
+    <!-- MAIN MENU: AI Routing -->
+    <form id="main_menu">
+        <!-- AI routes between checking grades or enrolling in camp -->
+        <ai role="You are a school assistant. The user can either check their grades, or enroll in a summer camp sport. Ask them what they want to do." 
+            options="Check Grades (action: check_grades), Enroll in Camp (action: enroll_camp)">
+            <prompt>Welcome to the School System. How can I help you today?</prompt>
+        </ai>
+    </form>
+
+    <!-- FORM: Check Grades -->
+    <form id="check_grades">
+        <block>
+            <prompt>Let's check your grades.</prompt>
+        </block>
+        
+        <field name="student_id">
+            <prompt>Please enter your 4 digit student ID.</prompt>
+        </field>
+        
+        <api url="http://localhost:8080/api/grades" 
+             var="student_id" 
+             jsonPath="status" 
+             saveResultAs="grades_result" />
+             
+        <block>
+            <prompt>${grades_result}</prompt>
+        </block>
+
+        <!-- Route to Anything Else -->
+        <block>
+            <!-- In standard VXML, you use goto. Since the custom engine might not support goto properly yet, we can use an AI tag to route, or a menu. Let's use a menu for anything else. -->
+        </block>
+        
+        <!-- Wait, I need a way to go to anything_else. I can just put a choice inside a menu directly if I restructure it, or I can use the <ai> tag for the "anything else" loop! -->
+        <ai role="You are a school assistant. Ask the user if they need anything else. If they say yes, action is main_menu. If they say no, action is exit_form." 
+            options="Yes (action: main_menu), No (action: exit_form)">
+            <prompt>Is there anything else I can help you with?</prompt>
+        </ai>
+    </form>
+
+    <!-- FORM: Enroll in Camp -->
+    <form id="enroll_camp">
+        <block>
+            <prompt>Let's get you enrolled in summer camp.</prompt>
+        </block>
+        
+        <field name="student_id">
+            <prompt>Please enter your 4 digit student ID.</prompt>
+        </field>
+        
+        <!-- Use AI to capture the sport, since voice is better for words like 'Soccer' -->
+        <ai role="You are a summer camp counselor. First, ask the user to confirm their student ID by saying yes or no. If they say no, the action should be enroll_camp to try again. If they say yes, ask them which sport they want to enroll in (Soccer, Basketball, or Tennis). Save their exact choice as the action." 
+            options="Soccer (action: Soccer), Basketball (action: Basketball), Tennis (action: Tennis), Restart (action: enroll_camp)">
+            <prompt>You entered ${student_id}. Is that correct?</prompt>
+        </ai>
+        
+        <!-- Wait, the AI tag in VxmlAgiHandler sets finalAction to the form ID to jump to. 
+             If we use AI to capture the sport, it will try to jump to a form named "Soccer".
+             Let's use a standard menu to capture the sport via DTMF instead to keep it robust, 
+             or create forms for each sport that then call the API.
+             Let's create forms for each sport to do it properly with the current engine. -->
+    </form>
+
+    <!-- Sport Routing Forms (since <ai> jumps to form IDs) -->
+    <form id="Soccer">
+        <!-- We manually set the sport variable here? 
+             Wait, the current engine doesn't have a <assign> tag. 
+             Instead of using AI, let's just make the API call directly in the sport forms. -->
+        <api url="http://localhost:8080/api/enroll?sport=Soccer" 
+             var="student_id" 
+             jsonPath="status" 
+             saveResultAs="enroll_result" />
+        <block>
+            <prompt>${enroll_result}</prompt>
+        </block>
+        <ai role="Ask if they need anything else." options="Yes (action: main_menu), No (action: exit_form)">
+            <prompt>Is there anything else I can help you with?</prompt>
+        </ai>
+    </form>
+
+    <form id="Basketball">
+        <api url="http://localhost:8080/api/enroll?sport=Basketball" 
+             var="student_id" 
+             jsonPath="status" 
+             saveResultAs="enroll_result" />
+        <block>
+            <prompt>${enroll_result}</prompt>
+        </block>
+        <ai role="Ask if they need anything else." options="Yes (action: main_menu), No (action: exit_form)">
+            <prompt>Is there anything else I can help you with?</prompt>
+        </ai>
+    </form>
+    
+    <form id="Tennis">
+        <api url="http://localhost:8080/api/enroll?sport=Tennis" 
+             var="student_id" 
+             jsonPath="status" 
+             saveResultAs="enroll_result" />
+        <block>
+            <prompt>${enroll_result}</prompt>
+        </block>
+        <ai role="Ask if they need anything else." options="Yes (action: main_menu), No (action: exit_form)">
+            <prompt>Is there anything else I can help you with?</prompt>
+        </ai>
+    </form>
+
+    <!-- FORM: Exit -->
+    <form id="exit_form">
+        <block>
+            <prompt>Thank you for using the school system. Goodbye.</prompt>
+        </block>
+    </form>
+
+</vxml>

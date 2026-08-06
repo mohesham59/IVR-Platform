@@ -212,12 +212,14 @@ public class FlowDraftService {
         if (baseName == null || baseName.isBlank()) {
             baseName = "ivr_flow";
         }
-        if (tenantId != null && !tenantId.isBlank()) {
-            String prefix = tenantId.toLowerCase().trim().replaceAll("[^a-z0-9]+", "_").replaceAll("^_+|_+$", "");
-            if (!prefix.isEmpty() && !baseName.startsWith(prefix + "_")) {
-                baseName = prefix + "_" + baseName;
-            }
+        
+        // Ensure it's short and descriptive
+        if (baseName.length() > 30) {
+            baseName = baseName.substring(0, 30);
+            // Don't end on an underscore if truncated
+            baseName = baseName.replaceAll("_+$", "");
         }
+        
         return baseName;
     }
 }

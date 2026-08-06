@@ -158,6 +158,15 @@ same  => n,Hangup()
 
 
 ; =====================================================================
+; Extension 505: Arabic Testing Flow
+; =====================================================================
+exten => 505,1,NoOp(=== VXML IVR: Arabic Testing Flow ===)
+same  => n,Answer()
+same  => n,Set(VXML_FILE=arabic_test_flow)
+same  => n,AGI(agi://127.0.0.1:4573/default)
+same  => n,Hangup()
+
+; =====================================================================
 ; Menu for Extension Selection
 ; =====================================================================
 [menu]

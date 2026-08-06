@@ -239,6 +239,26 @@ public class LlmConfig {
     }
 
     // ----------------------------------------------------------------
+    // OpenRouter configuration
+    // ----------------------------------------------------------------
+
+    public static String getOpenrouterApiKey() {
+        return resolve("openrouter.apiKey", "OPENROUTER_API_KEY", "").trim();
+    }
+
+    public static String getOpenrouterModel() {
+        return resolve("openrouter.model", "OPENROUTER_MODEL", "openai/gpt-oss-20b").trim();
+    }
+
+    public static String getOpenrouterBaseUrl() {
+        return resolve("openrouter.baseUrl", "OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").trim();
+    }
+
+    public static int getOpenrouterTimeout() {
+        return parseIntOrDefault(resolve("openrouter.timeout", "OPENROUTER_TIMEOUT", "35"), 35);
+    }
+
+    // ----------------------------------------------------------------
     // Circuit Breaker configuration
     // ----------------------------------------------------------------
 
@@ -275,6 +295,22 @@ public class LlmConfig {
     /** Database password. Default: empty string. */
     public static String getDatabasePassword() {
         return resolve("db.password", "DATABASE_PASSWORD", "").trim();
+    }
+
+    // ----------------------------------------------------------------
+    // IVR File System configuration
+    // ----------------------------------------------------------------
+
+    public static String getDraftsDir() {
+        return resolve("ivr.drafts.dir", "IVR_ENGINE_DRAFTS_DIR", "/var/lib/nexusivr/drafts").trim();
+    }
+
+    public static String getScenariosDir() {
+        return resolve("ivr.scenarios.dir", "IVR_ENGINE_SCENARIOS_DIR", "/var/lib/nexusivr/scenarios").trim();
+    }
+
+    public static String getAddExtensionScriptPath() {
+        return resolve("ivr.script.addExtension", "IVR_ADD_EXTENSION_SCRIPT", "/var/lib/nexusivr/scripts/add_extension.sh").trim();
     }
 
     // ----------------------------------------------------------------

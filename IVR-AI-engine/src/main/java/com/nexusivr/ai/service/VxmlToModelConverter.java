@@ -85,9 +85,6 @@ public class VxmlToModelConverter {
             if (node != null) {
                 model.addNode(node);
                 nodeMap.put(node.getId(), node);
-                if (model.getName() == null && node.getSubtitle() != null && !node.getSubtitle().isBlank()) {
-                    model.setName(node.getSubtitle());
-                }
             }
         }
 

@@ -176,6 +176,7 @@ export function useAIAssistant(options: UseAIAssistantOptions = {}): UseAIAssist
         setProviders({
           gemini: ['gemini-2.0-flash'],
           groq: ['llama-3.3-70b-versatile'],
+          openrouter: ['openai.gpt-oss-20b-1:0'],
         })
       })
   }, [])

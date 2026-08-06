@@ -155,4 +155,29 @@
         <url-pattern>/api/v1/ai/agents</url-pattern>
     </servlet-mapping>
 
+    <!-- Voice Prompts Upload Servlet -->
+    <servlet>
+        <servlet-name>VoicePromptsUploadServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.VoicePromptsUploadServlet</servlet-class>
+        <multipart-config>
+            <max-file-size>52428800</max-file-size>
+            <max-request-size>104857600</max-request-size>
+            <file-size-threshold>2097152</file-size-threshold>
+        </multipart-config>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>VoicePromptsUploadServlet</servlet-name>
+        <url-pattern>/api/v1/voice-prompts/upload</url-pattern>
+    </servlet-mapping>
+
+    <!-- Voice Prompts Generate Servlet -->
+    <servlet>
+        <servlet-name>VoicePromptsGenerateServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.VoicePromptsGenerateServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>VoicePromptsGenerateServlet</servlet-name>
+        <url-pattern>/api/v1/voice-prompts/generate</url-pattern>
+    </servlet-mapping>
+
 </web-app>
