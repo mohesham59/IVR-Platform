@@ -181,7 +181,20 @@ public abstract class BaseAiServlet extends HttpServlet {
         resp.setStatus(statusCode);
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
-        String json = data instanceof String ? (String) data : gson.toJson(data);
+        String json;
+        if (data instanceof String strData) {
+            String trimmed = strData.trim();
+            if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+                json = trimmed;
+            } else {
+                Map<String, Object> errMap = new HashMap<>();
+                errMap.put("success", false);
+                errMap.put("message", strData);
+                json = gson.toJson(errMap);
+            }
+        } else {
+            json = gson.toJson(data);
+        }
         resp.getWriter().write(json);
     }
 

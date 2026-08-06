@@ -2,6 +2,7 @@ import { Component, type ReactNode } from 'react'
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import LoginPage from './screens/LoginPage'
 import SuperAdminDashboard from './screens/SuperAdminDashboard'
+import SuperAdminUsers from './screens/SuperAdminUsers'
 import TenantAdminDashboard from './screens/TenantAdminDashboard'
 import UserManagement from './screens/UserManagement'
 import PhoneNumbers from './screens/PhoneNumbers'
@@ -28,7 +29,7 @@ const superAdminPages = [
 
 function LogoutRoute() {
   const navigate = useNavigate()
-  return <LoginPage onLogin={(email) => navigate(email === 'admin@nexusivr.io' ? '/super-admin/dashboard' : '/tenant/dashboard')} />
+  return <LoginPage onLogin={(email) => navigate((email === 'admin@nexusivr.com' || email === 'admin@nexusivr.io') ? '/super-admin/dashboard' : '/tenant/dashboard')} />
 }
 
 function SuperAdminSection({ title }: { title: string }) {
@@ -94,7 +95,8 @@ export default function App() {
     <Routes>
       <Route path="/" element={<LogoutRoute />} />
       <Route path="/super-admin/dashboard" element={<SuperAdminDashboard onLogout={logout} />} />
-      {superAdminPages.map(([slug, title]) => (
+      <Route path="/super-admin/users" element={<SuperAdminUsers onLogout={logout} />} />
+      {superAdminPages.filter(([slug]) => slug !== 'users').map(([slug, title]) => (
         <Route key={slug} path={`/super-admin/${slug}`} element={<SuperAdminSection title={title} />} />
       ))}
       <Route path="/tenant/dashboard" element={<TenantAdminDashboard onLogout={logout} />} />

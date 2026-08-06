@@ -19,10 +19,12 @@ const navItems = [
 interface SuperAdminLayoutProps {
   children: ReactNode
   pageTitle: string
+  pageSubtitle?: string
+  headerActions?: ReactNode
   onLogout: () => void
 }
 
-export default function SuperAdminLayout({ children, pageTitle, onLogout }: SuperAdminLayoutProps) {
+export default function SuperAdminLayout({ children, pageTitle, pageSubtitle, headerActions, onLogout }: SuperAdminLayoutProps) {
   const [collapsed, setCollapsed] = useState(false)
   const [darkMode, setDarkMode] = useState(false)
   const navigate = useNavigate()
@@ -54,7 +56,16 @@ export default function SuperAdminLayout({ children, pageTitle, onLogout }: Supe
             <button onClick={() => { onLogout(); navigate('/') }} className="w-8 h-8 rounded-lg flex items-center justify-center text-[#9CA3AF] hover:text-[#EF4444] hover:bg-[#FEF2F2] transition-colors"><LogOut className="w-4 h-4" /></button>
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto p-6 space-y-6"><div><h1 className="text-[#1F2937] text-xl font-bold">{pageTitle}</h1></div>{children}</main>
+        <main className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-[#1F2937] text-xl font-bold">{pageTitle}</h1>
+              {pageSubtitle && <p className="text-[#9CA3AF] text-xs mt-0.5">{pageSubtitle}</p>}
+            </div>
+            {headerActions && <div className="flex items-center gap-3">{headerActions}</div>}
+          </div>
+          {children}
+        </main>
       </div>
     </div>
   )

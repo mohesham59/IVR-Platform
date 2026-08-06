@@ -21,6 +21,38 @@
         <url-pattern>/api/*</url-pattern>
     </filter-mapping>
 
+    <!-- Auth Servlet -->
+    <servlet>
+        <servlet-name>AuthServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.AuthServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AuthServlet</servlet-name>
+        <url-pattern>/api/v1/auth/login</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AuthServlet</servlet-name>
+        <url-pattern>/api/v1/auth/me</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AuthServlet</servlet-name>
+        <url-pattern>/api/v1/auth/logout</url-pattern>
+    </servlet-mapping>
+
+    <!-- SuperAdmin Users Servlet -->
+    <servlet>
+        <servlet-name>SuperAdminUsersServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.SuperAdminUsersServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SuperAdminUsersServlet</servlet-name>
+        <url-pattern>/api/v1/super-admin/users</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SuperAdminUsersServlet</servlet-name>
+        <url-pattern>/api/v1/super-admin/users/reset-password</url-pattern>
+    </servlet-mapping>
+
     <!-- AI Chat Servlet -->
     <servlet>
         <servlet-name>AiChatServlet</servlet-name>
