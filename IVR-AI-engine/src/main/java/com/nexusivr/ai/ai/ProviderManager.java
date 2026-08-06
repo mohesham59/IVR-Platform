@@ -462,6 +462,11 @@ public class ProviderManager {
                                                    String userPrompt, String callerLabel,
                                                    List<QuotaWarning> quotaWarnings, String domain,
                                                    boolean structuredOutput) {
+        UUID currentSessionId = com.nexusivr.ai.service.GenerationCancellationRegistry.getCurrentSessionId();
+        if (currentSessionId != null && com.nexusivr.ai.service.GenerationCancellationRegistry.isCancelled(currentSessionId)) {
+            throw new com.nexusivr.ai.service.exception.GenerationCancelledException("Generation request was cancelled.");
+        }
+
         List<String> providersToTry = new ArrayList<>(PROVIDER_PRIORITY);
 
         // If a specific provider was requested, try it first, then fall back to priority order.
@@ -490,6 +495,10 @@ public class ProviderManager {
         List<com.nexusivr.ai.dto.common.ProviderAttemptDto> providerAttempts = new ArrayList<>();
 
         for (String targetProvider : providersToTry) {
+            UUID checkSessionId = com.nexusivr.ai.service.GenerationCancellationRegistry.getCurrentSessionId();
+            if (checkSessionId != null && com.nexusivr.ai.service.GenerationCancellationRegistry.isCancelled(checkSessionId)) {
+                throw new com.nexusivr.ai.service.exception.GenerationCancelledException("Generation request was cancelled.");
+            }
             if (!isProviderAvailable(targetProvider)) {
                 ProviderHealth health = getHealth(targetProvider);
                 CircuitBreaker breaker = getCircuitBreaker(targetProvider);

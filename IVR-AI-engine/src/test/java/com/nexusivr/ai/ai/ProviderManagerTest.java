@@ -21,7 +21,8 @@ class ProviderManagerTest {
     void testPriorityOrder() {
         ProviderManager pm = new ProviderManager();
         assertEquals("groq", pm.getAvailableProviders().get(0));
-        assertEquals("gemini", pm.getAvailableProviders().get(1));
+        assertEquals("openrouter", pm.getAvailableProviders().get(1));
+        assertEquals("gemini", pm.getAvailableProviders().get(2));
     }
 
     @Test
@@ -77,8 +78,8 @@ class ProviderManagerTest {
     @Test
     void testNextProviderReturnsFirstAvailable() {
         ProviderManager pm = new ProviderManager();
-        assertEquals("gemini", pm.getNextProvider("groq"));
-        assertEquals("groq", pm.getNextProvider("gemini"));
+        assertEquals("openrouter", pm.getNextProvider("groq"));
+        assertEquals("groq", pm.getNextProvider("openrouter"));
     }
 
     @Test
@@ -118,6 +119,7 @@ class ProviderManagerTest {
     void testAllProvidersExhaustedReturnsTemplateFallback() {
         ProviderManager pm = new ProviderManager();
         pm.markRateLimited("groq");
+        pm.markRateLimited("openrouter");
         pm.markRateLimited("gemini");
         pm.markRateLimited("ollama");
 
@@ -135,6 +137,7 @@ class ProviderManagerTest {
     void testTemplateFallbackAttributesRequestedProvider() {
         ProviderManager pm = new ProviderManager();
         pm.markRateLimited("groq");
+        pm.markRateLimited("openrouter");
         pm.markRateLimited("gemini");
         pm.markRateLimited("ollama");
 
@@ -152,6 +155,7 @@ class ProviderManagerTest {
     void testMultiProviderAttemptsTrackingWhenAllProvidersFail() {
         ProviderManager pm = new ProviderManager();
         pm.markRateLimited("groq");
+        pm.markRateLimited("openrouter");
         pm.markRateLimited("gemini");
         pm.markRateLimited("ollama");
 
@@ -165,7 +169,7 @@ class ProviderManagerTest {
         assertNotNull(response.getProviderAttempts());
         assertFalse(response.getProviderAttempts().isEmpty());
 
-        assertEquals(3, response.getProviderAttempts().size());
+        assertEquals(4, response.getProviderAttempts().size());
 
         com.nexusivr.ai.dto.common.ProviderAttemptDto groqAttempt = response.getProviderAttempts().get(0);
         assertEquals("groq", groqAttempt.getProvider());
@@ -217,6 +221,7 @@ class ProviderManagerTest {
     void testExhaustedQuotaProvidersThrowProviderExceptionWithQuotaReason() {
         ProviderManager pm = new ProviderManager();
         pm.markRateLimited("groq");
+        pm.markRateLimited("openrouter");
         pm.markRateLimited("gemini");
         pm.markRateLimited("ollama");
 

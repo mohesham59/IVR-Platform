@@ -166,7 +166,7 @@ class OpenAiCompatibleClientTest {
 
         for (int i = 0; i < prompts.length; i++) {
             System.out.println("--- LIVE REQUEST " + (i + 1) + " ---");
-            AiResponse response = client.generateResponse("You are a helpful assistant.", prompts[i], new ArrayList<>());
+            AiResponse response = client.generateResponse(null, prompts[i], new ArrayList<>());
             System.out.println("Status      : " + response.getStatusCode());
             System.out.println("Mock/Error  : " + response.isMock());
             System.out.println("Content     : " + response.getContent());

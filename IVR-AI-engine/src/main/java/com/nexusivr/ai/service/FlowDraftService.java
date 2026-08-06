@@ -219,6 +219,10 @@ public class FlowDraftService {
             // Don't end on an underscore if truncated
             baseName = baseName.replaceAll("_+$", "");
         }
+
+        if (tenantId != null && !tenantId.isBlank()) {
+            baseName = tenantId.trim() + "_" + baseName;
+        }
         
         return baseName;
     }

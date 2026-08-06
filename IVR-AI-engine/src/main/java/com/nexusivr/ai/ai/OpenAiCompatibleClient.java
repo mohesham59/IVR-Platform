@@ -47,10 +47,15 @@ public class OpenAiCompatibleClient implements LlmClient {
         this.temperature = temperature >= 0 ? temperature : 0.7;
         int connectTimeoutSec = "ollama".equalsIgnoreCase(this.providerName) ? 3 : Math.min(this.timeoutSeconds, 5);
         this.httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
                 .connectTimeout(Duration.ofSeconds(connectTimeoutSec))
                 .build();
         this.gson = new Gson();
         logger.info("OpenAiCompatibleClient: Initialized for {} using model={}", this.providerName, this.model);
+    }
+
+    public HttpClient getHttpClient() {
+        return httpClient;
     }
 
     @Override
@@ -100,17 +105,30 @@ public class OpenAiCompatibleClient implements LlmClient {
         }
 
         try {
+            boolean isStudentProxy = baseUrl.contains("/student");
+            boolean isItiApi = baseUrl.contains("apiaccess.iti.net.eg") || isStudentProxy;
+
+            String requestModel = model;
+            if ("openrouter".equalsIgnoreCase(providerName)) {
+                if (isStudentProxy) {
+                    requestModel = com.nexusivr.ai.config.LlmConfig.getOpenrouterModel();
+                } else if ("llama-3.3-70b-versatile".equalsIgnoreCase(model) || "llama-3.3-70b".equalsIgnoreCase(model)) {
+                    requestModel = "meta-llama/llama-3.3-70b-instruct";
+                }
+            }
+
             JsonObject requestBody = new JsonObject();
-            boolean isItiApi = baseUrl.contains("apiaccess.iti.net.eg");
-            if (isItiApi) {
-                requestBody.addProperty("model_id", model);
+            if (isStudentProxy) {
+                requestBody.addProperty("model_id", requestModel);
+            } else if (isItiApi) {
+                requestBody.addProperty("model_id", requestModel);
             } else {
-                requestBody.addProperty("model", model);
+                requestBody.addProperty("model", requestModel);
             }
             requestBody.addProperty("temperature", temperature);
 
             // Handle structured JSON output format
-            if (jsonMode) {
+            if (jsonMode && !isStudentProxy) {
                 if ("ollama".equals(providerName)) {
                     // Ollama expects format: "json"
                     requestBody.addProperty("format", "json");
@@ -171,6 +189,11 @@ public class OpenAiCompatibleClient implements LlmClient {
                 httpReqBuilder.header("Authorization", "Bearer " + apiKey);
             }
 
+            if ("openrouter".equalsIgnoreCase(providerName) && !isStudentProxy) {
+                httpReqBuilder.header("HTTP-Referer", "https://nexusivr.com");
+                httpReqBuilder.header("X-Title", "NexusIVR");
+            }
+
             HttpRequest httpRequest = httpReqBuilder.timeout(Duration.ofSeconds(timeoutSeconds)).build();
             HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
             long latencyMs = System.currentTimeMillis() - startTime;
@@ -178,7 +201,7 @@ public class OpenAiCompatibleClient implements LlmClient {
             if (response.statusCode() >= 400) {
                 logger.error("OpenAiCompatibleClient [{}]: HTTP {} returned. Latency: {}ms, Body: {}",
                         providerName, response.statusCode(), latencyMs, response.body());
-                return new AiResponse(providerName.toUpperCase() + " API returned HTTP error status: " + response.statusCode(), model, 0, 0, true, null, null, response.statusCode());
+                return new AiResponse(providerName.toUpperCase() + " API returned HTTP error status: " + response.statusCode(), requestModel, 0, 0, true, null, null, response.statusCode());
             }
 
             JsonObject responseJson = JsonParser.parseString(response.body()).getAsJsonObject();
@@ -219,9 +242,9 @@ public class OpenAiCompatibleClient implements LlmClient {
             }
 
             logger.info("[{}] LLM Latency: {}ms. Token Usage: input={}, output={}, total={}. Model: {}.",
-                    providerName, latencyMs, promptTokens, completionTokens, promptTokens + completionTokens, model);
+                    providerName, latencyMs, promptTokens, completionTokens, promptTokens + completionTokens, requestModel);
 
-            return new AiResponse(content, model, promptTokens, completionTokens, false);
+            return new AiResponse(content, requestModel, promptTokens, completionTokens, false);
 
         } catch (ConnectException e) {
             long latencyMs = System.currentTimeMillis() - startTime;

@@ -51,7 +51,7 @@ public enum FlowNodeType {
             case "prompt", "playback", "tts" -> PROMPT;
             case "menu", "dtmf_menu" -> MENU;
             case "input", "field", "dtmf_input" -> INPUT;
-            case "transfer" -> TRANSFER;
+            case "transfer", "extension" -> TRANSFER;
             case "queue" -> QUEUE;
             case "condition", "if" -> CONDITION;
             case "business_hours", "hours" -> BUSINESS_HOURS;

@@ -23,7 +23,9 @@ class VxmlImportCompatibilityTest {
 
     @Test
     void testCinemaBookingImport() throws Exception {
+        System.out.println("DEBUG SCENARIOS DIR: " + LlmConfig.getScenariosDir());
         Path path = Path.of(LlmConfig.getScenariosDir(), "cinema-booking-001.vxml");
+        System.out.println("DEBUG CINEMA PATH: " + path.toAbsolutePath());
         assertTrue(Files.exists(path), "cinema-booking-001.vxml must exist");
 
         String vxml = Files.readString(path, StandardCharsets.UTF_8);

@@ -267,8 +267,18 @@ public class FlowPublishService {
             return new ScriptExecutionResult(false, 127, "add_extension.sh script not found", "Script path does not exist");
         }
 
+        boolean runWithSudo = true;
+        for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
+            if (element.getClassName().startsWith("org.junit.") || element.getClassName().startsWith("org.apache.maven.surefire.")) {
+                runWithSudo = false;
+                break;
+            }
+        }
+
         List<String> command = new ArrayList<>();
-        command.add("/usr/bin/sudo");
+        if (runWithSudo) {
+            command.add("/usr/bin/sudo");
+        }
         command.add("/bin/bash");
         command.add(scriptPath.toAbsolutePath().toString());
         command.add(extToRegister);

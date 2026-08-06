@@ -962,13 +962,13 @@ public class UnifiedAiEngine {
 
         if (resolvedModel != null) {
             if (sessionId != null) {
-                ServiceRegistry.getFlowContextService().updateFlowContext(sessionId, resolvedModel);
+                flowContextService.updateFlowContext(sessionId, resolvedModel);
             }
             return resolvedModel;
         }
 
         logger.warn("[UnifiedAiEngine] Parser Stage: Unrecognized format or parse failed. Trying session memory.");
-        FlowModel sessionModel = ServiceRegistry.getFlowContextService().getActiveFlowModel(sessionId);
+        FlowModel sessionModel = flowContextService.getActiveFlowModel(sessionId);
         if (sessionModel != null) {
             logger.info("[UnifiedAiEngine] Parser Stage: Session Memory → FlowModel. Status: SUCCESS. Nodes={}.", sessionModel.getNodes().size());
             return sessionModel;

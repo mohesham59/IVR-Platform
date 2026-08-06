@@ -180,6 +180,13 @@ public class FlowContextService {
         }
         try {
             com.google.gson.JsonObject obj = com.google.gson.JsonParser.parseString(json).getAsJsonObject();
+            if (obj.has("connections") && !obj.has("edges")) {
+                FlowModel directModel = new com.google.gson.Gson().fromJson(json, FlowModel.class);
+                if (directModel != null && directModel.getNodes() != null) {
+                    return directModel;
+                }
+            }
+
             FlowModel model = new FlowModel();
             model.setName(obj.has("name") ? obj.get("name").getAsString() : "Frontend Flow");
             model.setDescription("Imported from React Flow JSON");

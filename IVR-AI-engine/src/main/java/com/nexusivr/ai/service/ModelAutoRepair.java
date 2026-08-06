@@ -49,6 +49,7 @@ public class ModelAutoRepair {
         // Phase 1: Insert missing structural nodes
         ensureStartNode(model);
         ensureEndNode(model);
+        repairTransferDestinations(model);
 
         // Phase 2: Reconnect disconnected nodes
         reconnectOrphanNodes(model);
@@ -61,6 +62,9 @@ public class ModelAutoRepair {
 
         // Phase 4: Repair broken transitions
         repairBrokenTransitions(model);
+
+        // Phase 4.5: Wire disconnected fallback menus
+        wireDisconnectedFallbackMenus(model);
 
         // Phase 5: Repair unreachable branches (last resort: reconnect to nearest branch)
         repairUnreachableBranches(model);
@@ -163,16 +167,22 @@ public class ModelAutoRepair {
 
         logger.info("[ModelAutoRepair] Remapping {} invalid output port(s)", toFix.size());
 
+        List<FlowConnection> toRemove = new ArrayList<>();
         for (FlowConnection conn : toFix) {
             FlowNode sourceNode = nodeMap.get(conn.getSourceNodeId());
             if (sourceNode == null) continue;
+
+            if (sourceNode.getType() == FlowNodeType.END || sourceNode.getType() == FlowNodeType.DISCONNECT) {
+                toRemove.add(conn);
+                continue;
+            }
 
             Set<String> validPorts = VALID_PORTS.getOrDefault(sourceNode.getType(), Set.of("out"));
             String oldPort = conn.getSourcePort();
             String newPort = validPorts.isEmpty() ? "out" : validPorts.iterator().next();
 
             if (oldPort.equals(newPort)) {
-                logger.warn("[ModelAutoRepair] No-op remap detected on node '{}' port '{}' — skipping because new port equals old invalid port. Check VALID_PORTS for node type {}.",
+                logger.warn("[ModelAutoRepair] No-op re-map detected on node '{}' port '{}' — skipping because new port equals old invalid port. Check VALID_PORTS for node type {}.",
                         sourceNode.getId(), oldPort, sourceNode.getType());
                 continue;
             }
@@ -180,6 +190,11 @@ public class ModelAutoRepair {
             conn.setSourcePort(newPort);
             logger.info("[ModelAutoRepair] Remapped invalid port on node '{}' from '{}' to '{}'",
                     sourceNode.getId(), oldPort, newPort);
+        }
+
+        if (!toRemove.isEmpty()) {
+            model.getConnections().removeAll(toRemove);
+            logger.info("[ModelAutoRepair] Removed {} stray outgoing connection(s) from terminal node(s)", toRemove.size());
         }
     }
 
@@ -221,6 +236,42 @@ public class ModelAutoRepair {
                             "end",
                             "in"
                     ));
+                }
+            }
+        }
+    }
+
+    private void repairTransferDestinations(FlowModel model) {
+        int nextExt = 101;
+        Set<Integer> existingExts = new HashSet<>();
+        for (FlowNode node : model.getNodes()) {
+            if (node.getType() == FlowNodeType.TRANSFER && node.getTransfer() != null) {
+                String dest = node.getTransfer().getDestination();
+                if (dest != null && dest.matches("\\d+")) {
+                    try {
+                        existingExts.add(Integer.parseInt(dest));
+                    } catch (NumberFormatException e) {
+                        // ignore
+                    }
+                }
+            }
+        }
+
+        for (FlowNode node : model.getNodes()) {
+            if (node.getType() == FlowNodeType.TRANSFER) {
+                String dest = node.getTransfer() != null ? node.getTransfer().getDestination() : null;
+                if (dest == null || dest.trim().isEmpty() || "TRANSFER_TARGET_PLACEHOLDER".equalsIgnoreCase(dest.trim())) {
+                    while (existingExts.contains(nextExt)) {
+                        nextExt++;
+                    }
+                    if (node.getTransfer() == null) {
+                        node.setTransfer(new FlowTransfer(String.valueOf(nextExt)));
+                    } else {
+                        node.getTransfer().setDestination(String.valueOf(nextExt));
+                    }
+                    existingExts.add(nextExt);
+                    logger.info("[ModelAutoRepair] Assigned auto-incremented extension '{}' to TRANSFER node '{}'", nextExt, node.getId());
+                    nextExt++;
                 }
             }
         }
@@ -395,7 +446,7 @@ public class ModelAutoRepair {
         }
 
         for (FlowNode leaf : leafNodes) {
-            if (leaf.getType() == FlowNodeType.START || leaf.getType() == FlowNodeType.END || leaf.getType() == FlowNodeType.TRANSFER) {
+            if (leaf.getType() == FlowNodeType.START || leaf.getType() == FlowNodeType.END || leaf.getType() == FlowNodeType.DISCONNECT) {
                 continue;
             }
             boolean hasOutgoing = model.getConnections().stream()
@@ -408,6 +459,51 @@ public class ModelAutoRepair {
                         endNode.getId(),
                         "in"
                 ));
+            }
+        }
+
+        // Repair TRANSFER nodes (must connect to End Call on port 'fail' and 'success' if missing)
+        for (FlowNode node : model.getNodes()) {
+            if (node.getType() == FlowNodeType.TRANSFER) {
+                boolean hasFail = model.getConnections().stream()
+                        .anyMatch(c -> c.getSourceNodeId().equals(node.getId()) && "fail".equals(c.getSourcePort()));
+                if (!hasFail) {
+                    model.addConnection(new FlowConnection(
+                            "c_repair_leaf_fail_" + node.getId() + "_end",
+                            node.getId(),
+                            "fail",
+                            endNode.getId(),
+                            "in"
+                    ));
+                }
+                boolean hasSuccess = model.getConnections().stream()
+                        .anyMatch(c -> c.getSourceNodeId().equals(node.getId()) && "success".equals(c.getSourcePort()));
+                if (!hasSuccess) {
+                    model.addConnection(new FlowConnection(
+                            "c_repair_leaf_success_" + node.getId() + "_end",
+                            node.getId(),
+                            "success",
+                            endNode.getId(),
+                            "in"
+                    ));
+                }
+            }
+        }
+
+        // Repair MENU/INPUT timeout fallback connection
+        for (FlowNode node : model.getNodes()) {
+            if (node.getType() == FlowNodeType.MENU || node.getType() == FlowNodeType.INPUT) {
+                boolean hasTimeout = model.getConnections().stream()
+                        .anyMatch(c -> c.getSourceNodeId().equals(node.getId()) && "timeout".equals(c.getSourcePort()));
+                if (!hasTimeout) {
+                    model.addConnection(new FlowConnection(
+                            "c_repair_timeout_" + node.getId() + "_end",
+                            node.getId(),
+                            "timeout",
+                            endNode.getId(),
+                            "in"
+                    ));
+                }
             }
         }
     }
@@ -587,5 +683,57 @@ public class ModelAutoRepair {
             }
         }
         return false;
+    }
+
+    private void wireDisconnectedFallbackMenus(FlowModel model) {
+        List<FlowNode> aiNodes = model.getNodes().stream()
+                .filter(n -> n.getType() == FlowNodeType.AI)
+                .collect(Collectors.toList());
+        List<FlowNode> menuNodes = model.getNodes().stream()
+                .filter(n -> n.getType() == FlowNodeType.MENU)
+                .collect(Collectors.toList());
+
+        for (FlowNode menu : menuNodes) {
+            boolean hasIncoming = model.getConnections().stream()
+                    .anyMatch(c -> menu.getId().equals(c.getTargetNodeId()));
+            if (!hasIncoming) {
+                Set<String> menuTargets = new HashSet<>();
+                if (menu.getMenu() != null && menu.getMenu().getChoices() != null) {
+                    for (FlowChoice choice : menu.getMenu().getChoices()) {
+                        if (choice.getTargetNodeId() != null) {
+                            menuTargets.add(choice.getTargetNodeId().replace("#", "").trim());
+                        }
+                    }
+                }
+                if (!menuTargets.isEmpty()) {
+                    for (FlowNode aiNode : aiNodes) {
+                        Set<String> aiTargets = new HashSet<>();
+                        if (aiNode.getMenu() != null && aiNode.getMenu().getChoices() != null) {
+                            for (FlowChoice choice : aiNode.getMenu().getChoices()) {
+                                if (choice.getTargetNodeId() != null) {
+                                    aiTargets.add(choice.getTargetNodeId().replace("#", "").trim());
+                                }
+                            }
+                        }
+                        model.getConnections().stream()
+                                .filter(c -> aiNode.getId().equals(c.getSourceNodeId()))
+                                .forEach(c -> aiTargets.add(c.getTargetNodeId()));
+
+                        if (aiTargets.containsAll(menuTargets)) {
+                            model.addConnection(new FlowConnection(
+                                    "c_repair_fallback_" + aiNode.getId() + "_" + menu.getId(),
+                                    aiNode.getId(),
+                                    "nomatch",
+                                    menu.getId(),
+                                    "in"
+                            ));
+                            logger.info("[ModelAutoRepair] Connected AI node '{}' (nomatch) to fallback menu '{}'",
+                                    aiNode.getId(), menu.getId());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
