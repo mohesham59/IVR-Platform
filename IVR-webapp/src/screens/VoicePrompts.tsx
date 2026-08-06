@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 import TenantLayout from '../components/TenantLayout'
 import {
-  Plus, Search, Upload, ChevronDown, MoreHorizontal, X,
-  Play, Pause, Download, Trash2, Archive, RefreshCw,
-  Volume2, Wand2, Mic, Globe, Filter,
-  ChevronLeft, ChevronRight, SkipBack, SkipForward,
-  FileAudio, Sparkles,
+  Search, Upload, ChevronDown, MoreHorizontal, X,
+  Play, Pause, Download, Trash2, RefreshCw,
+  Volume2, Filter, ChevronLeft, ChevronRight,
+  SkipBack, SkipForward, FileAudio, Sparkles,
 } from 'lucide-react'
 
 export interface Prompt {
@@ -25,6 +24,15 @@ const prompts: Prompt[] = []
 // Fake waveform bars
 const WAVEFORM = Array.from({ length: 60 }, (_, i) => 0.15 + Math.abs(Math.sin(i * 0.5 + Math.cos(i * 0.3)) * 0.7 + Math.cos(i * 0.2) * 0.2))
 
+const parseDurationSec = (durStr?: string) => {
+  if (!durStr || durStr === '0:00' || durStr === '--:--') return 0
+  const parts = durStr.split(':')
+  if (parts.length === 2) {
+    return (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0)
+  }
+  return 0
+}
+
 const typeCls: Record<string, string> = {
   'AI Generated': 'bg-[#F5F3FF] text-[#6D28D9] border-[#DDD6FE]',
   Uploaded: 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]',
@@ -34,7 +42,6 @@ function ActionMenu({ onClose, onDelete, onDownload, onReplace }: { onClose: () 
   return (
     <div className="absolute right-0 top-8 z-50 bg-white rounded-xl border border-[#E5E7EB] shadow-xl shadow-black/10 w-40 py-1">
       {[
-        { icon: <Play className="w-3.5 h-3.5" />, label: 'Play' },
         { icon: <Download className="w-3.5 h-3.5" />, label: 'Download', action: onDownload },
         { icon: <RefreshCw className="w-3.5 h-3.5" />, label: 'Replace', action: onReplace },
         { icon: <Trash2 className="w-3.5 h-3.5" />, label: 'Delete', color: 'text-[#EF4444]', action: onDelete },
@@ -58,8 +65,6 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
   const [langFilter, setLangFilter] = useState('All Languages')
   const [typeFilter, setTypeFilter] = useState('All Types')
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
-  const intervalRef = useRef<number | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetch('/api/v1/voice-prompts/upload')
@@ -81,11 +86,13 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
   const [modalFileName, setModalFileName] = useState('')
   const [modalLanguage, setModalLanguage] = useState('English (US)')
 
-  const handleReplaceInit = (originalName: string) => {
-    setModalConfig({ isOpen: true, mode: 'replace', originalName })
+  const handleReplaceInit = (prompt: Prompt) => {
+    const isAi = prompt.type === 'AI Generated'
+    setModalConfig({ isOpen: true, mode: isAi ? 'generate' : 'replace', originalName: prompt.name })
     setModalFile(null)
-    setModalFileName(originalName.replace('.wav', ''))
-    setModalLanguage('English (US)')
+    setModalFileName(prompt.name.replace('.wav', ''))
+    setModalLanguage(prompt.language || 'English (US)')
+    setGenerateText('')
   }
 
   const handleUploadInit = () => {
@@ -128,8 +135,10 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
 
     if (modalConfig.mode === 'generate') {
       if (!generateText.trim()) return alert('Please enter text to generate.')
-      if (promptsList.some(p => p.name.toLowerCase() === finalName.toLowerCase())) {
-        return alert(`A voice prompt named "${finalName}" already exists.`)
+      if (!modalConfig.originalName || finalName.toLowerCase() !== modalConfig.originalName.toLowerCase()) {
+        if (promptsList.some(p => p.name.toLowerCase() === finalName.toLowerCase())) {
+          return alert(`A voice prompt named "${finalName}" already exists.`)
+        }
       }
       try {
         const res = await fetch('/api/v1/voice-prompts/generate', {
@@ -140,7 +149,17 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
         if (!res.ok) throw new Error('Generation failed')
         const data = await res.json()
         if (data.success) {
-          fetch('/api/v1/voice-prompts/upload').then(r => r.json()).then(d => { if (d.success) setPromptsList(d.prompts) })
+          if (modalConfig.originalName && finalName !== modalConfig.originalName) {
+            await fetch(`/api/v1/voice-prompts/upload?fileName=${encodeURIComponent(modalConfig.originalName)}`, { method: 'DELETE' }).catch(() => {})
+          }
+          fetch('/api/v1/voice-prompts/upload').then(r => r.json()).then(d => {
+            if (d.success && d.prompts) {
+              setPromptsList(d.prompts)
+              if (selected?.name === modalConfig.originalName) {
+                setSelected(d.prompts.find((p: any) => p.name === finalName) || null)
+              }
+            }
+          })
           setModalConfig({ isOpen: false, mode: 'upload' })
         } else alert('Error: ' + data.message)
       } catch (e: any) { alert(e.message) }
@@ -226,22 +245,188 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
     }
   }
 
-  const togglePlay = () => {
-    setPlaying(p => {
-      if (!p) {
-        intervalRef.current = window.setInterval(() => setProgress(v => v >= 100 ? 0 : v + 0.5), 50)
-      } else {
-        if (intervalRef.current) clearInterval(intervalRef.current)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const [audioDuration, setAudioDuration] = useState<number>(() => parseDurationSec(selected?.duration))
+  const [currentTime, setCurrentTime] = useState(0)
+  const [volume, setVolume] = useState(80)
+  const animFrameRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (selected) {
+      if (audioRef.current) {
+        audioRef.current.pause()
       }
-      return !p
-    })
+
+      const dbSecs = parseDurationSec(selected.duration)
+      setAudioDuration(dbSecs)
+
+      const audio = new Audio(`/api/v1/voice-prompts/stream?name=${encodeURIComponent(selected.name)}`)
+      audio.volume = volume / 100
+      audioRef.current = audio
+
+      const updateDuration = () => {
+        if (audio.duration && !isNaN(audio.duration) && isFinite(audio.duration) && audio.duration > 0) {
+          setAudioDuration(audio.duration)
+        }
+      }
+
+      audio.addEventListener('loadedmetadata', updateDuration)
+      audio.addEventListener('durationchange', updateDuration)
+
+      audio.onended = () => {
+        if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
+        setPlaying(false)
+        setProgress(0)
+        setCurrentTime(0)
+      }
+
+      setPlaying(false)
+      setProgress(0)
+      setCurrentTime(0)
+
+      audio.load()
+
+      return () => {
+        if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
+        audio.removeEventListener('loadedmetadata', updateDuration)
+        audio.removeEventListener('durationchange', updateDuration)
+        audio.pause()
+        audioRef.current = null
+      }
+    } else {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current = null
+      }
+      setPlaying(false)
+      setProgress(0)
+      setCurrentTime(0)
+      setAudioDuration(0)
+    }
+  }, [selected])
+
+  // Continuous animation frame loop when playing
+  useEffect(() => {
+    if (playing && audioRef.current) {
+      const updateProgress = () => {
+        if (audioRef.current) {
+          const cur = audioRef.current.currentTime
+          const dur = (audioRef.current.duration && !isNaN(audioRef.current.duration) && isFinite(audioRef.current.duration) && audioRef.current.duration > 0)
+            ? audioRef.current.duration
+            : parseDurationSec(selected?.duration)
+          
+          setCurrentTime(cur)
+          if (dur > 0) {
+            setProgress((cur / dur) * 100)
+          }
+          if (!audioRef.current.paused && !audioRef.current.ended) {
+            animFrameRef.current = requestAnimationFrame(updateProgress)
+          }
+        }
+      }
+      animFrameRef.current = requestAnimationFrame(updateProgress)
+    } else {
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current)
+      }
+    }
+
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
+    }
+  }, [playing, selected])
+
+  const togglePlay = () => {
+    if (!selected) return
+
+    if (!audioRef.current) {
+      const audio = new Audio(`/api/v1/voice-prompts/stream?name=${encodeURIComponent(selected.name)}`)
+      audio.volume = volume / 100
+      audioRef.current = audio
+      
+      const updateDuration = () => {
+        if (audio.duration && !isNaN(audio.duration) && isFinite(audio.duration)) {
+          setAudioDuration(audio.duration)
+        }
+      }
+
+      audio.addEventListener('loadedmetadata', updateDuration)
+      audio.addEventListener('durationchange', updateDuration)
+      audio.onended = () => {
+        if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
+        setPlaying(false)
+        setProgress(0)
+        setCurrentTime(0)
+      }
+    }
+
+    if (audioRef.current) {
+      if (playing) {
+        audioRef.current.pause()
+        setPlaying(false)
+      } else {
+        audioRef.current.play()
+          .then(() => setPlaying(true))
+          .catch(err => console.error('Play failed:', err))
+      }
+    }
   }
+
+  const effectiveDuration = (audioDuration && isFinite(audioDuration) && audioDuration > 0)
+    ? audioDuration
+    : parseDurationSec(selected?.duration)
+
+  const handleSkip = (seconds: number) => {
+    if (!audioRef.current) return
+    const dur = effectiveDuration
+    const newTime = Math.max(0, Math.min(dur || 9999, audioRef.current.currentTime + seconds))
+    audioRef.current.currentTime = newTime
+    setCurrentTime(newTime)
+    if (dur) setProgress((newTime / dur) * 100)
+  }
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = Number(e.target.value)
+    setVolume(val)
+    if (audioRef.current) {
+      audioRef.current.volume = val / 100
+    }
+  }
+
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!audioRef.current) return
+    const dur = effectiveDuration
+    if (!dur) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    const clickX = e.clientX - rect.left
+    const pct = Math.max(0, Math.min(1, clickX / rect.width))
+    const seekTime = pct * dur
+    audioRef.current.currentTime = seekTime
+    setCurrentTime(seekTime)
+    setProgress(pct * 100)
+  }
+
+  const formatTime = (secs: number) => {
+    if (isNaN(secs) || secs < 0) return '0:00'
+    const m = Math.floor(secs / 60)
+    const s = Math.floor(secs % 60)
+    return `${m}:${s < 10 ? '0' : ''}${s}`
+  }
+
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 10
 
   const filtered = promptsList.filter(p =>
     (langFilter === 'All Languages' || p.language === langFilter) &&
     (typeFilter === 'All Types' || p.type === typeFilter) &&
     p.name.toLowerCase().includes(search.toLowerCase())
   )
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1
+  const validCurrentPage = Math.min(currentPage, totalPages)
+  const startIndex = (validCurrentPage - 1) * ITEMS_PER_PAGE
+  const pageItems = filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE)
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
@@ -376,7 +561,7 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#F3F4F6]">
-                  {filtered.map(p => (
+                  {pageItems.map(p => (
                     <tr key={p.id} onClick={() => setSelected(p)}
                       className={`hover:bg-[#F9FAFB] transition-colors cursor-pointer group ${selected?.id === p.id ? 'bg-[#EFF6FF]' : ''}`}>
                       <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
@@ -407,7 +592,7 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
                             className="w-7 h-7 rounded-lg flex items-center justify-center text-[#9CA3AF] hover:bg-[#F3F4F6] transition-colors opacity-0 group-hover:opacity-100">
                             <MoreHorizontal className="w-4 h-4" />
                           </button>
-                          {openMenu === p.id && <ActionMenu onClose={() => setOpenMenu(null)} onDelete={() => handleDelete(p.name)} onDownload={() => handleDownload(p.name)} onReplace={() => handleReplaceInit(p.name)} />}
+                          {openMenu === p.id && <ActionMenu onClose={() => setOpenMenu(null)} onDelete={() => handleDelete(p.name)} onDownload={() => handleDownload(p.name)} onReplace={() => handleReplaceInit(p)} />}
                         </div>
                       </td>
                     </tr>
@@ -415,11 +600,24 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
                 </tbody>
               </table>
               <div className="flex items-center justify-between px-5 py-3 border-t border-[#F3F4F6] bg-[#F9FAFB]">
-                <p className="text-[#9CA3AF] text-xs">Showing {filtered.length} of {promptsList.length} prompts</p>
-                <div className="flex gap-1">
-                  <button className="w-7 h-7 rounded-lg border border-[#E5E7EB] bg-white flex items-center justify-center text-[#9CA3AF]"><ChevronLeft className="w-3.5 h-3.5" /></button>
-                  <button className="w-7 h-7 rounded-lg border bg-[#2563EB] border-[#2563EB] text-white text-xs font-medium">1</button>
-                  <button className="w-7 h-7 rounded-lg border border-[#E5E7EB] bg-white flex items-center justify-center text-[#9CA3AF]"><ChevronRight className="w-3.5 h-3.5" /></button>
+                <p className="text-[#9CA3AF] text-xs">
+                  Showing {filtered.length === 0 ? 0 : startIndex + 1} to {Math.min(startIndex + ITEMS_PER_PAGE, filtered.length)} of {filtered.length} prompts
+                </p>
+                <div className="flex gap-1 items-center">
+                  <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={validCurrentPage === 1}
+                    className="w-7 h-7 rounded-lg border border-[#E5E7EB] bg-white flex items-center justify-center text-[#9CA3AF] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#F9FAFB] transition-colors">
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button key={page} onClick={() => setCurrentPage(page)}
+                      className={`w-7 h-7 rounded-lg border text-xs font-medium transition-colors ${validCurrentPage === page ? 'bg-[#2563EB] border-[#2563EB] text-white' : 'bg-white border-[#E5E7EB] text-[#374151] hover:bg-[#F9FAFB]'}`}>
+                      {page}
+                    </button>
+                  ))}
+                  <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={validCurrentPage === totalPages}
+                    className="w-7 h-7 rounded-lg border border-[#E5E7EB] bg-white flex items-center justify-center text-[#9CA3AF] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#F9FAFB] transition-colors">
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -449,7 +647,7 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
 
                 {/* Waveform */}
                 <div>
-                  <div className="flex items-end gap-0.5 h-14 bg-[#F9FAFB] rounded-xl px-3 py-2 cursor-pointer border border-[#F3F4F6]">
+                  <div onClick={handleSeek} className="flex items-end gap-0.5 h-14 bg-[#F9FAFB] rounded-xl px-3 py-2 cursor-pointer border border-[#F3F4F6]">
                     {WAVEFORM.map((h, i) => {
                       const pct = (i / WAVEFORM.length) * 100
                       const isPast = pct <= progress
@@ -460,21 +658,21 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
                     })}
                   </div>
                   <div className="flex items-center justify-between mt-1.5 px-1">
-                    <span className="text-[#9CA3AF] text-[10px] font-mono">0:0{Math.floor(progress * 0.15)}</span>
+                    <span className="text-[#9CA3AF] text-[10px] font-mono">{formatTime(currentTime)}</span>
                     <span className="text-[#9CA3AF] text-[10px] font-mono">{selected.duration}</span>
                   </div>
                 </div>
 
                 {/* Controls */}
                 <div className="flex items-center justify-center gap-3">
-                  <button className="w-8 h-8 rounded-full flex items-center justify-center text-[#9CA3AF] hover:text-[#374151] transition-colors">
+                  <button onClick={() => handleSkip(-5)} className="w-8 h-8 rounded-full flex items-center justify-center text-[#9CA3AF] hover:text-[#374151] transition-colors" title="Rewind 5s">
                     <SkipBack className="w-4 h-4" />
                   </button>
                   <button onClick={togglePlay}
                     className="w-11 h-11 rounded-full bg-[#2563EB] flex items-center justify-center text-white hover:bg-[#1E40AF] transition-colors shadow-md shadow-[#2563EB]/25">
                     {playing ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
                   </button>
-                  <button className="w-8 h-8 rounded-full flex items-center justify-center text-[#9CA3AF] hover:text-[#374151] transition-colors">
+                  <button onClick={() => handleSkip(5)} className="w-8 h-8 rounded-full flex items-center justify-center text-[#9CA3AF] hover:text-[#374151] transition-colors" title="Forward 5s">
                     <SkipForward className="w-4 h-4" />
                   </button>
                 </div>
@@ -482,18 +680,10 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
                 {/* Volume */}
                 <div className="flex items-center gap-2">
                   <Volume2 className="w-3.5 h-3.5 text-[#9CA3AF] flex-shrink-0" />
-                  <input type="range" min={0} max={100} defaultValue={80}
+                  <input type="range" min={0} max={100} value={volume} onChange={handleVolumeChange}
                     className="flex-1 h-1 bg-[#E5E7EB] rounded-lg appearance-none cursor-pointer accent-[#2563EB]" />
-                  <span className="text-[#9CA3AF] text-[10px] w-7 text-right">80%</span>
+                  <span className="text-[#9CA3AF] text-[10px] w-7 text-right">{volume}%</span>
                 </div>
-
-                {/* Transcript */}
-                <section>
-                  <h4 className="text-[#9CA3AF] text-[10px] font-semibold uppercase tracking-wider mb-2">Transcript</h4>
-                  <div className="p-3 rounded-lg bg-[#F9FAFB] border border-[#F3F4F6] text-[#374151] text-xs leading-relaxed italic">
-                    "Thank you for calling Meridian Health. For appointments, press 1. For emergency services, press 2. For billing, press 3. For all other inquiries, press 0 to speak with an agent."
-                  </div>
-                </section>
 
                 {/* Used in */}
                 {selected.usedIn.length > 0 && (
@@ -506,20 +696,6 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
                     </div>
                   </section>
                 )}
-
-                {/* AI actions */}
-                <section className="space-y-2 pt-1">
-                  <h4 className="text-[#9CA3AF] text-[10px] font-semibold uppercase tracking-wider">AI Actions</h4>
-                  <button className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-gradient-to-r from-[#8B5CF6] to-[#2563EB] text-white text-xs font-semibold hover:opacity-90 transition-opacity">
-                    <Wand2 className="w-3.5 h-3.5" /> AI Rewrite Prompt
-                  </button>
-                  <button className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-white border border-[#E5E7EB] text-[#374151] text-xs font-medium hover:border-[#2563EB] hover:text-[#2563EB] transition-all">
-                    <Mic className="w-3.5 h-3.5" /> Generate New Voice
-                  </button>
-                  <button className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-white border border-[#E5E7EB] text-[#374151] text-xs font-medium hover:border-[#2563EB] hover:text-[#2563EB] transition-all">
-                    <Download className="w-3.5 h-3.5" /> Download File
-                  </button>
-                </section>
               </div>
             </div>
           )}
