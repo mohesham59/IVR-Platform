@@ -14,10 +14,12 @@ import {
 } from '../hooks/useAIAssistant'
 import { exportAsVxml } from '../ivr/vxmlExporter'
 import { GenerationStepper } from '../components/GenerationStepper'
+import { aiApi } from '../api/aiApi'
 
 function FlowPreviewCard({
   extra,
   onOpenInBuilder,
+  sessionId,
 }: {
   extra: {
     nodes: number
@@ -31,20 +33,41 @@ function FlowPreviewCard({
     flowName?: string
   }
   onOpenInBuilder?: () => void
+  sessionId?: string
 }) {
   const [vxmlCopied, setVxmlCopied] = useState(false)
 
-  const handleCopyVxml = () => {
-    const nodes = extra.flowNodes ?? []
-    const edges = extra.flowEdges ?? []
-    const name  = extra.flowName  ?? 'IVR Flow'
-    const { vxml } = exportAsVxml(name, nodes, edges)
-    navigator.clipboard.writeText(vxml).then(() => {
-      setVxmlCopied(true)
-      setTimeout(() => setVxmlCopied(false), 2000)
-    }).catch(() => {
-      // clipboard unavailable (e.g. non-https) — silently ignore
-    })
+  const handleCopyVxml = async () => {
+    let nodes = extra.flowNodes ?? []
+    let edges = extra.flowEdges ?? []
+    let name  = extra.flowName  ?? 'IVR Flow'
+
+    if (sessionId) {
+      const stored = localStorage.getItem(`nexus_flow_${sessionId}`)
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored)
+          if (parsed && parsed.nodes && parsed.nodes.length > 0) {
+            nodes = parsed.nodes
+            edges = parsed.edges || []
+            name  = parsed.flowName || name
+          }
+        } catch { /* ignore */ }
+      }
+    }
+
+    try {
+      const flowJsonStr = JSON.stringify({ name, nodes, edges })
+      const { vxml } = await aiApi.exportVxml(flowJsonStr)
+      navigator.clipboard.writeText(vxml).then(() => {
+        setVxmlCopied(true)
+        setTimeout(() => setVxmlCopied(false), 2000)
+      }).catch(() => {
+        // clipboard unavailable (e.g. non-https) — silently ignore
+      })
+    } catch (err) {
+      console.error('[FlowPreviewCard] Failed to copy VXML:', err)
+    }
   }
 
   return (
@@ -119,11 +142,13 @@ function ChatBubble({
   onOpenInBuilder,
   onInspect,
   isSelected,
+  sessionId,
 }: {
   msg: Message
   onOpenInBuilder?: (flow?: any) => void
   onInspect?: () => void
   isSelected?: boolean
+  sessionId?: string
 }) {
   const isUser = msg.role === 'user'
   return (
@@ -166,6 +191,7 @@ function ChatBubble({
                 const ex = msg.extra as any
                 onOpenInBuilder?.({ nodes: ex.flowNodes, edges: ex.flowEdges, flowName: ex.flowName })
               }}
+              sessionId={sessionId}
             />
           </div>
         )}
@@ -485,6 +511,7 @@ export default function AIAssistant({ onLogout }: { onLogout: () => void }) {
                 onOpenInBuilder={(flow) => handleOpenInBuilder(flow)}
                 onInspect={() => handleInspectMessage(msg)}
                 isSelected={selectedMessageId === msg.id}
+                sessionId={sessionId}
               />
             ))}
             {isTyping && (

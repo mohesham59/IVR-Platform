@@ -146,7 +146,7 @@ export const aiApi = {
    * Pass flowContext (serialized canvas nodes+edges JSON) so the backend
    * always answers from the same flow the preview shows.
    */
-  async sendMessage(userMessage: string, sessionId?: string, channel = 'CHAT', flowContext?: string, snapshotId?: string, autoRefine?: boolean): Promise<ChatApiResponse> {
+  async sendMessage(userMessage: string, sessionId?: string, channel = 'CHAT', flowContext?: string, snapshotId?: string, autoRefine?: boolean, options: any = {}): Promise<ChatApiResponse> {
     const headers: Record<string, string> = {};
     if (snapshotId) {
       headers['X-AI-Snapshot-ID'] = snapshotId;
@@ -154,6 +154,7 @@ export const aiApi = {
     return request<ChatApiResponse>('/chat', {
       method: 'POST',
       headers,
+      ...options,
       body: JSON.stringify({ sessionId, userMessage, channel, flowContext, autoRefine }),
     });
   },
@@ -333,6 +334,16 @@ export const aiApi = {
   },
 
   /**
+   * Parse VoiceXML text into a Flow JSON
+   */
+  async importVxml(vxml: string): Promise<any> {
+    return request<any>('/flow/parse', {
+      method: 'POST',
+      body: JSON.stringify({ vxml }),
+    });
+  },
+
+  /**
    * Save a draft version of the flow to the backend.
    * Backend endpoint not yet implemented — stub returns success.
    */
@@ -340,17 +351,17 @@ export const aiApi = {
     data: { flowId: string; flowName: string; flowJson: string },
     _onRetry?: (attempt: number, maxAttempts: number, errorMsg: string) => void
   ): Promise<{ version: number; filename: string }> {
-    return {
-      version: 1,
-      filename: `${data.flowName}_draft.vxml`,
-    };
+    return request<{ version: number; filename: string }>('/flow/draft', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   },
 
   /**
    * Publish the flow as a production VXML scenario.
    * Backend endpoint not yet implemented — stub returns success.
    */
-  async publishFlow(data: { flowId: string; flowName: string; flowJson: string }): Promise<{
+  async publishFlow(data: { flowId: string; flowName: string; extension?: string; flowJson: string }): Promise<{
     filename: string;
     status: string;
     extensionRegistered: boolean;
@@ -362,6 +373,22 @@ export const aiApi = {
     return request<any>('/flow/publish', {
       method: 'POST',
       body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Export the flow as a VoiceXML string from the backend.
+   */
+  async exportVxml(flowJson: string): Promise<{ vxml: string }> {
+    return request<{ vxml: string }>('/flow/export', {
+      method: 'POST',
+      body: JSON.stringify({ flowJson }),
+    });
+  },
+
+  async cancelGeneration(sessionId: string): Promise<{ success: boolean }> {
+    return request<{ success: boolean }>(`/generation/${encodeURIComponent(sessionId)}/cancel`, {
+      method: 'POST',
     });
   },
 };

@@ -42,7 +42,7 @@ describe('useAIAssistant Session & Cancellation Guards', () => {
     const controller = new AbortController()
     let isAbortedDuringFetch = false
 
-    vi.spyOn(aiApi, 'generateFlowStream').mockImplementation(async (_desc: string, options?: any) => {
+    vi.spyOn(aiApi, 'generateFlow').mockImplementation(async (_desc: string, options?: any) => {
       const signal = options?.signal
 
       return new Promise((resolve, reject) => {
@@ -61,7 +61,7 @@ describe('useAIAssistant Session & Cancellation Guards', () => {
     })
 
     // Initiate request
-    const genPromise = aiApi.generateFlowStream('create hospital flow', { signal: controller.signal })
+    const genPromise = aiApi.generateFlow('create hospital flow', { signal: controller.signal })
 
     // Simulate session switch / new chat clicking abort
     controller.abort('Session switched')
