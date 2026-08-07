@@ -14,5 +14,5 @@ RUN mvn clean compile
 # Expose FastAGI port
 EXPOSE 4573
 
-# Run the FastAGI server using the exec plugin (matches how it's run locally)
-CMD ["mvn", "exec:java", "-Dexec.mainClass=gov.iti.telecom.VxmlAgiServer"]
+# Run the FastAGI server using the exec plugin
+CMD ["mvn", "exec:java", "-Dexec.mainClass=gov.iti.telecom.App"]

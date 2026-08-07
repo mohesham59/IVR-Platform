@@ -10,11 +10,11 @@ COPY src ./src
 # Install asterisk so the container has the CLI tool for add_extension.sh
 RUN apt-get update && apt-get install -y asterisk && rm -rf /var/lib/apt/lists/*
 
-# Cache dependencies
-RUN mvn clean compile
+# Cache dependencies and build the WAR file
+RUN mvn clean package -DskipTests
 
-# Expose Tomcat port (Cargo typically runs on 8080)
-EXPOSE 8080
+# Expose Tomcat port (Cargo typically runs on 8081 in this project)
+EXPOSE 8081
 
 # Run the Tomcat server using the Cargo plugin (matches how it's run locally)
 CMD ["mvn", "cargo:run"]
