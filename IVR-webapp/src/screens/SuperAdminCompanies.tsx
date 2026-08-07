@@ -7,8 +7,7 @@ import {
 
 export interface DbTenant {
   id: string
-  name: string
-  displayName?: string
+  displayName: string
   ownerUserId: string
   ownerUsername: string
   ownerEmail: string
@@ -59,7 +58,6 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
     tenant?: DbTenant | null
   }>({ isOpen: false, mode: 'add' })
 
-  const [formName, setFormName] = useState('')
   const [formDisplayName, setFormDisplayName] = useState('')
   const [formOwnerUserId, setFormOwnerUserId] = useState('')
   const [formStatus, setFormStatus] = useState('ACTIVE')
@@ -101,7 +99,7 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
 
   const filtered = tenantsList.filter((t) => {
     const matchStatus = statusFilter === 'All Status' || t.status === statusFilter
-    const nameMatch = (t.displayName || t.name).toLowerCase().includes(search.toLowerCase()) || t.name.toLowerCase().includes(search.toLowerCase())
+    const nameMatch = (t.displayName || '').toLowerCase().includes(search.toLowerCase())
     const ownerMatch = (t.ownerUsername && t.ownerUsername.toLowerCase().includes(search.toLowerCase())) || (t.ownerEmail && t.ownerEmail.toLowerCase().includes(search.toLowerCase()))
     return matchStatus && (nameMatch || ownerMatch)
   })
@@ -112,7 +110,6 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
   const paginatedTenants = filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE)
 
   const handleOpenAdd = () => {
-    setFormName('')
     setFormDisplayName('')
     const defaultOwner = userOptions.length > 0 ? userOptions[0].id : ''
     setFormOwnerUserId(defaultOwner)
@@ -123,8 +120,7 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
   }
 
   const handleOpenEdit = (tenant: DbTenant) => {
-    setFormName(tenant.name)
-    setFormDisplayName(tenant.displayName || tenant.name)
+    setFormDisplayName(tenant.displayName || '')
     setFormOwnerUserId(tenant.ownerUserId || (userOptions.length > 0 ? userOptions[0].id : ''))
     setOwnerSearch('')
     setFormStatus(tenant.status)
@@ -161,14 +157,13 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
 
     try {
       if (modalConfig.mode === 'add') {
-        if (!formName.trim()) return alert('Please enter company name.')
+        if (!formDisplayName.trim()) return alert('Please enter company name.')
         if (!formOwnerUserId) return alert('Please select a company owner user.')
         const res = await doFetch('/api/v1/super-admin/companies', {
           method: 'POST',
           headers,
           body: JSON.stringify({
-            name: formName,
-            displayName: formDisplayName || formName,
+            displayName: formDisplayName,
             ownerUserId: formOwnerUserId,
             status: formStatus
           })
@@ -179,15 +174,14 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
           setModalConfig({ isOpen: false, mode: 'add' })
         } else alert(data.message || 'Error creating company')
       } else if (modalConfig.mode === 'edit' && modalConfig.tenant) {
-        if (!formName.trim()) return alert('Please enter company name.')
+        if (!formDisplayName.trim()) return alert('Please enter company name.')
         if (!formOwnerUserId) return alert('Please select a company owner user.')
         const res = await doFetch('/api/v1/super-admin/companies', {
           method: 'PUT',
           headers,
           body: JSON.stringify({
             id: modalConfig.tenant.id,
-            name: formName,
-            displayName: formDisplayName || formName,
+            displayName: formDisplayName,
             ownerUserId: formOwnerUserId,
             status: formStatus
           })
@@ -280,7 +274,7 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
                           <Building2 className="w-4 h-4" />
                         </div>
                         <div>
-                          <p className="text-[#1F2937] font-semibold text-xs">{tenant.displayName || tenant.name}</p>
+                          <p className="text-[#1F2937] font-semibold text-xs">{tenant.displayName}</p>
                         </div>
                       </div>
                     </td>
@@ -357,7 +351,7 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
                     <Building2 className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-[#1F2937] text-sm">{selectedTenant.displayName || selectedTenant.name}</h3>
+                    <h3 className="font-semibold text-[#1F2937] text-sm">{selectedTenant.displayName}</h3>
                   </div>
                 </div>
                 <button onClick={() => setSelectedTenant(null)} className="text-[#9CA3AF] hover:text-[#374151] p-1 rounded-lg hover:bg-[#F3F4F6]">
@@ -417,7 +411,7 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
             <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
               {modalConfig.mode === 'delete' ? (
                 <p className="text-sm text-[#4B5563]">
-                  Are you sure you want to permanently delete company <span className="font-semibold text-[#1F2937]">{modalConfig.tenant?.displayName || modalConfig.tenant?.name}</span>?
+                  Are you sure you want to permanently delete company <span className="font-semibold text-[#1F2937]">{modalConfig.tenant?.displayName}</span>?
                 </p>
               ) : (
                 <>
@@ -427,7 +421,6 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
                       value={formDisplayName}
                       onChange={(e) => {
                         setFormDisplayName(e.target.value)
-                        setFormName(e.target.value)
                       }}
                       placeholder="e.g. TEST Corp"
                       className="w-full h-10 px-3 rounded-lg border border-[#E5E7EB] text-sm outline-none focus:border-[#2563EB]"

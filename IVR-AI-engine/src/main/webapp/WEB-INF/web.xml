@@ -63,6 +63,16 @@
         <url-pattern>/api/v1/super-admin/companies</url-pattern>
     </servlet-mapping>
 
+    <!-- Tenant Companies Servlet -->
+    <servlet>
+        <servlet-name>TenantCompaniesServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.TenantCompaniesServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TenantCompaniesServlet</servlet-name>
+        <url-pattern>/api/v1/tenant/companies</url-pattern>
+    </servlet-mapping>
+
     <!-- AI Chat Servlet -->
     <servlet>
         <servlet-name>AiChatServlet</servlet-name>

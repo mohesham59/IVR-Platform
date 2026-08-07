@@ -17,13 +17,13 @@ public class UserDao {
     private static final Logger logger = LoggerFactory.getLogger(UserDao.class);
 
     private static final String FIND_BY_EMAIL_OR_USERNAME_SQL = """
-        SELECT id, active_tenant_id, email, password_hash, is_superadmin, username, status, last_login_at, created_at, updated_at
+        SELECT id, active_tenant_id, email, password, is_superadmin, username, status, last_login_at, created_at, updated_at
         FROM users
         WHERE LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?)
         """;
 
     private static final String FIND_BY_ID_SQL = """
-        SELECT id, active_tenant_id, email, password_hash, is_superadmin, username, status, last_login_at, created_at, updated_at
+        SELECT id, active_tenant_id, email, password, is_superadmin, username, status, last_login_at, created_at, updated_at
         FROM users
         WHERE id = ?::uuid
         """;
@@ -31,7 +31,7 @@ public class UserDao {
     public List<User> findAllUsers() {
         List<User> list = new ArrayList<>();
         String sql = """
-            SELECT id, active_tenant_id, email, password_hash, is_superadmin, username, status, last_login_at, created_at, updated_at
+            SELECT id, active_tenant_id, email, password, is_superadmin, username, status, last_login_at, created_at, updated_at
             FROM users
             ORDER BY created_at DESC
             """;
@@ -49,9 +49,9 @@ public class UserDao {
 
     public User createUser(User user) {
         String sql = """
-            INSERT INTO users (id, active_tenant_id, email, password_hash, is_superadmin, username, status, created_at, updated_at)
+            INSERT INTO users (id, active_tenant_id, email, password, is_superadmin, username, status, created_at, updated_at)
             VALUES (?::uuid, ?::uuid, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            RETURNING id, active_tenant_id, email, password_hash, is_superadmin, username, status, last_login_at, created_at, updated_at
+            RETURNING id, active_tenant_id, email, password, is_superadmin, username, status, last_login_at, created_at, updated_at
             """;
         String newId = user.getId() != null ? user.getId() : UUID.randomUUID().toString();
         try (Connection conn = DatabaseManager.getConnection();
@@ -122,7 +122,7 @@ public class UserDao {
     public boolean updatePassword(String userId, String newPassword) {
         String sql = """
             UPDATE users
-            SET password_hash = ?, updated_at = CURRENT_TIMESTAMP
+            SET password = ?, updated_at = CURRENT_TIMESTAMP
             WHERE id = ?::uuid
             """;
         try (Connection conn = DatabaseManager.getConnection();
@@ -184,7 +184,7 @@ public class UserDao {
         u.setId(rs.getString("id"));
         u.setActiveTenantId(rs.getString("active_tenant_id"));
         u.setEmail(rs.getString("email"));
-        u.setPasswordHash(rs.getString("password_hash"));
+        u.setPasswordHash(rs.getString("password"));
         u.setSuperadmin(rs.getBoolean("is_superadmin"));
         u.setUsername(rs.getString("username"));
         u.setStatus(rs.getString("status"));

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
   Activity, BarChart3, Bell, Building2, ChevronDown, ChevronLeft, ChevronRight,
@@ -26,8 +26,39 @@ interface SuperAdminLayoutProps {
 
 export default function SuperAdminLayout({ children, pageTitle, pageSubtitle, headerActions, onLogout }: SuperAdminLayoutProps) {
   const [collapsed, setCollapsed] = useState(false)
-  const [darkMode, setDarkMode] = useState(false)
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark')
+  const [currentUser, setCurrentUser] = useState<{username: string, email: string, isSuperadmin: boolean} | null>(null)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
+  }, [darkMode])
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem('nexus_jwt_token')
+        const headers = token ? { Authorization: `Bearer ${token}` } : {}
+        let res = await fetch('/api/v1/auth/me', { headers }).catch(() => null)
+        if (!res || !res.ok) {
+          res = await fetch('http://localhost:8081/nexusivr-ai-engine/api/v1/auth/me', { headers })
+        }
+        const data = await res.json()
+        if (data.success && data.user) {
+          setCurrentUser(data.user)
+        }
+      } catch (e) {
+        console.error('Failed to fetch user', e)
+      }
+    }
+    fetchUser()
+  }, [])
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden">
@@ -52,7 +83,7 @@ export default function SuperAdminLayout({ children, pageTitle, pageSubtitle, he
           <div className="flex items-center gap-2 ml-auto">
             <button onClick={() => setDarkMode(!darkMode)} className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${darkMode ? 'bg-[#1F2937] text-white' : 'text-[#6B7280] hover:bg-[#F3F4F6]'}`}><Moon className="w-4 h-4" /></button>
             <button className="relative w-8 h-8 rounded-lg flex items-center justify-center text-[#6B7280] hover:bg-[#F3F4F6] transition-colors"><Bell className="w-4 h-4" /><span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#EF4444]" /></button>
-            <button className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-lg hover:bg-[#F3F4F6] transition-colors"><div className="w-7 h-7 rounded-full bg-[#2563EB] flex items-center justify-center text-white text-xs font-bold">SA</div><div className="text-left hidden sm:block"><div className="text-[#1F2937] text-xs font-semibold leading-tight">Super Admin</div><div className="text-[#9CA3AF] text-[10px]">admin@nexusivr.io</div></div><ChevronDown className="w-3 h-3 text-[#9CA3AF]" /></button>
+            <button className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-lg hover:bg-[#F3F4F6] transition-colors"><div className="w-7 h-7 rounded-full bg-[#2563EB] flex items-center justify-center text-white text-xs font-bold">{currentUser?.username ? currentUser.username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'SA'}</div><div className="text-left hidden sm:block"><div className="text-[#1F2937] text-xs font-semibold leading-tight">{currentUser?.username || 'Super Admin'}</div><div className="text-[#9CA3AF] text-[10px]">{currentUser ? (currentUser.isSuperadmin ? 'Super Admin' : 'Tenant Admin') : 'Super Admin'}</div></div><ChevronDown className="w-3 h-3 text-[#9CA3AF]" /></button>
             <button onClick={() => { onLogout(); navigate('/') }} className="w-8 h-8 rounded-lg flex items-center justify-center text-[#9CA3AF] hover:text-[#EF4444] hover:bg-[#FEF2F2] transition-colors"><LogOut className="w-4 h-4" /></button>
           </div>
         </header>

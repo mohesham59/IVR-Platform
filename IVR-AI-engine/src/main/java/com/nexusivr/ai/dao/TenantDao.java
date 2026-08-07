@@ -18,7 +18,6 @@ public class TenantDao {
 
     public static class Tenant {
         private String id;
-        private String name;
         private String displayName;
         private String ownerUserId;
         private String ownerUsername;
@@ -29,10 +28,7 @@ public class TenantDao {
 
         public String getId() { return id; }
         public void setId(String id) { this.id = id; }
-
-        public String getName() { return name; }
-        public void setName(String name) { this.name = name; }
-
+        
         public String getDisplayName() { return displayName; }
         public void setDisplayName(String displayName) { this.displayName = displayName; }
 
@@ -58,7 +54,7 @@ public class TenantDao {
     public List<Tenant> findAllTenants() {
         List<Tenant> list = new ArrayList<>();
         String sql = """
-            SELECT t.id, t.name, t.display_name, t.owner_user_id, t.status, t.created_at, t.updated_at,
+            SELECT t.id, t.display_name, t.owner_user_id, t.status, t.created_at, t.updated_at,
                    u.username AS owner_username, u.email AS owner_email
             FROM tenants t
             LEFT JOIN users u ON t.owner_user_id = u.id
@@ -76,9 +72,46 @@ public class TenantDao {
         return list;
     }
 
+    public List<Tenant> findTenantsByUserId(String userId) {
+        List<Tenant> list = new ArrayList<>();
+        String sql = """
+            SELECT t.id, t.display_name, t.owner_user_id, t.status, t.created_at, t.updated_at,
+                   u.username AS owner_username, u.email AS owner_email
+            FROM tenants t
+            LEFT JOIN users u ON t.owner_user_id = u.id
+            WHERE t.owner_user_id = ?::uuid
+            ORDER BY t.created_at DESC
+            """;
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapTenant(rs));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error listing tenants for user {}: {}", userId, e.getMessage(), e);
+        }
+        return list;
+    }
+
+    public boolean updateActiveTenant(String userId, String tenantId) {
+        String sql = "UPDATE users SET active_tenant_id = ?::uuid, updated_at = CURRENT_TIMESTAMP WHERE id = ?::uuid";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, tenantId);
+            ps.setString(2, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            logger.error("Error updating active tenant for user {} to {}: {}", userId, tenantId, e.getMessage(), e);
+            return false;
+        }
+    }
+
     public Tenant findById(String tenantId) {
         String sql = """
-            SELECT t.id, t.name, t.display_name, t.owner_user_id, t.status, t.created_at, t.updated_at,
+            SELECT t.id, t.display_name, t.owner_user_id, t.status, t.created_at, t.updated_at,
                    u.username AS owner_username, u.email AS owner_email
             FROM tenants t
             LEFT JOIN users u ON t.owner_user_id = u.id
@@ -98,29 +131,23 @@ public class TenantDao {
         return null;
     }
 
-    public Tenant createTenant(String name, String displayName, String ownerUserId, String status) {
+    public Tenant createTenant(String displayName, String ownerUserId, String status) {
         String newId = UUID.randomUUID().toString();
         String sql = """
-            INSERT INTO tenants (id, name, display_name, owner_user_id, status, created_at, updated_at)
-            VALUES (?::uuid, ?, ?, ?::uuid, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            INSERT INTO tenants (id, display_name, owner_user_id, status, created_at, updated_at)
+            VALUES (?::uuid, ?, ?::uuid, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """;
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, newId);
-            ps.setString(2, name);
-            ps.setString(3, displayName != null && !displayName.isBlank() ? displayName : name);
+            ps.setString(2, displayName);
             if (ownerUserId != null && !ownerUserId.isBlank()) {
-                ps.setString(4, ownerUserId);
+                ps.setString(3, ownerUserId);
             } else {
-                ps.setNull(4, java.sql.Types.OTHER);
+                ps.setNull(3, java.sql.Types.OTHER);
             }
-            ps.setString(5, status != null ? status : "ACTIVE");
+            ps.setString(4, status != null ? status : "ACTIVE");
             ps.executeUpdate();
-
-            // Link owner user in user_tenants and active_tenant_id if set
-            if (ownerUserId != null && !ownerUserId.isBlank()) {
-                updateOwnerUserMapping(conn, newId, ownerUserId);
-            }
 
             return findById(newId);
         } catch (SQLException e) {
@@ -129,28 +156,23 @@ public class TenantDao {
         return null;
     }
 
-    public boolean updateTenant(String tenantId, String name, String displayName, String ownerUserId, String status) {
+    public boolean updateTenant(String tenantId, String displayName, String ownerUserId, String status) {
         String sql = """
             UPDATE tenants
-            SET name = ?, display_name = ?, owner_user_id = ?::uuid, status = ?, updated_at = CURRENT_TIMESTAMP
+            SET display_name = ?, owner_user_id = ?::uuid, status = ?, updated_at = CURRENT_TIMESTAMP
             WHERE id = ?::uuid
             """;
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, name);
-            ps.setString(2, displayName != null && !displayName.isBlank() ? displayName : name);
+            ps.setString(1, displayName);
             if (ownerUserId != null && !ownerUserId.isBlank()) {
-                ps.setString(3, ownerUserId);
+                ps.setString(2, ownerUserId);
             } else {
-                ps.setNull(3, java.sql.Types.OTHER);
+                ps.setNull(2, java.sql.Types.OTHER);
             }
-            ps.setString(4, status);
-            ps.setString(5, tenantId);
+            ps.setString(3, status);
+            ps.setString(4, tenantId);
             boolean updated = ps.executeUpdate() > 0;
-
-            if (ownerUserId != null && !ownerUserId.isBlank()) {
-                updateOwnerUserMapping(conn, tenantId, ownerUserId);
-            }
 
             return updated;
         } catch (SQLException e) {
@@ -171,34 +193,9 @@ public class TenantDao {
         }
     }
 
-    private void updateOwnerUserMapping(Connection conn, String tenantId, String ownerUserId) throws SQLException {
-        // Clear previous user_tenants mapping for this tenant
-        try (PreparedStatement psDel = conn.prepareStatement("DELETE FROM user_tenants WHERE tenant_id = ?::uuid")) {
-            psDel.setString(1, tenantId);
-            psDel.executeUpdate();
-        }
-
-        // Insert single owner into user_tenants
-        String psInsSql = "INSERT INTO user_tenants (user_id, tenant_id, role) VALUES (?::uuid, ?::uuid, 'TENANT_ADMIN') ON CONFLICT DO NOTHING";
-        try (PreparedStatement psIns = conn.prepareStatement(psInsSql)) {
-            psIns.setString(1, ownerUserId);
-            psIns.setString(2, tenantId);
-            psIns.executeUpdate();
-        }
-
-        // Set active_tenant_id for owner user
-        String psActiveSql = "UPDATE users SET active_tenant_id = ?::uuid WHERE id = ?::uuid";
-        try (PreparedStatement psActive = conn.prepareStatement(psActiveSql)) {
-            psActive.setString(1, tenantId);
-            psActive.setString(2, ownerUserId);
-            psActive.executeUpdate();
-        }
-    }
-
     private Tenant mapTenant(ResultSet rs) throws SQLException {
         Tenant t = new Tenant();
         t.setId(rs.getString("id"));
-        t.setName(rs.getString("name"));
         t.setDisplayName(rs.getString("display_name"));
         t.setOwnerUserId(rs.getString("owner_user_id"));
         t.setOwnerUsername(rs.getString("owner_username"));

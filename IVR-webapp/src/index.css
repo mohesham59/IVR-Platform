@@ -19,6 +19,16 @@
   --radius: 12px;
 }
 
+html.dark {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+html.dark img, 
+html.dark video,
+html.dark .no-invert {
+  filter: invert(1) hue-rotate(180deg);
+}
+
 * {
   box-sizing: border-box;
 }

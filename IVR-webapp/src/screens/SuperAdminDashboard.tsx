@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, Building2, Users, CreditCard, Activity, ScrollText,
@@ -96,7 +96,38 @@ const activityColor: Record<string, string> = {
 export default function SuperAdminDashboard({ onLogout }: { onLogout: () => void }) {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [darkMode, setDarkMode] = useState(false)
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark')
+  const [currentUser, setCurrentUser] = useState<{username: string, email: string, isSuperadmin: boolean} | null>(null)
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
+  }, [darkMode])
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem('nexus_jwt_token')
+        const headers = token ? { Authorization: `Bearer ${token}` } : {}
+        let res = await fetch('/api/v1/auth/me', { headers }).catch(() => null)
+        if (!res || !res.ok) {
+          res = await fetch('http://localhost:8081/nexusivr-ai-engine/api/v1/auth/me', { headers })
+        }
+        const data = await res.json()
+        if (data.success && data.user) {
+          setCurrentUser(data.user)
+        }
+      } catch (e) {
+        console.error('Failed to fetch user', e)
+      }
+    }
+    fetchUser()
+  }, [])
 
   const sidebarW = collapsed ? 'w-16' : 'w-60'
 
@@ -187,11 +218,11 @@ export default function SuperAdminDashboard({ onLogout }: { onLogout: () => void
             {/* Profile */}
             <button className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-lg hover:bg-[#F3F4F6] transition-colors">
               <div className="w-7 h-7 rounded-full bg-[#2563EB] flex items-center justify-center text-white text-xs font-bold">
-                SA
+                {currentUser?.username ? currentUser.username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'SA'}
               </div>
               <div className="text-left hidden sm:block">
-                <div className="text-[#1F2937] text-xs font-semibold leading-tight">Super Admin</div>
-                <div className="text-[#9CA3AF] text-[10px]">admin@nexusivr.io</div>
+                <div className="text-[#1F2937] text-xs font-semibold leading-tight">{currentUser?.username || 'Super Admin'}</div>
+                <div className="text-[#9CA3AF] text-[10px]">{currentUser ? (currentUser.isSuperadmin ? 'Super Admin' : 'Tenant Admin') : 'Super Admin'}</div>
               </div>
               <ChevronDown className="w-3 h-3 text-[#9CA3AF]" />
             </button>
