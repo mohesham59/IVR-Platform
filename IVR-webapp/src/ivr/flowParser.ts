@@ -162,7 +162,7 @@ export function safeNodeType(raw: string | undefined): NodeType {
 }
 
 function makeNode(id: string, type: NodeType, x: number, y: number, title: string, subtitle: string): FlowNode {
-  const def = NODE_DEFS[type]
+  const def = NODE_DEFS[type] || { label: type, description: '', outputPorts: [] }
   return {
     id,
     type,
@@ -173,7 +173,7 @@ function makeNode(id: string, type: NodeType, x: number, y: number, title: strin
     status: 'valid',
     collapsed: false,
     disabled: false,
-    ports: def.outputPorts.map(p => ({ ...p, type: 'output' as const })),
+    ports: (def.outputPorts || []).map(p => ({ ...p, type: 'output' as const })),
   }
 }
 
