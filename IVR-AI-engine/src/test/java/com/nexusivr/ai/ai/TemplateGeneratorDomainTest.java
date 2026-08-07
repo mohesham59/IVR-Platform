@@ -12,13 +12,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class TemplateGeneratorDomainTest {
 
     @Test
-    void testGenericDomainWithoutDepartmentsThrowsHonestError() {
+    void testGenericDomainWithoutDepartmentsSucceedsInsteadOfThrowing() {
         String prompt = "design a teacher assistance IVR";
         String expectedDomain = DomainDetector.detect(prompt);
         assertEquals("generic", expectedDomain, "Non-standard prompt should default to generic domain");
 
         TemplateGenerator generator = new TemplateGenerator(expectedDomain);
-        assertThrows(ProviderException.class, () ->
+        AiResponse response = assertDoesNotThrow(() ->
                 generator.generateStructuredResponse(
                         "System prompt with guidelines",
                         prompt,
@@ -26,6 +26,11 @@ class TemplateGeneratorDomainTest {
                         expectedDomain
                 )
         );
+        assertNotNull(response);
+        assertTrue(response.isTemplateFallback());
+        String vxml = response.getContent();
+        assertNotNull(vxml);
+        assertTrue(vxml.contains("<vxml"));
     }
 
     @Test

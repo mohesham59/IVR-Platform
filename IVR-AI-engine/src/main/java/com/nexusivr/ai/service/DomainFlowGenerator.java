@@ -22,16 +22,7 @@ public class DomainFlowGenerator {
         List<String> extractedDepts = DepartmentExtractor.extractDepartments(description);
         boolean isGeneric = activeDomain == null || activeDomain.isBlank() || "generic".equalsIgnoreCase(activeDomain.trim());
 
-        // Requirement 2: If domain detection failed ('generic') AND department extraction yields NOTHING usable, throw error
-        if (isGeneric && extractedDepts.isEmpty()) {
-            throw new com.nexusivr.ai.service.exception.ProviderException(
-                    "template-generator",
-                    "I couldn't reach any AI provider and don't have enough information to build a fallback for this request. Please try again shortly, or provide more details (departments, menu options) so I can build something without AI assistance.",
-                    com.nexusivr.ai.service.exception.ProviderException.FailureReason.PROVIDER_ERROR
-            );
-        }
-
-        // Requirement 1a & 1b: If custom extracted departments exist, build menu options and node names using THOSE terms
+        // If custom extracted departments exist, build menu options and node names using THOSE terms
         if (!extractedDepts.isEmpty()) {
             return generateCustomDepartmentsVxml(activeDomain, description, extractedDepts);
         }

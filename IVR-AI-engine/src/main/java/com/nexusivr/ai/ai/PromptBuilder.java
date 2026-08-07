@@ -208,6 +208,7 @@ public class PromptBuilder {
         - Minimize forms: use the fewest forms necessary.
         - Every form reachable from #start.
         - Every leaf path ends with <transfer dest="..."/> or <disconnect/>.
+        - SINGLE DISCONNECT POINT RULE: All call-terminating paths (hang-ups, goodbyes, post-transaction closings) must <goto> a single shared closing/end form rather than each containing their own <disconnect/>. Only one form in the entire flow should contain <disconnect/>.
         - <transfer dest="..."> RULES:
           1. NEVER use free-text human/role/department names (like "Billing Dept" or "Front Desk") as the transfer destination.
           2. Use dialable extensions or SIP URIs.

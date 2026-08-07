@@ -64,4 +64,14 @@ public class PromptBuilderTest {
         String emptyPrompt = promptBuilder.buildSummarizationPrompt(List.of());
         assertTrue(emptyPrompt.contains("[No messages recorded]"));
     }
+
+    @Test
+    @DisplayName("Should contain single disconnect point rule in flow generator system instructions")
+    void testFlowGeneratorSystemInstructionContainsSingleDisconnectRule() {
+        String instruction = PromptBuilder.FLOW_GENERATOR_SYSTEM_INSTRUCTION;
+        assertNotNull(instruction);
+        assertTrue(instruction.contains("SINGLE DISCONNECT POINT RULE"), "Instructions must contain SINGLE DISCONNECT POINT RULE");
+        assertTrue(instruction.contains("All call-terminating paths"), "Instructions must explain call-terminating paths funnelling to a single shared closing/end form");
+        assertTrue(instruction.contains("Only one form in the entire flow should contain <disconnect/>"), "Instructions must require only one disconnect tag");
+    }
 }
