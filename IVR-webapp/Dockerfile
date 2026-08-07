@@ -1,7 +1,10 @@
 # Stage 1: Build the React application
-FROM node:18-alpine AS build
+FROM node:22-alpine AS build
 
 WORKDIR /app
+
+# Install native build tools required for some npm packages (e.g. node-gyp, inotify)
+RUN apk add --no-cache python3 make g++
 
 # Install dependencies
 COPY package*.json ./
