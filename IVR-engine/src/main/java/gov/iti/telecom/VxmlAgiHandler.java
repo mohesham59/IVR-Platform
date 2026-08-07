@@ -440,10 +440,21 @@ public class VxmlAgiHandler extends BaseAgiScript {
                     String extractedResult = responseBody;
                     if (jsonPath != null && !jsonPath.isEmpty()) {
                         try {
-                            com.google.gson.JsonObject jsonResponse = com.google.gson.JsonParser
-                                    .parseString(responseBody).getAsJsonObject();
-                            if (jsonResponse.has(jsonPath)) {
-                                extractedResult = jsonResponse.get(jsonPath).getAsString();
+                            // Support top-level fields and dot-nested paths,
+                            // e.g. "current_weather.temperature".
+                            com.google.gson.JsonElement element = com.google.gson.JsonParser
+                                    .parseString(responseBody);
+                            boolean found = true;
+                            for (String part : jsonPath.split("\\.")) {
+                                if (element == null || !element.isJsonObject()
+                                        || !element.getAsJsonObject().has(part)) {
+                                    found = false;
+                                    break;
+                                }
+                                element = element.getAsJsonObject().get(part);
+                            }
+                            if (found && element != null && element.isJsonPrimitive()) {
+                                extractedResult = element.getAsString();
                             }
                         } catch (Exception e) {
                             System.err.println("[VxmlAgiHandler] <api> Failed to parse JSON path: " + jsonPath);
@@ -514,6 +525,13 @@ public class VxmlAgiHandler extends BaseAgiScript {
                         session.setVariable(varKey, inputStr.toString());
                     }
                     System.out.println("[VxmlAgiHandler] Field " + varKey + " input: " + inputStr.toString());
+
+                    // Run the field's <filled> branch (e.g. confirmation prompt or <goto>)
+                    org.w3c.dom.Element followUp = findChildElement(child, "filled");
+                    if (followUp != null) {
+                        renderFormElement(followUp, channel, session);
+                        return true;
+                    }
                 }
             } else if ("ai".equals(tagName)) {
                 String role = child.getAttribute("role");

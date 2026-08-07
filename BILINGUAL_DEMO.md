@@ -4,11 +4,17 @@ End-to-end test of the FastAGI VXML renderer with an Arabic/English IVR scenario
 
 ## What it covers
 
+The call starts with a **language selection** (`lang_select` menu, the engine always renders the
+first `<menu>`): `1` = English, `2` = Arabic. It sets the session `language` variable and the main
+menu is then spoken only in the chosen language (the menu is a `<form>` using `<if>` on
+`${language}`). Subsequent prompts keep their `xml:lang` / session-language behavior.
+
 | Menu digit | Scenario | Renderer features exercised |
 |---|---|---|
+| L (1/2) | Language select | First `<menu>` + `<choice>`, `<assign>` `language`, `<goto>` |
 | 1 | Book | `field` + `grammar` (DTMF, `#`-terminated), `${var}` substitution |
 | 2 | Account | `assign`/`var`, session `language` switch, `if`/`then`/`else`, `${var}` substitution |
-| 3 | API | `api` (HTTP GET), `jsonPath`, `saveResultAs`, result spoken via substitution |
+| 3 | API | `api` (HTTP GET), dot-nested `jsonPath`, `saveResultAs`, spoken forecast, `field`→`filled`→`goto` back to the menu |
 | 4 | Record | `record` (beep + DTMF term), recorded path returned |
 | 5 | AI assistant | `ai` → AGI record → Google ASR → Ollama decision → jump to dialog |
 | 6 | Transfer | `transfer` with `filled`/`catch` (DIALSTATUS) |
@@ -30,17 +36,22 @@ python3 tools/agi_sim.py --port 4573 --vxml bilingual_demo --digits <d> \
   --ai-wav /tmp/opencode/ai_balance.wav --out /tmp/opencode/sim/bil_<d>.log
 ```
 
+The first digit is always the language choice (`1` = English, `2` = Arabic), followed by the menu
+digit. Digits are separated with `#` because the simulator sends keys back-to-back while the
+`field` inter-digit window is 5s — a real caller just pauses (or presses `#`).
+
 | digits | Expected |
 |---|---|
-| `1` | Menu spoken in Arabic then English; `VXML_RESULT_user_choice=1` |
-| `12` | field collects `2`; `VXML_RESULT_movie_selection=2`; "You selected option 2" |
-| `2` | Arabic session switch ("تغيير اللغة إلى العربية. رصيدك الحالي هو 50 جنيه"), `رصيدك منخفض.` (50 < 100 branch), `الحساب نشط.`, then back to English; `VXML_RESULT_balance=50`, `VXML_RESULT_status=active`, `VXML_RESULT_language=en` |
-| `3` | Live `api.open-meteo.com` call; `VXML_RESULT_weather_timezone=Europe/Berlin`; spoken in both languages |
-| `4` | `VXML_RESULT_voice_msg` points to a `.wav` recording |
-| `5` | beep → ASR "balance" → Ollama `{"status":"FINAL","reply":...,"action":"balance_info"}` → "Jumping to dialog: balance_info" → "Your current balance is five thousand pounds." |
-| `6` | `DIALSTATUS=CHANUNAVAIL` (6001 not registered) → catch branch "The agent is unavailable. Goodbye." |
-| `7` | Engine log `Audio file not found, using TTS fallback for: welcome_custom.wav`; fallback text spoken in both languages |
-| `0` | "Thank you for calling. Goodbye." then hangup |
+| `1` | Language menu spoken in Arabic then English; `1` → English; `VXML_RESULT_user_choice=1` |
+| `2` | `2` → Arabic; main menu greeting spoken in Arabic only |
+| `1#1#2#` | EN menu → 1 (book) → field collects `2`; `VXML_RESULT_movie_selection=2`; `filled` runs → "You selected option 2. Booking confirmed. Goodbye." |
+| `1#2#` | EN menu → 2 (account): Arabic session switch ("تغيير اللغة إلى العربية. رصيدك الحالي هو 50 جنيه"), `رصيدك منخفض.` (50 < 100 branch), `الحساب نشط.`, then back to English; `VXML_RESULT_balance=50`, `VXML_RESULT_status=active`, `VXML_RESULT_language=en` |
+| `1#3#0#` | EN menu → 3 (API): live Cairo forecast via `api.open-meteo.com` (`latitude=30.0444&longitude=31.2357`): `VXML_RESULT_weather_temp=<°C>` (e.g. `27.4`), `VXML_RESULT_weather_code=0`; speaks "The current temperature in Cairo is 27.4 degrees Celsius" + condition ("The sky is clear.") in both languages, then "Press 0 to return to the main menu"; `0` (`VXML_RESULT_api_return=0`) `<goto>`s back to the main menu instead of ending the call |
+| `1#4#` | EN menu → 4 (record): `VXML_RESULT_voice_msg` points to a `.wav` recording |
+| `1#5#` | EN menu → 5 (AI): beep → ASR "balance" → Ollama `{"status":"FINAL","reply":...,"action":"balance_info"}` → "Jumping to dialog: balance_info" → bilingual balance prompt |
+| `1#6#` | EN menu → 6 (transfer): `DIALSTATUS=CHANUNAVAIL` (6001 not registered) → catch branch "The agent is unavailable. Goodbye." |
+| `1#7#` | EN menu → 7 (audio): engine log `Audio file not found, using TTS fallback for: welcome_custom.wav`; fallback text spoken in both languages |
+| `2#0#` | AR menu → 0 (exit): "Thank you for calling. Goodbye." + Arabic goodbye, then hangup |
 
 Engine logs (`docker logs ivr-engine --since 5m`) show `Loading VXML from file: /app/scenarios/bilingual_demo.vxml`, `Validation complete. Errors: 0`, and per-step `Speaking prompt: ...` lines.
 
@@ -49,8 +60,10 @@ Engine logs (`docker logs ivr-engine --since 5m`) show `Loading VXML from file: 
 1. Publish `bilingual_demo` (or drop the file under `IVR-engine/scenarios/`).
 2. If the scenario name was already loaded once, restart the engine first (the scenario cache has no invalidation):
    `docker compose restart ivr-engine`
-3. Add a temporary dialplan entry (e.g. extension `560` → `Answer()` → `AGI(agi://127.0.0.1:4573/bilingual_demo)`), then:
-   `asterisk -rx "channel originate Local/560@default/n extension s@default application AGI agi://127.0.0.1:4573/bilingual_demo"`
+3. The scenario is already wired to a SIP extension in the default dialplan: **dial `507`** from
+   your SIP client (e.g. extension `1001`). It maps to `VXML_FILE=bilingual_demo` →
+   `AGI(agi://127.0.0.1:4573/default)`. For a headless originate test:
+   `docker exec ivr-asterisk asterisk -rx "channel originate Local/507@default/n extension 507@default"`
 
 ## Docker fixes required to make this pass (already applied)
 
@@ -66,6 +79,14 @@ Engine logs (`docker logs ivr-engine --since 5m`) show `Loading VXML from file: 
    (`AttributeError ... Did you mean: 'recognize_azure'?`). Fix in `IVR-engine/Dockerfile`:
    pin `SpeechRecognition==3.10.1` and install `typing_extensions` (required by the google
    recognizer, not pulled in with `--no-deps`).
+
+## Engine fixes required by this scenario (already applied)
+
+1. **`<api>` `jsonPath` now supports dot-nested paths.** Previously only top-level fields were
+   read, so the forecast's `current_weather.temperature` could not be extracted.
+2. **`<field>` now runs its `<filled>` branch.** Previously a field stored the DTMF input but
+   never executed `<filled>` (the booking confirmation and the return-to-menu `<goto>` were
+   silently skipped).
 
 ## Troubleshooting
 

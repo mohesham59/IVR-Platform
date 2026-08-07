@@ -7,10 +7,10 @@
        A bilingual (Arabic/English) IVR scenario that exercises every feature
        the FastAGI renderer supports:
 
-       [menu] + [choice]          bilingual DTMF main menu
+       [menu] + [choice]          language selection + DTMF routing (first menu)
        [prompt xml:lang=ar|en]    per-prompt TTS language selection
-       [assign] / [var]           session variables
-       [if][then][else]           condition evaluation
+       [assign] / [var]           session variables (incl. 'language' choice)
+       [if][then][else]           condition evaluation (language-aware menu)
        [field] + [grammar]        DTMF digit collection, '#' terminates
        [api]                      external HTTP(S) GET + jsonPath + saveResultAs
        [record]                   voice message recording
@@ -24,28 +24,59 @@
        Test guide: see BILINGUAL_DEMO.md (repo root).
        ======================================================================== -->
 
-  <!-- The renderer renders the FIRST [menu] and ignores leading [form] welcome
-       blocks, so the bilingual greeting lives inside the menu prompts. -->
-  <menu id="main_menu" dtmf="true">
-    <prompt xml:lang="ar">
-      مرحباً بك في خدمة الرد الآلي التجريبية. اضغط 1 للحجز، 2 لرصيد الحساب،
-      3 لاختبار واجهة برمجية خارجية، 4 لتسجيل رسالة صوتية، 5 للمساعد الذكي،
-      6 للتحويل إلى موظف، 7 لاختبار الصوت المخصص، أو 0 للإنهاء.
-    </prompt>
-    <prompt xml:lang="en">
-      Welcome to the integrated IVR demo. Press 1 for booking, 2 for account balance,
-      3 for an external API test, 4 to record a voice message, 5 for the AI assistant,
-      6 to transfer to an agent, 7 to test custom audio, or 0 to exit.
-    </prompt>
-    <choice dtmf="1" next="#book"/>
-    <choice dtmf="2" next="#account"/>
-    <choice dtmf="3" next="#api_test"/>
-    <choice dtmf="4" next="#record_msg"/>
-    <choice dtmf="5" next="#assist"/>
-    <choice dtmf="6" next="#transfer"/>
-    <choice dtmf="7" next="#audio_test"/>
-    <choice dtmf="0" next="#end"/>
+  <!-- The renderer always starts at the FIRST [menu], so the customer first
+       chooses their preferred language; the rest of the call proceeds in it. -->
+  <menu id="lang_select" dtmf="true">
+    <prompt xml:lang="ar">مرحباً بك في خدمة الرد الآلي التجريبية. اضغط 1 للإنجليزية أو اضغط 2 للعربية.</prompt>
+    <prompt xml:lang="en">Welcome to the integrated IVR demo. Press 1 for English or press 2 for Arabic.</prompt>
+    <choice dtmf="1" next="#lang_en"/>
+    <choice dtmf="2" next="#lang_ar"/>
   </menu>
+
+  <form id="lang_en">
+    <block>
+      <assign name="language" expr="'en'"/>
+      <goto next="#main_menu"/>
+    </block>
+  </form>
+
+  <form id="lang_ar">
+    <block>
+      <assign name="language" expr="'ar'"/>
+      <goto next="#main_menu"/>
+    </block>
+  </form>
+
+  <!-- Main menu as a form so it can be rendered in the chosen language.
+       The greeting uses the session 'language' variable and the field
+       routes the pressed digit to the matching dialog. -->
+  <form id="main_menu">
+    <block>
+      <if cond="'${language}' == 'ar'">
+        <then>
+          <prompt>مرحباً بك. اضغط 1 للحجز، 2 لرصيد الحساب، 3 لاختبار واجهة برمجية خارجية، 4 لتسجيل رسالة صوتية، 5 للمساعد الذكي، 6 للتحويل إلى موظف، 7 لاختبار الصوت المخصص، أو 0 للإنهاء.</prompt>
+        </then>
+      </if>
+      <if cond="'${language}' != 'ar'">
+        <then>
+          <prompt>Welcome. Press 1 for booking, 2 for account balance, 3 for an external API test, 4 to record a voice message, 5 for the AI assistant, 6 to transfer to an agent, 7 to test custom audio, or 0 to exit.</prompt>
+        </then>
+      </if>
+    </block>
+    <field name="menu_choice" type="digits">
+      <grammar>1 2 3 4 5 6 7 0</grammar>
+      <filled>
+        <if cond="'${menu_choice}' == '1'"><then><goto next="#book"/></then></if>
+        <if cond="'${menu_choice}' == '2'"><then><goto next="#account"/></then></if>
+        <if cond="'${menu_choice}' == '3'"><then><goto next="#api_test"/></then></if>
+        <if cond="'${menu_choice}' == '4'"><then><goto next="#record_msg"/></then></if>
+        <if cond="'${menu_choice}' == '5'"><then><goto next="#assist"/></then></if>
+        <if cond="'${menu_choice}' == '6'"><then><goto next="#transfer"/></then></if>
+        <if cond="'${menu_choice}' == '7'"><then><goto next="#audio_test"/></then></if>
+        <if cond="'${menu_choice}' == '0'"><then><goto next="#end"/></then></if>
+      </filled>
+    </field>
+  </form>
 
   <!-- ====================================================================
        Option 1: [field] + [grammar] DTMF input collection.
@@ -107,20 +138,109 @@
        Option 3: [api] external HTTP(S) GET.
        url         : http/https endpoint (other schemes are blocked)
        var         : optional; appends ?var=<session var> to the URL
-       jsonPath    : optional; extracts a top-level JSON field
+       jsonPath    : optional; extracts a top-level or dot-nested JSON field
        saveResultAs: stores the result in a session variable
-       Result is spoken back via ${weather_timezone} substitution.
+       Live Cairo forecast (open-meteo): speaks temperature + weather-code
+       description, then offers to return to the main menu so the call
+       does not end.
        ==================================================================== -->
   <form id="api_test">
     <block>
-      <prompt xml:lang="en">Testing an external weather API. Please wait.</prompt>
-      <prompt xml:lang="ar">اختبار واجهة برمجية للطقس. أرجو الانتظار.</prompt>
-      <api url="https://api.open-meteo.com/v1/forecast?latitude=52.52&amp;longitude=13.41&amp;current_weather=true&amp;timezone=auto"
-           saveResultAs="weather_timezone"
-           jsonPath="timezone"/>
-      <prompt xml:lang="en">The weather service reports the timezone: ${weather_timezone}.</prompt>
-      <prompt xml:lang="ar">خدمة الطقس تخبرنا بأن المنطقة الزمنية هي: ${weather_timezone}.</prompt>
+      <prompt xml:lang="en">Testing the live weather forecast for Cairo, Egypt. Please wait.</prompt>
+      <prompt xml:lang="ar">اختبار توقعات الطقس الفورية للقاهرة في مصر. أرجو الانتظار.</prompt>
+      <api url="https://api.open-meteo.com/v1/forecast?latitude=30.0444&amp;longitude=31.2357&amp;current_weather=true"
+           saveResultAs="weather_temp" jsonPath="current_weather.temperature"/>
+      <api url="https://api.open-meteo.com/v1/forecast?latitude=30.0444&amp;longitude=31.2357&amp;current_weather=true"
+           saveResultAs="weather_code" jsonPath="current_weather.weathercode"/>
+      <prompt xml:lang="en">The current temperature in Cairo is ${weather_temp} degrees Celsius.</prompt>
+      <prompt xml:lang="ar">درجة الحرارة الآن في القاهرة هي ${weather_temp} درجة مئوية.</prompt>
+      <if cond="'${weather_code}' == '0'">
+        <then>
+          <prompt xml:lang="en">The sky is clear.</prompt>
+          <prompt xml:lang="ar">السماء صافية.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '1'">
+        <then>
+          <prompt xml:lang="en">It is mostly clear.</prompt>
+          <prompt xml:lang="ar">السماء صافية غالباً.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '2'">
+        <then>
+          <prompt xml:lang="en">It is partly cloudy.</prompt>
+          <prompt xml:lang="ar">يوجد بعض الغيوم.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '3'">
+        <then>
+          <prompt xml:lang="en">The sky is overcast.</prompt>
+          <prompt xml:lang="ar">السماء ملبدة بالغيوم.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '45'">
+        <then>
+          <prompt xml:lang="en">There is fog.</prompt>
+          <prompt xml:lang="ar">يوجد ضباب.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '48'">
+        <then>
+          <prompt xml:lang="en">There is fog with rime.</prompt>
+          <prompt xml:lang="ar">يوجد ضباب متجمد.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '61'">
+        <then>
+          <prompt xml:lang="en">There is light rain.</prompt>
+          <prompt xml:lang="ar">هناك أمطار خفيفة.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '63'">
+        <then>
+          <prompt xml:lang="en">There is moderate rain.</prompt>
+          <prompt xml:lang="ar">هناك أمطار متوسطة.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '65'">
+        <then>
+          <prompt xml:lang="en">There is heavy rain.</prompt>
+          <prompt xml:lang="ar">هناك أمطار غزيرة.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '80'">
+        <then>
+          <prompt xml:lang="en">There are light rain showers.</prompt>
+          <prompt xml:lang="ar">هناك زخات مطر خفيفة.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '81'">
+        <then>
+          <prompt xml:lang="en">There are moderate rain showers.</prompt>
+          <prompt xml:lang="ar">هناك زخات مطر متوسطة.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '82'">
+        <then>
+          <prompt xml:lang="en">There are violent rain showers.</prompt>
+          <prompt xml:lang="ar">هناك زخات مطر عنيفة.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '95'">
+        <then>
+          <prompt xml:lang="en">There is a thunderstorm.</prompt>
+          <prompt xml:lang="ar">توجد عاصفة رعدية.</prompt>
+        </then>
+      </if>
+      <prompt xml:lang="en">Press 0 to return to the main menu.</prompt>
+      <prompt xml:lang="ar">اضغط 0 للعودة إلى القائمة الرئيسية.</prompt>
     </block>
+    <field name="api_return" type="digits">
+      <grammar>0</grammar>
+      <filled>
+        <goto next="#main_menu"/>
+      </filled>
+    </field>
   </form>
 
   <!-- ====================================================================
