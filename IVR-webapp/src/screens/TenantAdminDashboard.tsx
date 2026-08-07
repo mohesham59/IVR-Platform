@@ -3,11 +3,11 @@ import type { ReactElement } from 'react'
 import { NavLink } from 'react-router-dom'
 import { aiApi } from '../api/aiApi'
 import {
-  LayoutDashboard, Users, Phone, GitBranch, Volume2, Server,
+  LayoutDashboard, Building2, Users, Phone, GitBranch, Volume2, Server,
   Bot, Radio, History, BarChart3, Settings, Bell, Search,
   ChevronDown, LogOut, Clock, CheckCircle,
   PhoneMissed, PhoneCall, Headphones, List, ChevronLeft, ChevronRight,
-  ArrowUpRight, ArrowDownRight, Layers,
+  ArrowUpRight, ArrowDownRight, Layers, Moon,
 } from 'lucide-react'
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
@@ -61,7 +61,7 @@ const recentCalls = [
 
 const navItems = [
   { icon: <LayoutDashboard className="w-4 h-4" />, label: 'Dashboard', path: '/tenant/dashboard' },
-  { icon: <Users className="w-4 h-4" />, label: 'Users', path: '/tenant/users' },
+  { icon: <Building2 className="w-4 h-4" />, label: 'Companies', path: '/tenant/companies' },
   { icon: <Phone className="w-4 h-4" />, label: 'Phone Numbers', path: '/tenant/phone-numbers' },
   { icon: <Server className="w-4 h-4" />, label: 'SIP Extensions', path: '/tenant/sip-extensions' },
   { icon: <List className="w-4 h-4" />, label: 'Queues', path: '/tenant/queues' },
@@ -86,6 +86,73 @@ const statusIcon: Record<string, ReactElement> = {
 
 export default function TenantAdminDashboard({ onLogout }: { onLogout: () => void }) {
   const [collapsed, setCollapsed] = useState(false)
+  const [activeWorkspaceName, setActiveWorkspaceName] = useState<string>('Loading...')
+  const [currentUser, setCurrentUser] = useState<{username: string, isSuperadmin: boolean} | null>(null)
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark')
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
+  }, [darkMode])
+
+  useEffect(() => {
+    const fetchActiveWorkspace = async () => {
+      try {
+        const token = localStorage.getItem('nexus_jwt_token')
+        const headers = token ? { Authorization: `Bearer ${token}` } : {}
+        let res = await fetch('/api/v1/tenant/companies', { headers }).catch(() => null)
+        if (!res || !res.ok) {
+          res = await fetch('http://localhost:8081/nexusivr-ai-engine/api/v1/tenant/companies', { headers })
+        }
+        const data = await res.json()
+        if (data.success && Array.isArray(data.tenants)) {
+          const active = data.tenants.find((t: any) => t.isActive)
+          setActiveWorkspaceName(active ? active.displayName : 'No Active Workspace')
+        } else {
+          setActiveWorkspaceName('Unknown Workspace')
+        }
+      } catch (e) {
+        console.error('Failed to fetch workspace name', e)
+        setActiveWorkspaceName('Unknown Workspace')
+      }
+    }
+    fetchActiveWorkspace()
+
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem('nexus_jwt_token')
+        const headers = token ? { Authorization: `Bearer ${token}` } : {}
+        let res = await fetch('/api/v1/auth/me', { headers }).catch(() => null)
+        if (!res || !res.ok) {
+          res = await fetch('http://localhost:8081/nexusivr-ai-engine/api/v1/auth/me', { headers })
+        }
+        const data = await res.json()
+        if (data.success && data.user) {
+          setCurrentUser(data.user)
+        }
+      } catch (e) {
+        console.error('Failed to fetch user', e)
+      }
+    }
+    fetchUser()
+
+    const handleWorkspaceUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail && customEvent.detail.name) {
+        setActiveWorkspaceName(customEvent.detail.name)
+      } else {
+        fetchActiveWorkspace()
+      }
+    }
+
+    window.addEventListener('workspace-updated', handleWorkspaceUpdate)
+    return () => window.removeEventListener('workspace-updated', handleWorkspaceUpdate)
+  }, [])
   const [activeSessions, setActiveSessions] = useState(0)
 
   useEffect(() => {
@@ -116,7 +183,7 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
           {!collapsed && (
             <div>
               <div className="text-[#1F2937] font-bold text-sm leading-tight">NexusIVR</div>
-              <div className="text-[#9CA3AF] text-[10px]">Meridian Health</div>
+              <div className="text-[#9CA3AF] text-[10px]">{activeWorkspaceName}</div>
             </div>
           )}
         </div>
@@ -129,7 +196,7 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
                 <Layers className="w-3 h-3 text-white" />
               </div>
               <div className="min-w-0">
-                <p className="text-[#2563EB] text-[10px] font-bold truncate">Meridian Health</p>
+                <p className="text-[#2563EB] text-[10px] font-bold truncate">{activeWorkspaceName}</p>
                 <p className="text-[#93C5FD] text-[9px]">Enterprise Plan</p>
               </div>
             </div>
@@ -189,6 +256,14 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
               <span className="text-[#15803D] text-xs font-semibold">18 Active Calls</span>
             </div>
 
+            {/* Dark mode */}
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${darkMode ? 'bg-[#1F2937] text-white' : 'text-[#6B7280] hover:bg-[#F3F4F6]'}`}
+            >
+              <Moon className="w-4 h-4" />
+            </button>
+
             {/* Notifications */}
             <button className="relative w-8 h-8 rounded-lg flex items-center justify-center text-[#6B7280] hover:bg-[#F3F4F6] transition-colors">
               <Bell className="w-4 h-4" />
@@ -198,11 +273,11 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
             {/* Profile */}
             <button className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-lg hover:bg-[#F3F4F6] transition-colors">
               <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#2563EB] to-[#7C3AED] flex items-center justify-center text-white text-xs font-bold">
-                MH
+                {currentUser?.username ? currentUser.username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U'}
               </div>
               <div className="text-left hidden sm:block">
-                <div className="text-[#1F2937] text-xs font-semibold leading-tight">Marcus Webb</div>
-                <div className="text-[#9CA3AF] text-[10px]">Tenant Admin</div>
+                <div className="text-[#1F2937] text-xs font-semibold leading-tight">{currentUser?.username || 'User'}</div>
+                <div className="text-[#9CA3AF] text-[10px]">{currentUser?.isSuperadmin ? 'Super Admin' : 'Tenant Admin'}</div>
               </div>
               <ChevronDown className="w-3 h-3 text-[#9CA3AF]" />
             </button>

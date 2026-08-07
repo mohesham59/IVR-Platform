@@ -5,7 +5,7 @@ import SuperAdminDashboard from './screens/SuperAdminDashboard'
 import SuperAdminUsers from './screens/SuperAdminUsers'
 import SuperAdminCompanies from './screens/SuperAdminCompanies'
 import TenantAdminDashboard from './screens/TenantAdminDashboard'
-import UserManagement from './screens/UserManagement'
+import TenantCompanies from './screens/TenantCompanies'
 import PhoneNumbers from './screens/PhoneNumbers'
 import SIPExtensions from './screens/SIPExtensions'
 import QueueManagement from './screens/QueueManagement'
@@ -102,7 +102,7 @@ export default function App() {
         <Route key={slug} path={`/super-admin/${slug}`} element={<SuperAdminSection title={title} />} />
       ))}
       <Route path="/tenant/dashboard" element={<TenantAdminDashboard onLogout={logout} />} />
-      <Route path="/tenant/users" element={<UserManagement onLogout={logout} />} />
+      <Route path="/tenant/companies" element={<TenantCompanies onLogout={logout} />} />
       <Route path="/tenant/phone-numbers" element={<PhoneNumbers onLogout={logout} />} />
       <Route path="/tenant/sip-extensions" element={<SIPExtensions onLogout={logout} />} />
       <Route path="/tenant/queues" element={<QueueManagement onLogout={logout} />} />

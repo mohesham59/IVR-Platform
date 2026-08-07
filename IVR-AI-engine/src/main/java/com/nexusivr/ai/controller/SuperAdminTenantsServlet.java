@@ -35,8 +35,7 @@ public class SuperAdminTenantsServlet extends BaseAiServlet {
             for (TenantDao.Tenant t : tenants) {
                 Map<String, Object> map = new LinkedHashMap<>();
                 map.put("id", t.getId());
-                map.put("name", t.getName());
-                map.put("displayName", t.getDisplayName() != null ? t.getDisplayName() : t.getName());
+                map.put("displayName", t.getDisplayName());
                 map.put("ownerUserId", t.getOwnerUserId());
                 map.put("ownerUsername", t.getOwnerUsername() != null ? t.getOwnerUsername() : "—");
                 map.put("ownerEmail", t.getOwnerEmail() != null ? t.getOwnerEmail() : "—");
@@ -74,17 +73,16 @@ public class SuperAdminTenantsServlet extends BaseAiServlet {
             String requestBody = new BufferedReader(new InputStreamReader(req.getInputStream())).lines().collect(Collectors.joining("\n"));
             JsonObject json = new Gson().fromJson(requestBody, JsonObject.class);
 
-            if (json == null || !json.has("name") || json.get("name").getAsString().isBlank()) {
-                sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "Company name is required");
+            if (json == null || !json.has("displayName")) {
+                sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "Company displayName is required");
                 return;
             }
 
-            String name = json.get("name").getAsString().trim();
-            String displayName = json.has("displayName") ? json.get("displayName").getAsString().trim() : name;
+            String displayName = json.get("displayName").getAsString().trim();
             String ownerUserId = json.has("ownerUserId") ? json.get("ownerUserId").getAsString() : null;
             String status = json.has("status") ? json.get("status").getAsString() : "ACTIVE";
 
-            TenantDao.Tenant created = tenantDao.createTenant(name, displayName, ownerUserId, status);
+            TenantDao.Tenant created = tenantDao.createTenant(displayName, ownerUserId, status);
             if (created != null) {
                 Map<String, Object> result = new LinkedHashMap<>();
                 result.put("success", true);
@@ -112,12 +110,11 @@ public class SuperAdminTenantsServlet extends BaseAiServlet {
             }
 
             String tenantId = json.get("id").getAsString();
-            String name = json.has("name") ? json.get("name").getAsString().trim() : null;
-            String displayName = json.has("displayName") ? json.get("displayName").getAsString().trim() : name;
+            String displayName = json.has("displayName") ? json.get("displayName").getAsString().trim() : null;
             String ownerUserId = json.has("ownerUserId") ? json.get("ownerUserId").getAsString() : null;
             String status = json.has("status") ? json.get("status").getAsString() : "ACTIVE";
 
-            boolean updated = tenantDao.updateTenant(tenantId, name, displayName, ownerUserId, status);
+            boolean updated = tenantDao.updateTenant(tenantId, displayName, ownerUserId, status);
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("success", updated);
             result.put("message", updated ? "Company updated successfully" : "Failed to update company");

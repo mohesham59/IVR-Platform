@@ -1,7 +1,7 @@
 -- ============================================================================
 -- NexusIVR Authentication & Multi-Tenant Schema
 -- PostgreSQL 15+
--- Tables: tenants, users, user_tenants
+-- Tables: tenants, users
 -- ============================================================================
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
@@ -11,10 +11,9 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS tenants (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name          VARCHAR(255) NOT NULL DEFAULT 'Default Tenant',
     display_name  VARCHAR(255),
     owner_user_id UUID,
-    status        VARCHAR(20) NOT NULL DEFAULT 'ACTIVE'
+    status        VARCHAR(20) NOT NULL DEFAULT 'INACTIVE'
         CHECK (status IN ('ACTIVE', 'INACTIVE', 'SUSPENDED')),
     created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -25,9 +24,9 @@ CREATE TABLE IF NOT EXISTS tenants (
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS users (
     id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    active_tenant_id UUID REFERENCES tenants(id) ON DELETE SET NULL,
+    active_tenant_id UUID REFERENCES tenants(id) ON DELETE SET NULL DEFAULT NULL,
     email            VARCHAR(255) UNIQUE NOT NULL,
-    password_hash    TEXT NOT NULL,
+    password         TEXT NOT NULL,
     is_superadmin    BOOLEAN NOT NULL DEFAULT false,
     username         VARCHAR(100) NOT NULL,
     status           VARCHAR(20) NOT NULL DEFAULT 'ACTIVE'
@@ -37,38 +36,22 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Foreign key back to users for owner_user_id
+-- Foreign key back to users for owner_user_id (circular dependency handled)
 ALTER TABLE tenants DROP CONSTRAINT IF EXISTS fk_tenants_owner_user;
-ALTER TABLE tenants ADD CONSTRAINT fk_tenants_owner_user FOREIGN KEY (owner_user_id) REFERENCES users(id) ON DELETE SET NULL;
-
--- ---------------------------------------------------------------------------
--- 3. user_tenants (Junction table)
--- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS user_tenants (
-    user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    tenant_id  UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    role       VARCHAR(50) NOT NULL DEFAULT 'TENANT_ADMIN',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    PRIMARY KEY (user_id, tenant_id)
-);
+ALTER TABLE tenants ADD CONSTRAINT fk_tenants_owner_user FOREIGN KEY (owner_user_id) REFERENCES users(id) ON DELETE CASCADE;
 
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_active_tenant ON users(active_tenant_id);
 
--- Idempotently add display_name if it doesn't exist yet
-ALTER TABLE tenants ADD COLUMN IF NOT EXISTS display_name VARCHAR(255);
-
 -- ---------------------------------------------------------------------------
 -- Seed Data
--- SuperAdmin password: admin ($2a$10$wT5dYcR/RkZ.4qFh0y34j.vV8V3p5.Q5uWfL8F.Sg2Y8o9m4Nq6qS -> BCrypt hash for 'admin')
--- TenantUser password: user ($2a$10$4B9Y8gR5rE6S.7uT9vW8x.yZ1A2B3C4D5E6F7G8H9I0J1K2L3M4N5 -> BCrypt for 'user')
 -- ---------------------------------------------------------------------------
-INSERT INTO tenants (id, name, display_name, status, created_at, updated_at)
-VALUES ('11111111-1111-1111-1111-111111111111', 'Default Enterprise Tenant', 'Default Enterprise Tenant', 'ACTIVE', now(), now())
+INSERT INTO tenants (id, display_name, status, created_at, updated_at)
+VALUES ('11111111-1111-1111-1111-111111111111', 'Default Enterprise Tenant', 'ACTIVE', now(), now())
 ON CONFLICT (id) DO UPDATE SET display_name = COALESCE(tenants.display_name, EXCLUDED.display_name);
 
 -- SuperAdmin user
-INSERT INTO users (id, active_tenant_id, email, password_hash, is_superadmin, username, status, created_at, updated_at)
+INSERT INTO users (id, active_tenant_id, email, password, is_superadmin, username, status, created_at, updated_at)
 VALUES (
     'a0000000-0000-0000-0000-000000000001',
     NULL,
@@ -79,13 +62,13 @@ VALUES (
     'ACTIVE',
     now(),
     now()
-) ON CONFLICT (email) DO UPDATE SET active_tenant_id = NULL, password_hash = 'admin';
+) ON CONFLICT (email) DO UPDATE SET active_tenant_id = NULL, password = 'admin';
 
 -- Tenant User
-INSERT INTO users (id, active_tenant_id, email, password_hash, is_superadmin, username, status, created_at, updated_at)
+INSERT INTO users (id, active_tenant_id, email, password, is_superadmin, username, status, created_at, updated_at)
 VALUES (
     'a0000000-0000-0000-0000-000000000002',
-    NULL,
+    '11111111-1111-1111-1111-111111111111',
     'user@nexusivr.com',
     'user',
     false,
@@ -93,12 +76,7 @@ VALUES (
     'ACTIVE',
     now(),
     now()
-) ON CONFLICT (email) DO UPDATE SET active_tenant_id = NULL, password_hash = 'user';
+) ON CONFLICT (email) DO UPDATE SET active_tenant_id = EXCLUDED.active_tenant_id, password = 'user';
 
 -- Link owner user to tenant
 UPDATE tenants SET owner_user_id = 'a0000000-0000-0000-0000-000000000002' WHERE id = '11111111-1111-1111-1111-111111111111';
-
--- Link user to tenant junction table
-INSERT INTO user_tenants (user_id, tenant_id, role)
-VALUES ('a0000000-0000-0000-0000-000000000002', '11111111-1111-1111-1111-111111111111', 'TENANT_ADMIN')
-ON CONFLICT DO NOTHING;

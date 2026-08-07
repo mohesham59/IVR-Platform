@@ -163,8 +163,6 @@ export function analyzeGraph(nodes: FlowNode[], edges: FlowEdge[]): GraphDiagnos
     }
 
     const isMenuType = (t: string) => t === 'dtmf_menu' || t === 'menu' || t === 'MENU'
-    const isConditionType = (t: string) => t === 'condition' || t === 'CONDITION'
-
     // Detect converging paths (multiple distinct non-menu source nodes converging directly to non-menu, non-start node)
     if (ins.length >= 2 && !isMenuType(n.type) && n.type !== 'start') {
       const distinctSourceIds = Array.from(new Set(ins.map(e => e.sourceId)))
@@ -177,8 +175,8 @@ export function analyzeGraph(nodes: FlowNode[], edges: FlowEdge[]): GraphDiagnos
       }
     }
 
-    // Detect outgoing collapsed branching hubs (non-menu, non-condition node with >= 2 outgoing edges)
-    if (outs.length >= 2 && !isMenuType(n.type) && !isConditionType(n.type)) {
+    // Detect outgoing collapsed branching hubs (non-menu node with >= 2 outgoing edges)
+    if (outs.length >= 2 && !isMenuType(n.type)) {
       const distinctTargets = new Set(outs.map(e => e.targetId))
       if (distinctTargets.size >= 2) {
         if (!convergingNodes.some(c => c.id === n.id)) {
@@ -350,11 +348,6 @@ export function optimizeFlow(
     dtmf_menu: 2,
     dtmf_input: 2,
     api: 3,
-    database: 3,
-    hours: 3,
-    condition: 3,
-    queue: 4,
-    transfer: 4,
     voicemail: 4,
     end: 5
   }
