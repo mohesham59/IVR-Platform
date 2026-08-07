@@ -102,6 +102,12 @@ public class AiResponse {
         return templateFallback;
     }
 
+    public boolean isFallbackUsed() {
+        return (selectedProvider != null && !selectedProvider.isBlank() && !selectedProvider.equalsIgnoreCase(actualProviderUsed)) 
+                || templateFallback 
+                || (providerAttempts != null && providerAttempts.size() > 1);
+    }
+
     public String getFunctionName() {
         return functionName;
     }

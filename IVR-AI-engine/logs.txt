@@ -17,7 +17,7 @@ WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.13.0:compile[m [1m(default-compile)[m @ [36mnexusivr-ai-engine[0;1m ---[m
 [[1;34mINFO[m] Recompiling the module because of [1mchanged source code[m.
-[[1;34mINFO[m] Compiling 215 source files with javac [debug release 21] to target/classes
+[[1;34mINFO[m] Compiling 218 source files with javac [debug release 21] to target/classes
 [[1;34mINFO[m] /home/mohesham/Desktop/IVR-Platform/IVR-AI-engine/src/main/java/com/nexusivr/ai/model/IvrPlan.java: /home/mohesham/Desktop/IVR-Platform/IVR-AI-engine/src/main/java/com/nexusivr/ai/model/IvrPlan.java uses unchecked or unsafe operations.
 [[1;34mINFO[m] /home/mohesham/Desktop/IVR-Platform/IVR-AI-engine/src/main/java/com/nexusivr/ai/model/IvrPlan.java: Recompile with -Xlint:unchecked for details.
 [[1;34mINFO[m] 
@@ -40,820 +40,111 @@ WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
 [[1;34mINFO[m] [1m--- [0;32mcargo-maven3-plugin:1.10.13:run[m [1m(default-cli)[m @ [36mnexusivr-ai-engine[0;1m ---[m
 [[1;34mINFO[m] Resolved container artifact org.codehaus.cargo:cargo-core-container-tomcat:jar:1.10.13 for container tomcat10x
 [[1;34mINFO[m] Tomcat 10.x Embedded starting...
-Aug 06, 2026 7:37:02 PM org.apache.coyote.AbstractProtocol init
-INFO: Initializing ProtocolHandler ["http-nio-8080"]
-Aug 06, 2026 7:37:02 PM org.apache.catalina.core.StandardService startInternal
+Aug 07, 2026 12:42:36 PM org.apache.coyote.AbstractProtocol init
+INFO: Initializing ProtocolHandler ["http-nio-8081"]
+Aug 07, 2026 12:42:36 PM org.apache.catalina.core.StandardService startInternal
 INFO: Starting service [Tomcat]
-Aug 06, 2026 7:37:02 PM org.apache.catalina.core.StandardEngine startInternal
+Aug 07, 2026 12:42:36 PM org.apache.catalina.core.StandardEngine startInternal
 INFO: Starting Servlet engine: [Apache Tomcat/10.1.23]
-Aug 06, 2026 7:37:02 PM org.apache.coyote.AbstractProtocol start
-INFO: Starting ProtocolHandler ["http-nio-8080"]
-Aug 06, 2026 7:37:02 PM org.apache.catalina.startup.ContextConfig getDefaultWebXmlFragment
+Aug 07, 2026 12:42:36 PM org.apache.coyote.AbstractProtocol start
+INFO: Starting ProtocolHandler ["http-nio-8081"]
+Aug 07, 2026 12:42:36 PM org.apache.catalina.startup.ContextConfig getDefaultWebXmlFragment
 INFO: No global web.xml found
-Aug 06, 2026 7:37:03 PM org.apache.jasper.servlet.TldScanner scanJars
+Aug 07, 2026 12:42:37 PM org.apache.jasper.servlet.TldScanner scanJars
 INFO: At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
 [main] INFO com.nexusivr.ai.config.AppServletContextListener - Initializing NexusIVR AI Engine Web Application Context...
 [main] INFO com.nexusivr.ai.config.LlmConfig - LlmConfig: Loaded application.properties successfully.
 [main] INFO com.nexusivr.ai.config.LlmConfig - LlmConfig: Loaded .env file from: /home/mohesham/Desktop/IVR-Platform/IVR-AI-engine/.env
-[main] INFO com.nexusivr.ai.config.GlobalAiConfig - GlobalAiConfig: Reset to defaults. Provider: groq, Model: llama-3.3-70b-versatile, Temperature: 0.7, Timeout: 30s
-[main] INFO com.nexusivr.ai.ai.ProviderManager - ProviderManager: Creating client for provider=groq, model=llama-3.3-70b-versatile, temperature=0.7, timeout=30s
-[main] INFO com.nexusivr.ai.ai.GroqClient - GroqClient initialized. Provider: groq, Model: llama-3.3-70b-versatile, BaseUrl: https://api.groq.com/openai/v1, HasKey: true
+[main] INFO com.nexusivr.ai.config.GlobalAiConfig - GlobalAiConfig: Reset to defaults. Provider: openrouter, Model: openai.gpt-oss-20b-1:0, Temperature: 0.7, Timeout: 35s
+[main] INFO com.nexusivr.ai.ai.ProviderManager - ProviderManager: Creating client for provider=openrouter, model=openai.gpt-oss-20b-1:0, temperature=0.7, timeout=35s
+[main] INFO com.nexusivr.ai.ai.OpenAiCompatibleClient - OpenAiCompatibleClient: Initialized for openrouter using model=openai.gpt-oss-20b-1:0
 [main] INFO com.nexusivr.ai.config.AppServletContextListener - NexusIVR AI Engine Web Application Context initialized successfully.
-[[1;34mINFO[m] Tomcat 10.x Embedded started on port [8080]
+[[1;34mINFO[m] Tomcat 10.x Embedded started on port [8081]
 [[1;34mINFO[m] Press Ctrl-C to stop the container...
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.dao.DatabaseManager - Initializing HikariCP DataSource for PostgreSQL: jdbc:postgresql://localhost:5432/nexusivr
-[http-nio-8080-exec-1] INFO com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=21.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-1] INFO com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@31fc05ed
-[http-nio-8080-exec-1] INFO com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.dao.DatabaseManager - HikariCP DataSource initialized successfully.
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 3 sessions returned.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7: 6 messages returned.
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 3 sessions returned.
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7: 6 messages returned.
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=19.
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-9] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, SessionStr: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-9] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7 to 'Transferring you to balance inquiry.': true
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=19.
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, SessionStr: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7 to 'Transferring you to balance inquiry.': true
-[http-nio-8080-exec-4] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-4] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-4] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=21.
-[http-nio-8080-exec-4] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=21.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=21.
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=11, Connections=20.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=10, Connections=19.
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=5. Score=75.
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=9, Connections=18.
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=4. Score=80.
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.service.FlowDraftService - [FlowDraftService] Saved JSON draft to /home/mohesham/Desktop/IVR-Platform/IVR-engine/draft/meridian_health_transferring_you_to_balance_inquiry_draft.json
-[http-nio-8080-exec-9] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-9] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-9] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=21.
-[http-nio-8080-exec-9] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=21.
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=9, Connections=18.
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=4. Score=80.
-[http-nio-8080-exec-4] INFO com.nexusivr.ai.service.FlowDraftService - [FlowDraftService] Saved JSON draft to /home/mohesham/Desktop/IVR-Platform/IVR-engine/draft/meridian_health_transferring_you_to_balance_inquiry_draft.json
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=9, Connections=18.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=4. Score=80.
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=9, Connections=18.
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=4. Score=80.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=21.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=9, Connections=18.
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=4. Score=80.
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=9, Connections=18.
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=4. Score=80.
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=21.
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-9] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-9] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-9] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=21.
-[http-nio-8080-exec-9] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=9, Connections=18.
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=4. Score=80.
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=21.
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-4] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-4] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-4] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=9, Connections=18.
-[http-nio-8080-exec-4] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=4. Score=80.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=9, Connections=18.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=4. Score=80.
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=9, Connections=18.
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=4. Score=80.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=9, Connections=18.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=4. Score=80.
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=21.
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=21.
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=21.
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 3 sessions returned.
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7: 6 messages returned.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 3 sessions returned.
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7: 6 messages returned.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=19.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=19.
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, SessionStr: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7 to 'Transferring you to balance inquiry.': true
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, SessionStr: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7 to 'Transferring you to balance inquiry.': true
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 3 sessions returned.
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7: 6 messages returned.
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 3 sessions returned.
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7: 6 messages returned.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=19.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=19.
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, SessionStr: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7 to 'Transferring you to balance inquiry.': true
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=21.
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-4] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-4] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 3 sessions returned.
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7: 6 messages returned.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 3 sessions returned.
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7: 6 messages returned.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=19.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, SessionStr: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7 to 'Transferring you to balance inquiry.': true
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=19.
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, SessionStr: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7 to 'Transferring you to balance inquiry.': true
-[http-nio-8080-exec-4] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-4] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7: 6 messages returned.
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 3 sessions returned.
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 3 sessions returned.
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7: 6 messages returned.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=19.
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=19.
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, SessionStr: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7 to 'Transferring you to balance inquiry.': true
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=21.
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 3 sessions returned.
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7: 6 messages returned.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 3 sessions returned.
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7: 6 messages returned.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=19.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, SessionStr: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7 to 'Transferring you to balance inquiry.': true
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=19.
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, SessionStr: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7 to 'Transferring you to balance inquiry.': true
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7: 6 messages returned.
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 3 sessions returned.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 3 sessions returned.
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7: 6 messages returned.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=19.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=19.
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, SessionStr: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7 to 'Transferring you to balance inquiry.': true
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=12, Connections=21.
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=70.
-[http-nio-8080-exec-9] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] POST Request -> Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: 88bf0685-b0b6-4143-b8ed-fc6a3bb90077, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session 88bf0685-b0b6-4143-b8ed-fc6a3bb90077: 0 messages returned.
-[http-nio-8080-exec-9] INFO com.nexusivr.ai.controller.BaseAiServlet - New chat session created successfully: id=414f3cb3-6df4-4e31-be46-53b0fd8de7ba, tenant=00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 4 sessions returned.
-[http-nio-8080-exec-4] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: 414f3cb3-6df4-4e31-be46-53b0fd8de7ba, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-4] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session 414f3cb3-6df4-4e31-be46-53b0fd8de7ba: 0 messages returned.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: GENERATE_FLOW, FlowGenerator invoked: true
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=GENERATE_FLOW for session=414f3cb3-6df4-4e31-be46-53b0fd8de7ba, snapshotId=null, provider=openrouter, model=llama-3.3-70b-versatile, autoRefine=true
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [UnifiedAiEngine] Starting FLOW GENERATION pipeline. Session: 414f3cb3-6df4-4e31-be46-53b0fd8de7ba. Selected Provider: openrouter, autoRefine: true
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [UnifiedAiEngine] Generation model: llama-3.3-70b-versatile
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.DomainDetector - [DomainDetector] Matched domain='government' (score=3, keywords=[الجوازات]) for prompt: 'عاوز اعمل تصميم لهئيه الجوازات المصريه ويكون فيه طبقه للذكاء الاصطناعي بحيث لما ...'
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [UnifiedAiEngine] Lightweight domain hint (for logging/title only): 'عاوز اعمل تصميم لهئيه الجوازات المصريه ويكون فيه طبقه للذكاء الاصطناعي بحيث لما العميل يتصل ع الخط الساخن الذكاء الاصطناعي يرد عليه ويشوف عو عاوز يروح علي انهي خدمه ويوديه عندها ع طول وكمان التصكيم يكون كامل' -> 'government'
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/414f3cb3-6df4-4e31-be46-53b0fd8de7ba, SessionStr: 414f3cb3-6df4-4e31-be46-53b0fd8de7ba, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [UnifiedAiEngine] Pass 1 heuristic status: Pass 1 triggered: missing department/menu details, autoRefine=true
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [UnifiedAiEngine] Pass 1 triggered: running LLM prompt refinement with historySize=0, domain='government'...
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.PromptRefinerService - [PromptRefinerService] Starting Pass 1: Prompt Refinement. Prompt length=207, historySize=0, domain='government'
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [PROMPT_REFINER] Requested: openrouter
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [PROMPT_REFINER] Attempt: OpenrouterClient
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [PROMPT_REFINER] Resolved model for 'openrouter': llama-3.3-70b-versatile.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - ProviderManager: Creating client for provider=openrouter, model=llama-3.3-70b-versatile, temperature=0.7, timeout=30s
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.OpenAiCompatibleClient - OpenAiCompatibleClient: Initialized for openrouter using model=llama-3.3-70b-versatile
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [PROMPT_REFINER] Attempt 1/3 on provider 'openrouter' (model='llama-3.3-70b-versatile', structuredOutput=true).
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session 414f3cb3-6df4-4e31-be46-53b0fd8de7ba to 'عاوز اعمل تصميم لهئيه الجوازات المصريه و...': true
-[http-nio-8080-exec-5] ERROR com.nexusivr.ai.ai.OpenAiCompatibleClient - OpenAiCompatibleClient [openrouter]: HTTP 502 returned. Latency: 5730ms, Body: {"error":{"code":"BEDROCK_ERROR","message":"Bedrock invocation failed.","details":{"model_id":"openai.gpt-oss-20b-1:0","region":"us-east-1","aws_error_code":"ServiceUnavailableException","aws_error_message":"Bedrock is unable to process your request."}}}
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.RetryPolicy - RetryPolicy: Retry Reason: HTTP 502 - Server error. Status=502.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [PROMPT_REFINER] Retry Reason: HTTP 502 - Server error on 'openrouter' attempt 1 (statusCode=502). Backing off before retry.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [PROMPT_REFINER] Attempt 2/3 on provider 'openrouter' (model='llama-3.3-70b-versatile', structuredOutput=true).
-[http-nio-8080-exec-5] ERROR com.nexusivr.ai.ai.OpenAiCompatibleClient - OpenAiCompatibleClient [openrouter]: HTTP 502 returned. Latency: 6159ms, Body: {"error":{"code":"BEDROCK_ERROR","message":"Bedrock invocation failed.","details":{"model_id":"openai.gpt-oss-20b-1:0","region":"us-east-1","aws_error_code":"ServiceUnavailableException","aws_error_message":"Bedrock is unable to process your request."}}}
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.RetryPolicy - RetryPolicy: Retry Reason: HTTP 502 - Server error. Status=502.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [PROMPT_REFINER] Retry Reason: HTTP 502 - Server error on 'openrouter' attempt 2 (statusCode=502). Backing off before retry.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [PROMPT_REFINER] Attempt 3/3 on provider 'openrouter' (model='llama-3.3-70b-versatile', structuredOutput=true).
-[http-nio-8080-exec-5] ERROR com.nexusivr.ai.ai.OpenAiCompatibleClient - OpenAiCompatibleClient [openrouter]: HTTP 502 returned. Latency: 3572ms, Body: {"error":{"code":"BEDROCK_ERROR","message":"Bedrock invocation failed.","details":{"model_id":"openai.gpt-oss-20b-1:0","region":"us-east-1","aws_error_code":"ServiceUnavailableException","aws_error_message":"Bedrock is unable to process your request."}}}
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.RetryPolicy - RetryPolicy: Retry Reason: HTTP 502 - Server error. Status=502.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [PROMPT_REFINER] Retry Reason: HTTP 502 - Server error on 'openrouter' attempt 3 (statusCode=502). Backing off before retry.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [ProviderManager] Provider 'openrouter' failed. Reason: 'OPENROUTER API returned HTTP error status: 502'. Consecutive failures: 1.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [PROMPT_REFINER] Attempt: OpenrouterClient Result: FAILED Reason: OPENROUTER API returned HTTP error status: 502
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [PROMPT_REFINER] Attempt: GroqClient
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [PROMPT_REFINER] Resolved model for 'groq': llama-3.3-70b-versatile.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [PROMPT_REFINER] Attempt 1/3 on provider 'groq' (model='llama-3.3-70b-versatile', structuredOutput=true).
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.GroqClient - [GroqClient] LLM Latency: 2281ms. Token Usage: input=504, output=511, total=1015. Model: llama-3.3-70b-versatile.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [PROMPT_REFINER] Fallback: From: openrouter To: groq Result: SUCCESS
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.PromptRefinerService - [PromptRefinerService] Pass 1 complete. Refined spec length=1354 chars
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [AUDIT] Stage 1 (Pass 1 - Refiner): skipped=false, cacheHit=false, reason=Pass 1 triggered: missing department/menu details
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [AUDIT] Stage 1 Output (Pass 1 refined spec / raw prompt): {
-  "refined_prompt": "تصميم نظام اتصال هئية الجوازات المصريه بتقنية الذكاء الاصطناعي للاستجابة للعملاء عبر الخط الساخن، وتمكينهم من الوصول الى الخدمات المطلوبة بسهولة، مع توفير تجربة مستخدم فريدة من خلال الاستجابة الذكية والتفاعل الفعال",
-   "business_domain": "حكومي",
-   "departments": [
-      "جوازات",
-      "تسجيل وحفظ الوثائق",
-      "خدمات للمواطنين",
-      "خدمات للمقيمين",
-      "خدمات للزوار",
-      "دعم فني",
-      "شؤون الموظفين"
-   ],
-   "features": [
-      "استجابة ذكية",
-      "تسجيل وحفظ الوثائق",
-      "خدمات جواز السفر",
-      "خدمات الهجرة",
-      "خدمات التأشيرات",
-      "خدمات استعلامات",
-      "خدمات شكاوى"
-   ],
-   "menu_options": [
-      "اضغط 1 لخدمات الجوازات",
-      "اضغط 2 لخدمات تسجيل وحفظ الوثائق",
-      "اضغط 3 لخدمات للمواطنين",
-      "اضغط 4 لخدمات للمقيمين",
-      "اضغط 5 لخدمات للزوار",
-      "اضغط 6 لدعم فني",
-      "اضغط 7 لشؤون الموظفين"
-   ],
-   "greeting": "مرحبا بك في هئية الجوازات المصريه، كيف يمكنني مساعدتك؟",
-   "closing": "شكرا لاتصالك، اتمنى لك يوما سعيدا",
-   "business_hours": "من الساعة 8 صباحا الى 3 مساءا، من الأحد الى الخميس",
-   "transfers": [
-      "موظف خدمة العملاء",
-      "مدير القسم"
-   ],
-   "error_handling": "في حالة حدوث أي خطأ، يرجى إعادة المحاولة أو طلب مساعدة من موظف الخدمة",
-   "authentication": "التأكد من هوية المتصل عن طريق رمز العميل أو رقم الهوية",
-   "tone": "مهني"
-}
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [AUDIT] Stage 2 (Pass 2 - Generator): User Prompt = {
-  "refined_prompt": "تصميم نظام اتصال هئية الجوازات المصريه بتقنية الذكاء الاصطناعي للاستجابة للعملاء عبر الخط الساخن، وتمكينهم من الوصول الى الخدمات المطلوبة بسهولة، مع توفير تجربة مستخدم فريدة من خلال الاستجابة الذكية والتفاعل الفعال",
-   "business_domain": "حكومي",
-   "departments": [
-      "جوازات",
-      "تسجيل وحفظ الوثائق",
-      "خدمات للمواطنين",
-      "خدمات للمقيمين",
-      "خدمات للزوار",
-      "دعم فني",
-      "شؤون الموظفين"
-   ],
-   "features": [
-      "استجابة ذكية",
-      "تسجيل وحفظ الوثائق",
-      "خدمات جواز السفر",
-      "خدمات الهجرة",
-      "خدمات التأشيرات",
-      "خدمات استعلامات",
-      "خدمات شكاوى"
-   ],
-   "menu_options": [
-      "اضغط 1 لخدمات الجوازات",
-      "اضغط 2 لخدمات تسجيل وحفظ الوثائق",
-      "اضغط 3 لخدمات للمواطنين",
-      "اضغط 4 لخدمات للمقيمين",
-      "اضغط 5 لخدمات للزوار",
-      "اضغط 6 لدعم فني",
-      "اضغط 7 لشؤون الموظفين"
-   ],
-   "greeting": "مرحبا بك في هئية الجوازات المصريه، كيف يمكنني مساعدتك؟",
-   "closing": "شكرا لاتصالك، اتمنى لك يوما سعيدا",
-   "business_hours": "من الساعة 8 صباحا الى 3 مساءا، من الأحد الى الخميس",
-   "transfers": [
-      "موظف خدمة العملاء",
-      "مدير القسم"
-   ],
-   "error_handling": "في حالة حدوث أي خطأ، يرجى إعادة المحاولة أو طلب مساعدة من موظف الخدمة",
-   "authentication": "التأكد من هوية المتصل عن طريق رمز العميل أو رقم الهوية",
-   "tone": "مهني"
-}, flowDomain = حكومي
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [UnifiedAiEngine] Expected Format: VoiceXML
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [UnifiedAiEngine] Generation attempt 1 of 2 (malformed output triggers one LLM retry, validation failures repaired locally).
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [AUDIT] Stage 3: LLM Request sent using provider = openrouter, model = llama-3.3-70b-versatile
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [GENERATE_FLOW] Requested: openrouter
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [GENERATE_FLOW] Attempt: OpenrouterClient
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Resolved model for 'openrouter': llama-3.3-70b-versatile.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Attempt 1/3 on provider 'openrouter' (model='llama-3.3-70b-versatile', structuredOutput=true).
-[http-nio-8080-exec-5] ERROR com.nexusivr.ai.ai.OpenAiCompatibleClient - OpenAiCompatibleClient [openrouter]: HTTP 502 returned. Latency: 6946ms, Body: {"error":{"code":"BEDROCK_ERROR","message":"Bedrock invocation failed.","details":{"model_id":"openai.gpt-oss-20b-1:0","region":"us-east-1","aws_error_code":"ServiceUnavailableException","aws_error_message":"Bedrock is unable to process your request."}}}
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.RetryPolicy - RetryPolicy: Retry Reason: HTTP 502 - Server error. Status=502.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Retry Reason: HTTP 502 - Server error on 'openrouter' attempt 1 (statusCode=502). Backing off before retry.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Attempt 2/3 on provider 'openrouter' (model='llama-3.3-70b-versatile', structuredOutput=true).
-[http-nio-8080-exec-5] ERROR com.nexusivr.ai.ai.OpenAiCompatibleClient - OpenAiCompatibleClient [openrouter]: HTTP 502 returned. Latency: 3911ms, Body: {"error":{"code":"BEDROCK_ERROR","message":"Bedrock invocation failed.","details":{"model_id":"openai.gpt-oss-20b-1:0","region":"us-east-1","aws_error_code":"ServiceUnavailableException","aws_error_message":"Bedrock is unable to process your request."}}}
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.RetryPolicy - RetryPolicy: Retry Reason: HTTP 502 - Server error. Status=502.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Retry Reason: HTTP 502 - Server error on 'openrouter' attempt 2 (statusCode=502). Backing off before retry.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Attempt 3/3 on provider 'openrouter' (model='llama-3.3-70b-versatile', structuredOutput=true).
-[http-nio-8080-exec-5] ERROR com.nexusivr.ai.ai.OpenAiCompatibleClient - OpenAiCompatibleClient [openrouter]: HTTP 502 returned. Latency: 4571ms, Body: {"error":{"code":"BEDROCK_ERROR","message":"Bedrock invocation failed.","details":{"model_id":"openai.gpt-oss-20b-1:0","region":"us-east-1","aws_error_code":"ServiceUnavailableException","aws_error_message":"Bedrock is unable to process your request."}}}
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.RetryPolicy - RetryPolicy: Retry Reason: HTTP 502 - Server error. Status=502.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Retry Reason: HTTP 502 - Server error on 'openrouter' attempt 3 (statusCode=502). Backing off before retry.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [ProviderManager] Provider 'openrouter' failed. Reason: 'OPENROUTER API returned HTTP error status: 502'. Consecutive failures: 2.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [GENERATE_FLOW] Attempt: OpenrouterClient Result: FAILED Reason: OPENROUTER API returned HTTP error status: 502
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [GENERATE_FLOW] Attempt: GroqClient
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Resolved model for 'groq': llama-3.3-70b-versatile.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Attempt 1/3 on provider 'groq' (model='llama-3.3-70b-versatile', structuredOutput=true).
-[http-nio-8080-exec-5] ERROR com.nexusivr.ai.ai.GroqClient - Groq API quota or rate limit exceeded (429). Model: llama-3.3-70b-versatile, Latency: 128ms
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.RetryPolicy - RetryPolicy: NOT retryable — HTTP 429 (quota exceeded). Status=429.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Non-retryable error on 'groq' attempt 1 (statusCode=429): Groq quota exceeded.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.CircuitBreaker - [CircuitBreaker] State transition: CLOSED/HALF_OPEN → OPEN. Reason: 'Quota exceeded (HTTP 429)'. Cooldown: 300000ms (openCount: 1)
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [ProviderManager] Provider 'groq' rate-limited. Circuit breaker updated.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [GENERATE_FLOW] Attempt: GroqClient Result: FAILED Reason: Groq quota exceeded.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [GENERATE_FLOW] Attempt: GeminiClient
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Resolved model for 'gemini': gemini-2.0-flash.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - ProviderManager: Creating client for provider=gemini, model=gemini-2.0-flash, temperature=0.7, timeout=30s
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.GeminiClient - GeminiClient initialized. Provider: gemini, Model: gemini-2.0-flash, BaseUrl: https://generativelanguage.googleapis.com/v1beta, HasKey: true
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Attempt 1/3 on provider 'gemini' (model='gemini-2.0-flash', structuredOutput=true).
-[http-nio-8080-exec-5] ERROR com.nexusivr.ai.ai.GeminiClient - Gemini API quota or rate limit exceeded (429). Model: gemini-2.0-flash, Latency: 402ms
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.RetryPolicy - RetryPolicy: NOT retryable — HTTP 429 (quota exceeded). Status=429.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Non-retryable error on 'gemini' attempt 1 (statusCode=429): Gemini quota exceeded.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.CircuitBreaker - [CircuitBreaker] State transition: CLOSED/HALF_OPEN → OPEN. Reason: 'Quota exceeded (HTTP 429)'. Cooldown: 300000ms (openCount: 1)
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [ProviderManager] Provider 'gemini' rate-limited. Circuit breaker updated.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [GENERATE_FLOW] Attempt: GeminiClient Result: FAILED Reason: Gemini quota exceeded.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [GENERATE_FLOW] Attempt: OllamaClient
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Resolved model for 'ollama': granite3.2:2b.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - ProviderManager: Creating client for provider=ollama, model=granite3.2:2b, temperature=0.7, timeout=12s
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.OpenAiCompatibleClient - OpenAiCompatibleClient: Initialized for ollama using model=granite3.2:2b
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Attempt 1/3 on provider 'ollama' (model='granite3.2:2b', structuredOutput=true).
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.OpenAiCompatibleClient - [ollama] LLM Latency: 12007ms. Error: Request timed out after 12s. Model: granite3.2:2b.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Non-retryable error on 'ollama' attempt 1 (statusCode=0): OLLAMA request timed out.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [ProviderManager] Provider 'ollama' failed. Reason: 'OLLAMA request timed out.'. Consecutive failures: 1.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [GENERATE_FLOW] Attempt: OllamaClient Result: FAILED Reason: OLLAMA request timed out.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [GENERATE_FLOW] All real LLM providers exhausted after retries. Invoking last-resort TemplateGenerator circuit-breaker.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.TemplateGenerator - [TemplateGenerator] Returning domain-specific fallback for domain='حكومي'. Prompt length=1354
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [GENERATE_FLOW] TemplateGenerator circuit-breaker generated fallback response successfully for domain='حكومي'.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [AUDIT] Stage 4: Raw LLM Response (provider=openrouter, actualProvider=template-generator) = <?xml version="1.0" encoding="UTF-8"?>
-<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
-  <form id="start">
-    <block>
-      <prompt>Welcome to حكومي Services. Press 1 for جوازات. Press 2 for تسجيل وحفظ الوثائق. Press 3 for خدمات للمواطنين. Press 4 for خدمات للمقيمين. Press 5 for خدمات للزوار. Press 6 for دعم فني. Press 7 for شؤون الموظفين. Press 0 to speak to an agent.</prompt>
-      <goto next="#menu"/>
-    </block>
-  </form>
-  <form id="menu">
-    <menu>
-      <prompt>Please select an option.</prompt>
-      <choice accept="digits 1" next="#dept_1"/>
-      <choice accept="digits 2" next="#dept_2"/>
-      <choice accept="digits 3" next="#dept_3"/>
-      <choice accept="digits 4" next="#dept_4"/>
-      <choice accept="digits 5" next="#dept_5"/>
-      <choice accept="digits 6" next="#dept_6"/>
-      <choice accept="digits 7" next="#dept_7"/>
-      <choice accept="digits 0" next="#agent"/>
-    </menu>
-  </form>
-  <form id="dept_1">
-    <block>
-      <prompt>Please hold while we connect you to جوازات.</prompt>
-      <transfer dest="+1001"/>
-    </block>
-  </form>
-  <form id="dept_2">
-    <block>
-      <prompt>Please hold while we connect you to تسجيل وحفظ الوثائق.</prompt>
-      <transfer dest="+1002"/>
-    </block>
-  </form>
-  <form id="dept_3">
-    <block>
-      <prompt>Please hold while we connect you to خدمات للمواطنين.</prompt>
-      <transfer dest="+1003"/>
-    </block>
-  </form>
-  <form id="dept_4">
-    <block>
-      <prompt>Please hold while we connect you to خدمات للمقيمين.</prompt>
-      <transfer dest="+1004"/>
-    </block>
-  </form>
-  <form id="dept_5">
-    <block>
-      <prompt>Please hold while we connect you to خدمات للزوار.</prompt>
-      <transfer dest="+1005"/>
-    </block>
-  </form>
-  <form id="dept_6">
-    <block>
-      <prompt>Please hold while we connect you to دعم فني.</prompt>
-      <transfer dest="+1006"/>
-    </block>
-  </form>
-  <form id="dept_7">
-    <block>
-      <prompt>Please hold while we connect you to شؤون الموظفين.</prompt>
-      <transfer dest="+1007"/>
-    </block>
-  </form>
-  <form id="agent">
-    <block>
-      <prompt>Please hold while we connect you to a representative.</prompt>
-      <transfer dest="+0"/>
-    </block>
-  </form>
-</vxml>
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.LlmResponseNormalizer - [LlmResponseNormalizer] Input length=2220 chars, first 20 chars (codes): 0x3C 0x3F 0x78 0x6D 0x6C 0x20 0x76 0x65 0x72 0x73 0x69 0x6F 0x6E 0x3D 0x22 0x31 0x2E 0x30 0x22 0x20 ...
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.LlmResponseNormalizer - [LlmResponseNormalizer] Normalized output length=2220 chars, first 20 chars (codes): 0x3C 0x3F 0x78 0x6D 0x6C 0x20 0x76 0x65 0x72 0x73 0x69 0x6F 0x6E 0x3D 0x22 0x31 0x2E 0x30 0x22 0x20 ...
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.LlmResponseNormalizer - [LlmResponseNormalizer] Input length=2220 chars, first 20 chars (codes): 0x3C 0x3F 0x78 0x6D 0x6C 0x20 0x76 0x65 0x72 0x73 0x69 0x6F 0x6E 0x3D 0x22 0x31 0x2E 0x30 0x22 0x20 ...
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.LlmResponseNormalizer - [LlmResponseNormalizer] Normalized output length=2220 chars, first 20 chars (codes): 0x3C 0x3F 0x78 0x6D 0x6C 0x20 0x76 0x65 0x72 0x73 0x69 0x6F 0x6E 0x3D 0x22 0x31 0x2E 0x30 0x22 0x20 ...
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [AUDIT] Stage 4c: Normalized VoiceXML length=2220 chars.
-========== GENERATED VXML ==========
-1 | <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-  2 | <vxml xmlns="http://www.w3.org/2001/vxml" version="2.1">
-  3 |       
-  4 |     <form id="start">
-  5 |             
-  6 |         <block>
-  7 |                   
-  8 |             <prompt>Welcome to حكومي Services. Press 1 for جوازات. Press 2 for تسجيل وحفظ الوثائق. Press 3 for خدمات للمواطنين. Press 4 for خدمات للمقيمين. Press 5 for خدمات للزوار. Press 6 for دعم فني. Press 7 for شؤون الموظفين. Press 0 to speak to an agent.</prompt>
-  9 |                   
- 10 |             <goto next="#menu"/>
- 11 |                 
- 12 |         </block>
- 13 |           
- 14 |     </form>
- 15 |       
- 16 |     <form id="menu">
- 17 |             
- 18 |         <menu>
- 19 |                   
- 20 |             <prompt>Please select an option.</prompt>
- 21 |                   
- 22 |             <choice accept="digits 1" next="#dept_1"/>
- 23 |                   
- 24 |             <choice accept="digits 2" next="#dept_2"/>
- 25 |                   
- 26 |             <choice accept="digits 3" next="#dept_3"/>
- 27 |                   
- 28 |             <choice accept="digits 4" next="#dept_4"/>
- 29 |                   
- 30 |             <choice accept="digits 5" next="#dept_5"/>
- 31 |                   
- 32 |             <choice accept="digits 6" next="#dept_6"/>
- 33 |                   
- 34 |             <choice accept="digits 7" next="#dept_7"/>
- 35 |                   
- 36 |             <choice accept="digits 0" next="#agent"/>
- 37 |                 
- 38 |         </menu>
- 39 |           
- 40 |     </form>
- 41 |       
- 42 |     <form id="dept_1">
- 43 |             
- 44 |         <block>
- 45 |                   
- 46 |             <prompt>Please hold while we connect you to جوازات.</prompt>
- 47 |                   
- 48 |             <transfer dest="+1001"/>
- 49 |                 
- 50 |         </block>
- 51 |           
- 52 |     </form>
- 53 |       
- 54 |     <form id="dept_2">
- 55 |             
- 56 |         <block>
- 57 |                   
- 58 |             <prompt>Please hold while we connect you to تسجيل وحفظ الوثائق.</prompt>
- 59 |                   
- 60 |             <transfer dest="+1002"/>
- 61 |                 
- 62 |         </block>
- 63 |           
- 64 |     </form>
- 65 |       
- 66 |     <form id="dept_3">
- 67 |             
- 68 |         <block>
- 69 |                   
- 70 |             <prompt>Please hold while we connect you to خدمات للمواطنين.</prompt>
- 71 |                   
- 72 |             <transfer dest="+1003"/>
- 73 |                 
- 74 |         </block>
- 75 |           
- 76 |     </form>
- 77 |       
- 78 |     <form id="dept_4">
- 79 |             
- 80 |         <block>
- 81 |                   
- 82 |             <prompt>Please hold while we connect you to خدمات للمقيمين.</prompt>
- 83 |                   
- 84 |             <transfer dest="+1004"/>
- 85 |                 
- 86 |         </block>
- 87 |           
- 88 |     </form>
- 89 |       
- 90 |     <form id="dept_5">
- 91 |             
- 92 |         <block>
- 93 |                   
- 94 |             <prompt>Please hold while we connect you to خدمات للزوار.</prompt>
- 95 |                   
- 96 |             <transfer dest="+1005"/>
- 97 |                 
- 98 |         </block>
- 99 |           
-100 |     </form>
-101 |       
-102 |     <form id="dept_6">
-103 |             
-104 |         <block>
-105 |                   
-106 |             <prompt>Please hold while we connect you to دعم فني.</prompt>
-107 |                   
-108 |             <transfer dest="+1006"/>
-109 |                 
-110 |         </block>
-111 |           
-112 |     </form>
-113 |       
-114 |     <form id="dept_7">
-115 |             
-116 |         <block>
-117 |                   
-118 |             <prompt>Please hold while we connect you to شؤون الموظفين.</prompt>
-119 |                   
-120 |             <transfer dest="+1007"/>
-121 |                 
-122 |         </block>
-123 |           
-124 |     </form>
-125 |       
-126 |     <form id="agent">
-127 |             
-128 |         <block>
-129 |                   
-130 |             <prompt>Please hold while we connect you to a representative.</prompt>
-131 |                   
-132 |             <transfer dest="+0"/>
-133 |                 
-134 |         </block>
-135 |           
-136 |     </form>
-137 |     
-138 | </vxml>
-========== END VXML ==========
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.LlmResponseNormalizer - [LlmResponseNormalizer] Input length=2220 chars, first 20 chars (codes): 0x3C 0x3F 0x78 0x6D 0x6C 0x20 0x76 0x65 0x72 0x73 0x69 0x6F 0x6E 0x3D 0x22 0x31 0x2E 0x30 0x22 0x20 ...
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.LlmResponseNormalizer - [LlmResponseNormalizer] Normalized output length=2220 chars, first 20 chars (codes): 0x3C 0x3F 0x78 0x6D 0x6C 0x20 0x76 0x65 0x72 0x73 0x69 0x6F 0x6E 0x3D 0x22 0x31 0x2E 0x30 0x22 0x20 ...
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Parser Stage: VoiceXML → FlowModel. Input length=2220 chars.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Parser Stage: VoiceXML → FlowModel. First 20 chars (codes): 0x3C 0x3F 0x78 0x6D 0x6C 0x20 0x76 0x65 0x72 0x73 0x69 0x6F 0x6E 0x3D 0x22 0x31 0x2E 0x30 0x22 0x20 ...
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Missing or generic title 'null' for node 'start'. Generating fallback label.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Missing or generic title 'null' for node 'menu'. Generating fallback label.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Missing or generic title 'null' for node 'dept_1'. Generating fallback label.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Missing or generic title 'null' for node 'dept_2'. Generating fallback label.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Missing or generic title 'null' for node 'dept_3'. Generating fallback label.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Missing or generic title 'null' for node 'dept_4'. Generating fallback label.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Missing or generic title 'null' for node 'dept_5'. Generating fallback label.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Missing or generic title 'null' for node 'dept_6'. Generating fallback label.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Missing or generic title 'null' for node 'dept_7'. Generating fallback label.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Missing or generic title 'null' for node 'agent'. Generating fallback label.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Parser Stage: VoiceXML → FlowModel. Status: SUCCESS. Nodes=10, Connections=9.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [UnifiedAiEngine] Parser Stage: Normalized VoiceXML → FlowModel. Status: SUCCESS. domain=government, provider=openrouter, operation=GENERATE_FLOW, nodes=10.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.UnifiedAiEngine - [UnifiedAiEngine] Post-generation completeness check failed. Candidate model is missing 9 feature(s): [استجابة ذكية, اضغط 1 لخدمات الجوازات, اضغط 3 لخدمات للمواطنين, اضغط 4 لخدمات للمقيمين, اضغط 5 لخدمات للزوار, اضغط 6 لدعم فني, اضغط 7 لشؤون الموظفين, موظف خدمة العملاء, مدير القسم]
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [AUDIT] Stage 3c: LLM retry triggered due to missing requested features: [استجابة ذكية, اضغط 1 لخدمات الجوازات, اضغط 3 لخدمات للمواطنين, اضغط 4 لخدمات للمقيمين, اضغط 5 لخدمات للزوار, اضغط 6 لدعم فني, اضغط 7 لشؤون الموظفين, موظف خدمة العملاء, مدير القسم]
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [GENERATE_FLOW] Requested: openrouter
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [GENERATE_FLOW] Attempt: OpenrouterClient
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Resolved model for 'openrouter': llama-3.3-70b-versatile.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Attempt 1/3 on provider 'openrouter' (model='llama-3.3-70b-versatile', structuredOutput=true).
-[http-nio-8080-exec-5] ERROR com.nexusivr.ai.ai.OpenAiCompatibleClient - OpenAiCompatibleClient [openrouter]: HTTP 502 returned. Latency: 4406ms, Body: {"error":{"code":"BEDROCK_ERROR","message":"Bedrock invocation failed.","details":{"model_id":"openai.gpt-oss-20b-1:0","region":"us-east-1","aws_error_code":"ServiceUnavailableException","aws_error_message":"Bedrock is unable to process your request."}}}
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.RetryPolicy - RetryPolicy: Retry Reason: HTTP 502 - Server error. Status=502.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Retry Reason: HTTP 502 - Server error on 'openrouter' attempt 1 (statusCode=502). Backing off before retry.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Attempt 2/3 on provider 'openrouter' (model='llama-3.3-70b-versatile', structuredOutput=true).
-[http-nio-8080-exec-5] ERROR com.nexusivr.ai.ai.OpenAiCompatibleClient - OpenAiCompatibleClient [openrouter]: HTTP 502 returned. Latency: 7190ms, Body: {"error":{"code":"BEDROCK_ERROR","message":"Bedrock invocation failed.","details":{"model_id":"openai.gpt-oss-20b-1:0","region":"us-east-1","aws_error_code":"ServiceUnavailableException","aws_error_message":"Bedrock is unable to process your request."}}}
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.RetryPolicy - RetryPolicy: Retry Reason: HTTP 502 - Server error. Status=502.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Retry Reason: HTTP 502 - Server error on 'openrouter' attempt 2 (statusCode=502). Backing off before retry.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Attempt 3/3 on provider 'openrouter' (model='llama-3.3-70b-versatile', structuredOutput=true).
-[http-nio-8080-exec-5] ERROR com.nexusivr.ai.ai.OpenAiCompatibleClient - OpenAiCompatibleClient [openrouter]: HTTP 502 returned. Latency: 5671ms, Body: {"error":{"code":"BEDROCK_ERROR","message":"Bedrock invocation failed.","details":{"model_id":"openai.gpt-oss-20b-1:0","region":"us-east-1","aws_error_code":"ServiceUnavailableException","aws_error_message":"Bedrock is unable to process your request."}}}
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.RetryPolicy - RetryPolicy: Retry Reason: HTTP 502 - Server error. Status=502.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Retry Reason: HTTP 502 - Server error on 'openrouter' attempt 3 (statusCode=502). Backing off before retry.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.CircuitBreaker - [CircuitBreaker] State transition: CLOSED/HALF_OPEN → OPEN. Reason: 'OPENROUTER API returned HTTP error status: 502'. Cooldown: 30000ms (openCount: 1)
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [ProviderManager] Provider 'openrouter' failed. Reason: 'OPENROUTER API returned HTTP error status: 502'. Consecutive failures: 3.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [GENERATE_FLOW] Attempt: OpenrouterClient Result: FAILED Reason: OPENROUTER API returned HTTP error status: 502
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [GENERATE_FLOW] Skipping 'groq'. Reason: Quota exceeded, retry after ~5 min.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [GENERATE_FLOW] Skipping 'gemini'. Reason: Quota exceeded, retry after ~5 min.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [GENERATE_FLOW] Attempt: OllamaClient
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Resolved model for 'ollama': granite3.2:2b.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Attempt 1/3 on provider 'ollama' (model='granite3.2:2b', structuredOutput=true).
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.OpenAiCompatibleClient - [ollama] LLM Latency: 12004ms. Error: Request timed out after 12s. Model: granite3.2:2b.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [ProviderManager] [GENERATE_FLOW] Non-retryable error on 'ollama' attempt 1 (statusCode=0): OLLAMA request timed out.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [ProviderManager] Provider 'ollama' failed. Reason: 'OLLAMA request timed out.'. Consecutive failures: 2.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [GENERATE_FLOW] Attempt: OllamaClient Result: FAILED Reason: OLLAMA request timed out.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [GENERATE_FLOW] All real LLM providers exhausted after retries. Invoking last-resort TemplateGenerator circuit-breaker.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.ai.TemplateGenerator - [TemplateGenerator] Returning domain-specific fallback for domain='حكومي'. Prompt length=1354
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.ai.ProviderManager - [AI_PROVIDER] [GENERATE_FLOW] TemplateGenerator circuit-breaker generated fallback response successfully for domain='حكومي'.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.LlmResponseNormalizer - [LlmResponseNormalizer] Input length=2220 chars, first 20 chars (codes): 0x3C 0x3F 0x78 0x6D 0x6C 0x20 0x76 0x65 0x72 0x73 0x69 0x6F 0x6E 0x3D 0x22 0x31 0x2E 0x30 0x22 0x20 ...
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.LlmResponseNormalizer - [LlmResponseNormalizer] Normalized output length=2220 chars, first 20 chars (codes): 0x3C 0x3F 0x78 0x6D 0x6C 0x20 0x76 0x65 0x72 0x73 0x69 0x6F 0x6E 0x3D 0x22 0x31 0x2E 0x30 0x22 0x20 ...
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.LlmResponseNormalizer - [LlmResponseNormalizer] Input length=2220 chars, first 20 chars (codes): 0x3C 0x3F 0x78 0x6D 0x6C 0x20 0x76 0x65 0x72 0x73 0x69 0x6F 0x6E 0x3D 0x22 0x31 0x2E 0x30 0x22 0x20 ...
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.LlmResponseNormalizer - [LlmResponseNormalizer] Normalized output length=2220 chars, first 20 chars (codes): 0x3C 0x3F 0x78 0x6D 0x6C 0x20 0x76 0x65 0x72 0x73 0x69 0x6F 0x6E 0x3D 0x22 0x31 0x2E 0x30 0x22 0x20 ...
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Parser Stage: VoiceXML → FlowModel. Input length=2220 chars.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Parser Stage: VoiceXML → FlowModel. First 20 chars (codes): 0x3C 0x3F 0x78 0x6D 0x6C 0x20 0x76 0x65 0x72 0x73 0x69 0x6F 0x6E 0x3D 0x22 0x31 0x2E 0x30 0x22 0x20 ...
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Missing or generic title 'null' for node 'start'. Generating fallback label.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Missing or generic title 'null' for node 'menu'. Generating fallback label.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Missing or generic title 'null' for node 'dept_1'. Generating fallback label.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Missing or generic title 'null' for node 'dept_2'. Generating fallback label.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Missing or generic title 'null' for node 'dept_3'. Generating fallback label.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Missing or generic title 'null' for node 'dept_4'. Generating fallback label.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Missing or generic title 'null' for node 'dept_5'. Generating fallback label.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Missing or generic title 'null' for node 'dept_6'. Generating fallback label.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Missing or generic title 'null' for node 'dept_7'. Generating fallback label.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Missing or generic title 'null' for node 'agent'. Generating fallback label.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.VxmlToModelConverter - [VxmlToModelConverter] Parser Stage: VoiceXML → FlowModel. Status: SUCCESS. Nodes=10, Connections=9.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [UnifiedAiEngine] Parser Stage: Normalized VoiceXML → FlowModel. Status: SUCCESS. domain=government, provider=openrouter, operation=GENERATE_FLOW, nodes=10.
-[http-nio-8080-exec-5] WARN com.nexusivr.ai.service.UnifiedAiEngine - [UnifiedAiEngine] Feature completeness LLM retry did not improve missing features (still missing 9). Retaining candidate model.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=10, Connections=9.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: INVALID. Errors count=1, Warnings count=8. Score=45.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [UnifiedAiEngine] Model Validation Result: INVALID. Errors=1, Warnings=8. Action: Attempt ModelAutoRepair locally. No retry.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelAutoRepair - [ModelAutoRepair] Starting repair with 9 issues
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelAutoRepair - [ModelAutoRepair] Inserting missing End node
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelAutoRepair - [ModelAutoRepair] Reconnecting 1 orphan node(s)
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelAutoRepair - [ModelAutoRepair] Added new menu choice 'key9' in 'menu' for orphan 'end'
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelAutoRepair - [ModelAutoRepair] Connected MENU node 'menu' timeout port to 'end'
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelAutoRepair - [ModelAutoRepair] Connected TRANSFER node 'dept_1' fail port to 'end'
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelAutoRepair - [ModelAutoRepair] Connected TRANSFER node 'dept_2' fail port to 'end'
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelAutoRepair - [ModelAutoRepair] Connected TRANSFER node 'dept_3' fail port to 'end'
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelAutoRepair - [ModelAutoRepair] Connected TRANSFER node 'dept_4' fail port to 'end'
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelAutoRepair - [ModelAutoRepair] Connected TRANSFER node 'dept_5' fail port to 'end'
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelAutoRepair - [ModelAutoRepair] Connected TRANSFER node 'dept_6' fail port to 'end'
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelAutoRepair - [ModelAutoRepair] Connected TRANSFER node 'dept_7' fail port to 'end'
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelAutoRepair - [ModelAutoRepair] Connected TRANSFER node 'agent' fail port to 'end'
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelAutoRepair - [ModelAutoRepair] Repair complete. Nodes: 11, Connections: 19
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=11, Connections=19.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID. Errors count=0, Warnings count=0. Score=100.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [UnifiedAiEngine] Model Repair Result: SUCCESS. Nodes=11, Connections=19.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.ModelToVxmlExporter - [ModelToVxmlExporter] Exporting FlowModel to VoiceXML: nodes=11, connections=19
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [UnifiedAiEngine] ModelAutoRepair succeeded locally.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [UnifiedAiEngine] Converter Stage: FlowModel → React Flow JSON. Status: SUCCESS. Nodes=11.
-========== FLOW MODEL ==========
-Name: unnamed
-Nodes: 11
-  - START: Start
-  - MENU: Menu
-  - TRANSFER: Dept 1
-  - TRANSFER: Dept 2
-  - TRANSFER: Dept 3
-  - TRANSFER: Dept 4
-  - TRANSFER: Dept 5
-  - TRANSFER: Dept 6
-  - TRANSFER: Dept 7
-  - TRANSFER: Agent
-  - END: End Call
-Connections: 19
-
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [AUDIT] Stage 12: Final Output Sent to IVR Builder. Nodes = 11, Edges = 19
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.FlowContextService - [FlowContextService] Cleared outdated flow context for session 414f3cb3-6df4-4e31-be46-53b0fd8de7ba
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.FlowContextService - [FlowContextService - SaveActiveFlow] Session ID: 414f3cb3-6df4-4e31-be46-53b0fd8de7ba, Flow ID: unknown-flow-id, Nodes Count: 11, Node IDs: [start, menu, dept_1, dept_2, dept_3, dept_4, dept_5, dept_6, dept_7, agent, end], Node Names: [Start, Menu, Dept 1, Dept 2, Dept 3, Dept 4, Dept 5, Dept 6, Dept 7, Agent, End Call]
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.UnifiedAiEngine - [UnifiedAiEngine] Flow generation complete. Session: 414f3cb3-6df4-4e31-be46-53b0fd8de7ba. Status: DRAFT
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] POST Request -> Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=414f3cb3-6df4-4e31-be46-53b0fd8de7ba, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=11, Connections=19.
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=8. Score=60.
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.FlowContextService - [FlowContextService] Cleared outdated flow context for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.FlowContextService - [FlowContextService - SaveActiveFlow] Session ID: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Flow ID: unknown-flow-id, Nodes Count: 11, Node IDs: [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11], Node Names: [Start, Menu, Dept 1, Dept 2, Dept 3, Dept 4, Dept 5, Dept 6, Dept 7, Agent, End Call]
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiChatServlet] Chat Turn Complete -> Session: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Latency: 14ms
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/414f3cb3-6df4-4e31-be46-53b0fd8de7ba, SessionStr: 414f3cb3-6df4-4e31-be46-53b0fd8de7ba, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session 414f3cb3-6df4-4e31-be46-53b0fd8de7ba to 'Government IVR': true
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=414f3cb3-6df4-4e31-be46-53b0fd8de7ba, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=11, Connections=19.
-[http-nio-8080-exec-10] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=8. Score=60.
-[http-nio-8080-exec-9] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-9] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7: 6 messages returned.
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=11, Connections=19.
-[http-nio-8080-exec-3] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=8. Score=60.
-[http-nio-8080-exec-4] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, SessionStr: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-4] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7 to 'Government IVR': true
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=6, Connections=9.
-[http-nio-8080-exec-2] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=3. Score=85.
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.FlowContextService - [FlowContextService] Cleared outdated flow context for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.service.FlowContextService - [FlowContextService - SaveActiveFlow] Session ID: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Flow ID: unknown-flow-id, Nodes Count: 6, Node IDs: [n1, n2, n3, n4, n5, n6], Node Names: [Start, Menu, Standard error handling, Polite closing, Agent, End Call]
-[http-nio-8080-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiChatServlet] Chat Turn Complete -> Session: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Latency: 1ms
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, SessionStr: 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, Tenant: 00000000-0000-0000-0000-000000000001
-[http-nio-8080-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session 50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7 to 'عاوز اعمل تصميم لهئيه الجوازات المصريه ويكون فيه طبقه للذكاء الاصطناعي بحيث لما العميل يتصل ع الخط الساخن الذكاء الاصطناعي يرد عليه ويشوف عو عاوز يروح علي انهي خدمه ويوديه عندها ع طول وكمان التصكيم يكون كامل': true
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=50eb8c46-11ea-4be8-a0b8-4d374f5ea3f7, snapshotId=null, provider=null, model=null, autoRefine=true
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=6, Connections=9.
-[http-nio-8080-exec-6] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=3. Score=85.
+[http-nio-8081-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-2] INFO com.nexusivr.ai.dao.DatabaseManager - Initializing HikariCP DataSource for PostgreSQL: jdbc:postgresql://ep-empty-cell-ay0ibimz-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require&channelBinding=require
+[http-nio-8081-exec-2] INFO com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+[http-nio-8081-exec-2] INFO com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@53ba4c1d
+[http-nio-8081-exec-2] INFO com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+[http-nio-8081-exec-2] INFO com.nexusivr.ai.dao.DatabaseManager - HikariCP DataSource initialized successfully.
+[http-nio-8081-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session a35a7a4d-37f9-4250-90ba-90b3956ea133: 6 messages returned.
+[http-nio-8081-exec-4] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
+[http-nio-8081-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/a35a7a4d-37f9-4250-90ba-90b3956ea133, SessionStr: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=a35a7a4d-37f9-4250-90ba-90b3956ea133, snapshotId=null, provider=null, model=null, autoRefine=null
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=10, Connections=23.
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=100.
+[http-nio-8081-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 4 sessions returned.
+[http-nio-8081-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-4] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session a35a7a4d-37f9-4250-90ba-90b3956ea133: 6 messages returned.
+[http-nio-8081-exec-9] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
+[http-nio-8081-exec-9] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=a35a7a4d-37f9-4250-90ba-90b3956ea133, snapshotId=null, provider=null, model=null, autoRefine=null
+[http-nio-8081-exec-9] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=10, Connections=23.
+[http-nio-8081-exec-9] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=100.
+[http-nio-8081-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/a35a7a4d-37f9-4250-90ba-90b3956ea133, SessionStr: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session a35a7a4d-37f9-4250-90ba-90b3956ea133 to 'عاوز اعمل تصميم لهيئه المعاشات المصريه في وزراه التضامن الاجتماعي': true
+[http-nio-8081-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 4 sessions returned.
+[http-nio-8081-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session a35a7a4d-37f9-4250-90ba-90b3956ea133 to 'عاوز اعمل تصميم لهيئه المعاشات المصريه في وزراه التضامن الاجتماعي': true
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=a35a7a4d-37f9-4250-90ba-90b3956ea133, snapshotId=null, provider=null, model=null, autoRefine=null
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=10, Connections=23.
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=100.
+[http-nio-8081-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-4] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
+[http-nio-8081-exec-4] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=a35a7a4d-37f9-4250-90ba-90b3956ea133, snapshotId=null, provider=null, model=null, autoRefine=null
+[http-nio-8081-exec-4] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=10, Connections=23.
+[http-nio-8081-exec-4] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=100.
+[http-nio-8081-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 4 sessions returned.
+[http-nio-8081-exec-9] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-9] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 4 sessions returned.
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session a35a7a4d-37f9-4250-90ba-90b3956ea133: 6 messages returned.
+[http-nio-8081-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
+[http-nio-8081-exec-8] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=a35a7a4d-37f9-4250-90ba-90b3956ea133, snapshotId=null, provider=null, model=null, autoRefine=null
+[http-nio-8081-exec-8] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=10, Connections=23.
+[http-nio-8081-exec-8] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=100.
+[http-nio-8081-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/a35a7a4d-37f9-4250-90ba-90b3956ea133, SessionStr: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session a35a7a4d-37f9-4250-90ba-90b3956ea133 to 'عاوز اعمل تصميم لهيئه المعاشات المصريه في وزراه التضامن الاجتماعي': true
+[http-nio-8081-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session a35a7a4d-37f9-4250-90ba-90b3956ea133: 6 messages returned.
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=a35a7a4d-37f9-4250-90ba-90b3956ea133, snapshotId=null, provider=null, model=null, autoRefine=null
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=10, Connections=23.
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=100.
+[http-nio-8081-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/a35a7a4d-37f9-4250-90ba-90b3956ea133, SessionStr: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session a35a7a4d-37f9-4250-90ba-90b3956ea133 to 'عاوز اعمل تصميم لهيئه المعاشات المصريه في وزراه التضامن الاجتماعي': true
+[http-nio-8081-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: SAVE_DRAFT
+[http-nio-8081-exec-1] INFO com.nexusivr.ai.service.FlowDraftService - [FlowDraftService] Saved and verified draft JSON successfully to /home/mohesham/Desktop/IVR-Platform/IVR-engine/draft/00000000-0000-0000-0000-000000000001/ivr_flow_draft_v1.json (version v1, size=8686 bytes)
+[http-nio-8081-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-9] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
+[http-nio-8081-exec-8] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=a35a7a4d-37f9-4250-90ba-90b3956ea133, snapshotId=null, provider=null, model=null, autoRefine=null
+[http-nio-8081-exec-8] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=10, Connections=23.
+[http-nio-8081-exec-8] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=100.
+[http-nio-8081-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 4 sessions returned.
+[http-nio-8081-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-9] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session a35a7a4d-37f9-4250-90ba-90b3956ea133: 6 messages returned.
+[http-nio-8081-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 4 sessions returned.
+[http-nio-8081-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=a35a7a4d-37f9-4250-90ba-90b3956ea133, snapshotId=null, provider=null, model=null, autoRefine=null
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=10, Connections=23.
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=100.
+[http-nio-8081-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/a35a7a4d-37f9-4250-90ba-90b3956ea133, SessionStr: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session a35a7a4d-37f9-4250-90ba-90b3956ea133 to 'عاوز اعمل تصميم لهيئه المعاشات المصريه في وزراه التضامن الاجتماعي': true
+[http-nio-8081-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session a35a7a4d-37f9-4250-90ba-90b3956ea133: 6 messages returned.
+[http-nio-8081-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
+[http-nio-8081-exec-1] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=a35a7a4d-37f9-4250-90ba-90b3956ea133, snapshotId=null, provider=null, model=null, autoRefine=null
+[http-nio-8081-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=10, Connections=23.
+[http-nio-8081-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=100.
+[http-nio-8081-exec-4] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/a35a7a4d-37f9-4250-90ba-90b3956ea133, SessionStr: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-4] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session a35a7a4d-37f9-4250-90ba-90b3956ea133 to 'عاوز اعمل تصميم لهيئه المعاشات المصريه في وزراه التضامن الاجتماعي': true
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: PUBLISH_FLOW
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.service.FlowModelValidator - [FlowModelValidator] Validation start. Nodes=10, Connections=23
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.service.ModelToVxmlExporter - [ModelToVxmlExporter] Exporting FlowModel to VoiceXML: nodes=10, connections=23
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.service.FlowModelValidator - [FlowModelValidator] Validation Result: VALID_WITH_WARNINGS (Valid (6 warnings)). Errors count=0, Warnings count=6. Score=82.
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.service.ModelToVxmlExporter - [ModelToVxmlExporter] Exporting FlowModel to VoiceXML: nodes=10, connections=23
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.service.FlowPublishService - [FlowPublishService] Published VXML scenario successfully to /home/mohesham/Desktop/IVR-Platform/IVR-engine/scenarios/00000000-0000-0000-0000-000000000001/published_flow.vxml
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.service.FlowPublishService - [FlowPublishService] Executing add_extension.sh: /home/mohesham/Desktop/IVR-Platform/IVR-engine/add_extension.sh with ext='1234', business='published_flow', vxml_path='00000000-0000-0000-0000-000000000001/published_flow'
+[http-nio-8081-exec-6] WARN com.nexusivr.ai.service.FlowPublishService - [FlowPublishService] add_extension.sh failed with exit 1. Stderr: sudo: 3 incorrect password attempts, Stdout: 

@@ -52,6 +52,10 @@
         <servlet-name>AiFlowServlet</servlet-name>
         <url-pattern>/api/v1/ai/flow/*</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AiFlowServlet</servlet-name>
+        <url-pattern>/api/v1/ai/generation/*</url-pattern>
+    </servlet-mapping>
 
     <!-- AI Summarize Servlet -->
     <servlet>

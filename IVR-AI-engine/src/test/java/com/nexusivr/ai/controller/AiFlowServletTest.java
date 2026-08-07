@@ -129,4 +129,63 @@ public class AiFlowServletTest {
         assertFalse(json.contains("\"retryAfterSeconds\": 30,"), "retryAfterSeconds must NOT be hardcoded 30 when 300s quota cooldown is in effect");
         assertTrue(json.contains("\"code\": \"QUOTA_EXCEEDED\"") || json.contains("\"code\":\"QUOTA_EXCEEDED\""));
     }
+
+    @Test
+    @DisplayName("Should parse valid VoiceXML and return rendered flow JSON")
+    void testParseVxmlEndpoint() throws Exception {
+        when(request.getRequestURI()).thenReturn("/api/v1/ai/flow/parse");
+        String vxmlContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\\n" +
+                "<vxml version=\"2.1\">\\n" +
+                "  <form id=\"welcome\">\\n" +
+                "    <block>\\n" +
+                "      <prompt>Welcome to NexusIVR</prompt>\\n" +
+                "      <goto next=\"#end\"/>\\n" +
+                "    </block>\\n" +
+                "  </form>\\n" +
+                "  <form id=\"end\">\\n" +
+                "    <disconnect/>\\n" +
+                "  </form>\\n" +
+                "</vxml>";
+        String requestJson = "{\"vxml\": \"" + vxmlContent.replace("\n", "\\n").replace("\"", "\\\"") + "\"}";
+        when(request.getReader()).thenReturn(new BufferedReader(new StringReader(requestJson)));
+
+        servlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_OK);
+        String responseBody = responseWriter.toString();
+        assertTrue(responseBody.contains("welcome"));
+        assertTrue(responseBody.contains("end"));
+        assertTrue(responseBody.contains("nodes"));
+        assertTrue(responseBody.contains("edges"));
+    }
+
+    @Test
+    @DisplayName("Should save flow draft as JSON to disk and return SC_OK")
+    void testSaveDraftEndpoint() throws Exception {
+        when(request.getRequestURI()).thenReturn("/api/v1/ai/flow/draft");
+        when(request.getHeader("X-Tenant-ID")).thenReturn("00000000-0000-0000-0000-000000000001");
+        
+        String testFlowJson = "{\\\"nodes\\\":[{\\\"id\\\":\\\"n1\\\",\\\"type\\\":\\\"start\\\",\\\"x\\\":100,\\\"y\\\":100,\\\"ports\\\":[]}]}";
+        String requestJson = "{\"flowId\":\"test_flow_id_123\",\"flowName\":\"Test Hospital Flow\",\"flowJson\":\"" + testFlowJson + "\"}";
+        when(request.getReader()).thenReturn(new BufferedReader(new StringReader(requestJson)));
+
+        servlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_OK);
+        String responseBody = responseWriter.toString();
+        
+        // Parse response
+        com.google.gson.JsonObject respObj = com.google.gson.JsonParser.parseString(responseBody).getAsJsonObject();
+        assertTrue(respObj.get("success").getAsBoolean());
+        String filePathStr = respObj.get("filePath").getAsString();
+        String filename = respObj.get("filename").getAsString();
+        
+        assertTrue(filename.endsWith(".json"));
+        java.nio.file.Path draftPath = java.nio.file.Paths.get(filePathStr);
+        assertTrue(java.nio.file.Files.exists(draftPath));
+        assertTrue(java.nio.file.Files.size(draftPath) > 0);
+        
+        // Clean up
+        java.nio.file.Files.deleteIfExists(draftPath);
+    }
 }

@@ -61,8 +61,7 @@ public class AiChatServlet extends BaseAiServlet {
             }
 
             UUID selectedSnapshotId = extractSnapshotId(req);
-            Boolean autoRefine = request.getAutoRefine();
-            ChatResponse response = service.sendMessage(sessionId, tenantId, messageText, request.getFlowContext(), selectedSnapshotId, autoRefine);
+            ChatResponse response = service.sendMessage(sessionId, tenantId, messageText, request.getFlowContext(), selectedSnapshotId, true);
             long latencyMs = System.currentTimeMillis() - startTime;
             logger.info("[AiChatServlet] Chat Turn Complete -> Session: {}, Latency: {}ms", sessionId, latencyMs);
 
