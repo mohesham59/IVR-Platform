@@ -17,3 +17,9 @@ src/components/
 
 .fuse_hidden*
 assets/
+
+# Exclude dynamic drafts
+IVR-engine/draft/
+
+# Exclude UUID-prefixed scenario files and subdirectories
+IVR-engine/scenarios/[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]-*
