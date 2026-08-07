@@ -224,6 +224,24 @@ public class FlowModelAutoRepair {
         for (FlowNode node : model.getNodes()) {
             if (node.getType() == FlowNodeType.MENU && node.getMenu() != null) {
                 List<FlowChoice> choices = node.getMenu().getChoices();
+                List<FlowConnection> outgoing = model.getConnections().stream()
+                        .filter(c -> node.getId().equals(c.getSourceNodeId()))
+                        .collect(Collectors.toList());
+
+                // Pre-match choices to connections by index for duplicates
+                Map<FlowChoice, FlowConnection> choiceToConn = new HashMap<>();
+                Map<String, List<FlowConnection>> connsByPort = outgoing.stream()
+                        .collect(Collectors.groupingBy(c -> c.getSourcePort() == null ? "" : c.getSourcePort()));
+                Map<String, Integer> portCounts = new HashMap<>();
+                for (FlowChoice choice : choices) {
+                    String port = choice.getKey();
+                    List<FlowConnection> conns = connsByPort.getOrDefault(port, List.of());
+                    int idx = portCounts.merge(port, 0, (old, val) -> old + 1);
+                    if (idx < conns.size()) {
+                        choiceToConn.put(choice, conns.get(idx));
+                    }
+                }
+
                 Set<String> usedKeys = new HashSet<>();
 
                 for (int i = 0; i < choices.size(); i++) {
@@ -231,11 +249,18 @@ public class FlowModelAutoRepair {
                     String dtmf = choice.getDtmf();
                     if (dtmf == null || dtmf.isBlank() || !dtmf.matches("\\d")) {
                         String newDtmf = findAvailableDigit(usedKeys);
+                        String newKey = "key" + newDtmf;
                         choice.setDtmf(newDtmf);
-                        choice.setKey("key" + newDtmf);
+                        choice.setKey(newKey);
                         usedKeys.add(newDtmf);
                         logger.info("[FlowModelAutoRepair] Fixed invalid menu option DTMF in node '{}', assigned '{}'",
                                 node.getId(), newDtmf);
+
+                        // Update the corresponding connection
+                        FlowConnection conn = choiceToConn.get(choice);
+                        if (conn != null) {
+                            conn.setSourcePort(newKey);
+                        }
                     } else {
                         usedKeys.add(dtmf);
                     }
@@ -252,11 +277,18 @@ public class FlowModelAutoRepair {
                     String dtmf = choice.getDtmf();
                     if (dtmf == null || dtmf.isBlank() || !seen.add(dtmf)) {
                         String newDtmf = findAvailableDigit(seen);
+                        String newKey = "key" + newDtmf;
                         choice.setDtmf(newDtmf);
-                        choice.setKey("key" + newDtmf);
+                        choice.setKey(newKey);
                         seen.add(newDtmf);
                         logger.info("[FlowModelAutoRepair] Reassigned duplicate/invalid menu option DTMF in node '{}', assigned '{}'",
                                 node.getId(), newDtmf);
+
+                        // Update the corresponding connection
+                        FlowConnection conn = choiceToConn.get(choice);
+                        if (conn != null) {
+                            conn.setSourcePort(newKey);
+                        }
                     }
                 }
             }

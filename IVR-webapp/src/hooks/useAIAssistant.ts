@@ -75,6 +75,8 @@ export interface UseAIAssistantReturn {
   handleValidateFlow: () => Promise<void>
   handleImproveFlow: () => Promise<void>
   handleExportJson: () => void
+  handleExportVxml: () => Promise<void>
+  stopGeneration: () => Promise<void>
   refreshSessions: () => Promise<void>
   loadSessionHistory: (sid: string) => Promise<void>
   buildFlowContextJson: () => string | undefined
@@ -155,6 +157,7 @@ export function useAIAssistant(options: UseAIAssistantOptions = {}): UseAIAssist
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const activeFlowRef = useRef<{ nodes: FlowNode[]; edges: FlowEdge[]; flowName: string } | null>(null)
   const currentSessionIdRef = useRef<string>(sessionId)
+  const abortControllersRef = useRef<Map<string, AbortController>>(new Map())
 
   useEffect(() => {
     currentSessionIdRef.current = sessionId
@@ -465,6 +468,13 @@ export function useAIAssistant(options: UseAIAssistantOptions = {}): UseAIAssist
   const handleSelectSession = useCallback((sid: string) => {
     if (sid === currentSessionIdRef.current) return
     console.log('Conversation clicked', sid)
+    // Abort other sessions
+    abortControllersRef.current.forEach((controller, id) => {
+      if (id !== sid) {
+        controller.abort('Session switched')
+        abortControllersRef.current.delete(id)
+      }
+    })
     currentSessionIdRef.current = sid
     setActiveFlow(null)
     setMessages([])
@@ -493,6 +503,13 @@ export function useAIAssistant(options: UseAIAssistantOptions = {}): UseAIAssist
 
     const newSid = crypto.randomUUID()
     currentSessionIdRef.current = newSid
+    // Abort other sessions
+    abortControllersRef.current.forEach((controller, id) => {
+      if (id !== newSid) {
+        controller.abort('New chat initiated')
+        abortControllersRef.current.delete(id)
+      }
+    })
     setSessionId(newSid)
 
     setSessions(prev => [{ id: newSid, title: 'New IVR Flow Session', ts: 'Just now' }, ...prev.filter(s => s.id !== newSid)])
@@ -631,11 +648,18 @@ export function useAIAssistant(options: UseAIAssistantOptions = {}): UseAIAssist
   const handleImproveFlow = useCallback(async () => {
     if (!activeFlowRef.current) return
     setIsTyping(true)
+    const controller = new AbortController()
+    abortControllersRef.current.set(sessionId, controller)
     try {
       const res = await aiApi.improveFlow(
         { nodes: activeFlowRef.current.nodes, edges: activeFlowRef.current.edges },
-        ['Improve call containment', 'Reduce wait times']
+        ['Improve call containment', 'Reduce wait times'],
+        { signal: controller.signal }
       )
+      if (currentSessionIdRef.current !== sessionId) {
+        console.debug(`[NexusIVR] Discarded stale response for session=${sessionId}, active session is ${currentSessionIdRef.current}`)
+        return
+      }
       if (res.quotaWarnings && res.quotaWarnings.length > 0) {
         setQuotaWarnings(res.quotaWarnings)
       }
@@ -693,6 +717,10 @@ export function useAIAssistant(options: UseAIAssistantOptions = {}): UseAIAssist
       }
       pushToHistory(aiMsg)
     } catch (err: any) {
+      if (err.name === 'AbortError') {
+        console.debug(`[NexusIVR] Discarded stale response for session=${sessionId}, active session is ${currentSessionIdRef.current}`)
+        return
+      }
       const errorMsg = err instanceof Error ? err.message : 'Flow improvement failed. Please try again.'
       const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
       const aiMsg: Message = {
@@ -704,6 +732,9 @@ export function useAIAssistant(options: UseAIAssistantOptions = {}): UseAIAssist
       }
       pushToHistory(aiMsg)
     } finally {
+      if (abortControllersRef.current.get(sessionId) === controller) {
+        abortControllersRef.current.delete(sessionId)
+      }
       setIsTyping(false)
     }
   }, [sessionId, setActiveFlow, pushToHistory])
@@ -720,6 +751,45 @@ export function useAIAssistant(options: UseAIAssistantOptions = {}): UseAIAssist
     a.click()
     URL.revokeObjectURL(url)
   }, [])
+
+  const handleExportVxml = useCallback(async () => {
+    if (!activeFlowRef.current) return
+    const flow = activeFlowRef.current
+    try {
+      const flowJsonStr = JSON.stringify({ name: flow.flowName, nodes: flow.nodes, edges: flow.edges })
+      const { vxml } = await aiApi.exportVxml(flowJsonStr)
+      const blob = new Blob([vxml], { type: 'application/voicexml+xml' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      const slug = flow.flowName
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '') || 'ivr_flow'
+      a.download = `${slug}.vxml`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (err: any) {
+      console.error('[useAIAssistant] Export VXML failed:', err.message || err)
+    }
+  }, [])
+
+  const stopGeneration = useCallback(async () => {
+    if (!sessionId) return
+    const controller = abortControllersRef.current.get(sessionId)
+    if (controller) {
+      controller.abort('Cancelled by user')
+      abortControllersRef.current.delete(sessionId)
+    }
+    setIsTyping(false)
+    setGenerationStage('idle')
+    try {
+      await aiApi.cancelGeneration(sessionId)
+    } catch (err: any) {
+      console.warn('[useAIAssistant] Failed to signal cancellation to backend:', err.message || err)
+    }
+  }, [sessionId])
 
   const advanceStage = useCallback((from: GenerationStage, to: GenerationStage, delay: number) => {
     setTimeout(() => {
@@ -761,10 +831,16 @@ export function useAIAssistant(options: UseAIAssistantOptions = {}): UseAIAssist
         advanceStage('planning', 'template', 900)
         setGenerationStage('generating')
 
+        const controller = new AbortController()
+        abortControllersRef.current.set(sessionId, controller)
         let flowRes
         try {
-          flowRes = await aiApi.generateFlow(text)
+          flowRes = await aiApi.generateFlow(text, { signal: controller.signal })
         } catch (err: any) {
+          if (err.name === 'AbortError') {
+            console.debug(`[NexusIVR] Discarded stale response for session=${sessionId}, active session is ${currentSessionIdRef.current}`)
+            return
+          }
           const errorMsg = err instanceof Error ? err.message : 'Flow generation failed. Please try again.'
           const aiMsg: Message = {
             id: (Date.now() + 1).toString(),
@@ -776,6 +852,15 @@ export function useAIAssistant(options: UseAIAssistantOptions = {}): UseAIAssist
           updateAndSaveMessages([...updatedWithUser, aiMsg])
           setGenerationStage('idle')
           setIsTyping(false)
+          return
+        } finally {
+          if (abortControllersRef.current.get(sessionId) === controller) {
+            abortControllersRef.current.delete(sessionId)
+          }
+        }
+
+        if (currentSessionIdRef.current !== sessionId) {
+          console.debug(`[NexusIVR] Discarded stale response for session=${sessionId}, active session is ${currentSessionIdRef.current}`)
           return
         }
 
@@ -809,8 +894,12 @@ export function useAIAssistant(options: UseAIAssistantOptions = {}): UseAIAssist
         const flowData = { nodes: parsedFlow.nodes, edges: parsedFlow.edges, flowName, status: parsedFlow.status }
 
         aiApi.validateFlow({ nodes: parsedFlow.nodes, edges: parsedFlow.edges })
-          .then(val => setValidationResult(val))
-          .catch(() => setValidationResult({ valid: true, issues: [] }))
+          .then(val => {
+            if (currentSessionIdRef.current === sessionId) setValidationResult(val)
+          })
+          .catch(() => {
+            if (currentSessionIdRef.current === sessionId) setValidationResult({ valid: true, issues: [] })
+          })
 
         setGenerationStage('converting')
         setActiveFlow(flowData)
@@ -851,7 +940,28 @@ export function useAIAssistant(options: UseAIAssistantOptions = {}): UseAIAssist
         updateAndSaveMessages([...updatedWithUser, aiMsg])
       } else {
         const flowCtx = buildFlowContextJson()
-        const chatRes = await aiApi.sendMessage(text, sessionId, 'CHAT', flowCtx, selectedSnapshotId || undefined, enhancePrompt)
+        const controller = new AbortController()
+        abortControllersRef.current.set(sessionId, controller)
+        let chatRes
+        try {
+          chatRes = await aiApi.sendMessage(text, sessionId, 'CHAT', flowCtx, selectedSnapshotId || undefined, enhancePrompt, { signal: controller.signal })
+        } catch (err: any) {
+          if (err.name === 'AbortError') {
+            console.debug(`[NexusIVR] Discarded stale response for session=${sessionId}, active session is ${currentSessionIdRef.current}`)
+            return
+          }
+          throw err
+        } finally {
+          if (abortControllersRef.current.get(sessionId) === controller) {
+            abortControllersRef.current.delete(sessionId)
+          }
+        }
+
+        if (currentSessionIdRef.current !== sessionId) {
+          console.debug(`[NexusIVR] Discarded stale response for session=${sessionId}, active session is ${currentSessionIdRef.current}`)
+          return
+        }
+
         if (chatRes.quotaWarnings && chatRes.quotaWarnings.length > 0) {
           setQuotaWarnings(chatRes.quotaWarnings)
         }
@@ -968,6 +1078,8 @@ export function useAIAssistant(options: UseAIAssistantOptions = {}): UseAIAssist
     handleValidateFlow,
     handleImproveFlow,
     handleExportJson,
+    handleExportVxml,
+    stopGeneration,
     refreshSessions,
     loadSessionHistory,
     buildFlowContextJson,

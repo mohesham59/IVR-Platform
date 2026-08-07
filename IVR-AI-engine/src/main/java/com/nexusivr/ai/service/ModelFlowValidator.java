@@ -141,9 +141,71 @@ public class ModelFlowValidator {
             }
 
             // Rule 8: Transfer nodes should have destination
-            if (node.getType() == FlowNodeType.TRANSFER && (node.getTransfer() == null || node.getTransfer().getDestination() == null || node.getTransfer().getDestination().isBlank())) {
-                issues.add(new ValidationIssueDto(ValidationSeverity.WARNING, "MISSING_TRANSFER_DEST",
-                        "Transfer node has no destination: " + node.getId(), node.getId(), null));
+            if (node.getType() == FlowNodeType.TRANSFER) {
+                String dest = node.getTransfer() != null ? node.getTransfer().getDestination() : null;
+                if (dest == null || dest.trim().isEmpty() || "TRANSFER_TARGET_PLACEHOLDER".equalsIgnoreCase(dest.trim())) {
+                    issues.add(new ValidationIssueDto(ValidationSeverity.WARNING, "MISSING_TRANSFER_DEST",
+                            "Transfer node has no destination: " + node.getId(), node.getId(), null));
+                } else if (isUnconfiguredOrRoleTransferDestination(dest)) {
+                    issues.add(new ValidationIssueDto(ValidationSeverity.WARNING, "UNCONFIGURED_TRANSFER_DEST",
+                            "Transfer destination is a human/role name instead of a dialable target: " + dest, node.getId(), null));
+                }
+            }
+        }
+
+        // DISCONNECTED_FALLBACK_MENU check
+        java.util.List<FlowNode> aiNodes = model.getNodes().stream()
+                .filter(n -> n.getType() == FlowNodeType.AI)
+                .collect(java.util.stream.Collectors.toList());
+        java.util.List<FlowNode> menuNodes = model.getNodes().stream()
+                .filter(n -> n.getType() == FlowNodeType.MENU)
+                .collect(java.util.stream.Collectors.toList());
+
+        for (FlowNode menu : menuNodes) {
+            boolean hasIncoming = model.getConnections().stream()
+                    .anyMatch(c -> menu.getId().equals(c.getTargetNodeId()));
+            if (!hasIncoming) {
+                java.util.Set<String> menuTargets = new java.util.HashSet<>();
+                if (menu.getMenu() != null && menu.getMenu().getChoices() != null) {
+                    for (FlowChoice choice : menu.getMenu().getChoices()) {
+                        if (choice.getTargetNodeId() != null) {
+                            menuTargets.add(choice.getTargetNodeId().replace("#", "").trim());
+                        }
+                    }
+                }
+                if (!menuTargets.isEmpty()) {
+                    for (FlowNode aiNode : aiNodes) {
+                        java.util.Set<String> aiTargets = new java.util.HashSet<>();
+                        if (aiNode.getMenu() != null && aiNode.getMenu().getChoices() != null) {
+                            for (FlowChoice choice : aiNode.getMenu().getChoices()) {
+                                if (choice.getTargetNodeId() != null) {
+                                    aiTargets.add(choice.getTargetNodeId().replace("#", "").trim());
+                                }
+                            }
+                        }
+                        model.getConnections().stream()
+                                .filter(c -> aiNode.getId().equals(c.getSourceNodeId()))
+                                .forEach(c -> aiTargets.add(c.getTargetNodeId()));
+
+                        if (aiTargets.containsAll(menuTargets)) {
+                            issues.add(new ValidationIssueDto(ValidationSeverity.WARNING, "DISCONNECTED_FALLBACK_MENU",
+                                    "Unlinked DTMF menu duplicates AI routing destinations: " + menu.getId(), menu.getId(), null));
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Rule 9: Terminal nodes should not have outgoing connections
+        for (FlowNode node : model.getNodes()) {
+            if (node.getType() == FlowNodeType.END || node.getType() == FlowNodeType.DISCONNECT) {
+                boolean hasOutgoing = model.getConnections().stream()
+                        .anyMatch(c -> c.getSourceNodeId().equals(node.getId()));
+                if (hasOutgoing) {
+                    issues.add(new ValidationIssueDto(ValidationSeverity.ERROR, "STRAY_OUTGOING_EDGE",
+                            "Terminal node cannot have outgoing connections: " + node.getId(), node.getId(), null));
+                }
             }
         }
 
@@ -178,6 +240,35 @@ public class ModelFlowValidator {
         long duplicateIds = issues.stream().filter(i -> "DUPLICATE_NODE_ID".equals(i.getCode())).count();
         score -= duplicateIds * 10;
 
+        long disconnectedFallback = issues.stream().filter(i -> "DISCONNECTED_FALLBACK_MENU".equals(i.getCode())).count();
+        score -= disconnectedFallback * 10;
+
+        long strayOutgoing = issues.stream().filter(i -> "STRAY_OUTGOING_EDGE".equals(i.getCode())).count();
+        score -= strayOutgoing * 10;
+
         return Math.max(0, Math.min(100, score));
+    }
+
+    public static boolean isUnconfiguredOrRoleTransferDestination(String dest) {
+        if (dest == null || dest.trim().isEmpty()) {
+            return true;
+        }
+        dest = dest.trim();
+        if ("TRANSFER_TARGET_PLACEHOLDER".equalsIgnoreCase(dest)) {
+            return true;
+        }
+        if (dest.contains(" ")) {
+            return true;
+        }
+        if (dest.toLowerCase().startsWith("sip:") || dest.contains("@")) {
+            return false;
+        }
+        if (dest.matches("^[\\+\\*#]?[0-9]+$")) {
+            return false;
+        }
+        if (dest.matches("^[A-Z0-9_]+$")) {
+            return false;
+        }
+        return true;
     }
 }

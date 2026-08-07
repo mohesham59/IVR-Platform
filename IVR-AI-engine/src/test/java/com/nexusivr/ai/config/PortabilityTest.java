@@ -38,7 +38,7 @@ public class PortabilityTest {
 
         assertTrue(scriptPathStr.endsWith("add_extension.sh"), "Script path must end with add_extension.sh: " + scriptPathStr);
         assertTrue(scenariosDirStr.endsWith("scenarios"), "Scenarios path must end with scenarios: " + scenariosDirStr);
-        assertTrue(draftsDirStr.endsWith("drafts"), "Drafts path must end with drafts: " + draftsDirStr);
+        assertTrue(draftsDirStr.endsWith("draft"), "Drafts path must end with draft: " + draftsDirStr);
 
         assertTrue(Files.exists(scriptPath), "Resolved add_extension.sh script file MUST exist: " + scriptPath);
     }

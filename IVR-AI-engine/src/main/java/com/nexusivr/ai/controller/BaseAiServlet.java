@@ -56,11 +56,18 @@ public abstract class BaseAiServlet extends HttpServlet {
             }
         }
 
+        UUID sessionId = extractSessionId(req);
+
         com.nexusivr.ai.config.GlobalAiConfig.setOverrides(provider, model, temp, timeout, systemPrompt);
+        if (sessionId != null) {
+            com.nexusivr.ai.service.GenerationCancellationRegistry.clear(sessionId);
+            com.nexusivr.ai.service.GenerationCancellationRegistry.setCurrentSessionId(sessionId);
+        }
         try {
             super.service(req, resp);
         } finally {
             com.nexusivr.ai.config.GlobalAiConfig.clearOverrides();
+            com.nexusivr.ai.service.GenerationCancellationRegistry.clearCurrentSessionId();
         }
     }
 
@@ -108,6 +115,7 @@ public abstract class BaseAiServlet extends HttpServlet {
         if ("gemini".equalsIgnoreCase(provider)) return com.nexusivr.ai.config.LlmConfig.getGeminiModel();
         if ("groq".equalsIgnoreCase(provider)) return com.nexusivr.ai.config.LlmConfig.getGroqModel();
         if ("ollama".equalsIgnoreCase(provider)) return com.nexusivr.ai.config.LlmConfig.getOllamaModel();
+        if ("openrouter".equalsIgnoreCase(provider)) return com.nexusivr.ai.config.LlmConfig.getOpenrouterModel();
         // openai and claude providers are no longer supported
 
         return com.nexusivr.ai.config.GlobalAiConfig.getInstance().getDefaultModel();
@@ -204,6 +212,10 @@ public abstract class BaseAiServlet extends HttpServlet {
             logger.warn("Validation error processing API request: {}", e.getMessage());
             sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
                     new ErrorResponse("VALIDATION_ERROR", e.getMessage(), Map.of(), now));
+        } else if (e instanceof com.nexusivr.ai.service.exception.GenerationCancelledException) {
+            logger.info("Generation request cancelled: {}", e.getMessage());
+            sendJsonResponse(resp, 499,
+                    new ErrorResponse("GENERATION_CANCELLED", e.getMessage(), Map.of(), now));
         } else if (e instanceof ResourceNotFoundException) {
             logger.warn("Resource not found processing API request: {}", e.getMessage());
             sendJsonResponse(resp, HttpServletResponse.SC_NOT_FOUND,
@@ -284,8 +296,9 @@ public abstract class BaseAiServlet extends HttpServlet {
                 requestedProvider = com.nexusivr.ai.config.LlmConfig.getProvider();
             }
             errorResponse.setSelectedProvider(requestedProvider);
-            errorResponse.setActualProviderUsed("none");
-            errorResponse.setFallbackUsed(false);
+            errorResponse.setActualProviderUsed(providerException.getActualProviderUsed() != null ? providerException.getActualProviderUsed() : "none");
+            errorResponse.setFallbackUsed(providerException.isFallbackUsed());
+            errorResponse.setProvidersAttempted(providerException.getProvidersAttempted());
             errorResponse.setFallbackReason(null);
             sendJsonResponse(resp, statusCode, errorResponse);
         } else {

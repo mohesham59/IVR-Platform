@@ -53,6 +53,9 @@ public class GlobalAiConfig {
         } else if ("groq".equalsIgnoreCase(this.defaultProvider)) {
             this.defaultModel = LlmConfig.getGroqModel();
             this.timeout = LlmConfig.getGroqTimeout();
+        } else if ("openrouter".equalsIgnoreCase(this.defaultProvider)) {
+            this.defaultModel = LlmConfig.getOpenrouterModel();
+            this.timeout = LlmConfig.getOpenrouterTimeout();
         } else {
             this.defaultModel = LlmConfig.getGroqModel();
             this.timeout = LlmConfig.getGroqTimeout();

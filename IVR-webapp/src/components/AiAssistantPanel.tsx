@@ -195,8 +195,6 @@ export default function AiAssistantPanel({ onClose, onFlowGenerated }: { onClose
     latestFlow,
     selectedProvider,
     setSelectedProvider,
-    enhancePrompt,
-    setEnhancePrompt,
     providers,
     quotaWarnings,
     validationResult,
@@ -400,18 +398,6 @@ export default function AiAssistantPanel({ onClose, onFlowGenerated }: { onClose
               </button>
             ))}
           </div>
-          <button
-            onClick={() => setEnhancePrompt(!enhancePrompt)}
-            title={enhancePrompt ? "Pass 1 Prompt Refinement enabled: turns rough inputs into structured specs" : "Pass 1 Prompt Refinement disabled: sends raw text directly"}
-            className={`px-2 py-1 rounded-full text-[10px] font-semibold border transition-all flex items-center gap-1 ${
-              enhancePrompt
-                ? 'bg-[#F3E8FF] text-[#7E22CE] border-[#D8B4FE] shadow-xs'
-                : 'bg-[#F3F4F6] text-[#6B7280] border-[#E5E7EB]'
-            }`}
-          >
-            <span>✨ Enhance Prompt:</span>
-            <span className={enhancePrompt ? 'font-bold text-[#6B21A8]' : 'text-[#9CA3AF]'}>{enhancePrompt ? 'ON' : 'OFF'}</span>
-          </button>
         </div>
 
         {/* Input */}

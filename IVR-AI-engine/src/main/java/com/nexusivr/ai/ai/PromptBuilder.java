@@ -208,8 +208,14 @@ public class PromptBuilder {
         - Minimize forms: use the fewest forms necessary.
         - Every form reachable from #start.
         - Every leaf path ends with <transfer dest="..."/> or <disconnect/>.
+        - SINGLE DISCONNECT POINT RULE: All call-terminating paths (hang-ups, goodbyes, post-transaction closings) must <goto> a single shared closing/end form rather than each containing their own <disconnect/>. Only one form in the entire flow should contain <disconnect/>.
+        - <transfer dest="..."> RULES:
+          1. NEVER use free-text human/role/department names (like "Billing Dept" or "Front Desk") as the transfer destination.
+          2. Use dialable extensions or SIP URIs.
+          3. If the destination is unknown, use "TRANSFER_TARGET_PLACEHOLDER".
         - Close every opened tag.
         - Any literal '&' in prompt text MUST be escaped as '&amp;'. Never output a bare '&' inside text content.
+        - AI DYNAMIC ROUTING & FALLBACK MENU WIRING RULE: When generating a dynamic routing AI node, specify a fallback path via a nomatch handler that routes back to the main menu using: <goto next="#main_menu"/>.
         """;
 
     private String systemInstruction;

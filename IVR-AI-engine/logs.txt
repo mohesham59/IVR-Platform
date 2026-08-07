@@ -1,0 +1,150 @@
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by com.google.common.util.concurrent.AbstractFuture$UnsafeAtomicHelper (file:/usr/share/maven/lib/guava.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.common.util.concurrent.AbstractFuture$UnsafeAtomicHelper
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[[1;34mINFO[m] Scanning for projects...
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m-----------------< [0;36mcom.nexusivr.ai:nexusivr-ai-engine[0;1m >-----------------[m
+[[1;34mINFO[m] [1mBuilding nexusivr-ai-engine 1.0.0-SNAPSHOT[m
+[[1;34mINFO[m] [1m--------------------------------[ war ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:2.5:clean[m [1m(default-clean)[m @ [36mnexusivr-ai-engine[0;1m ---[m
+[[1;34mINFO[m] Deleting /home/mohesham/Desktop/IVR-Platform/IVR-AI-engine/target
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:resources[m [1m(default-resources)[m @ [36mnexusivr-ai-engine[0;1m ---[m
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
+[[1;34mINFO[m] Copying 2 resources
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.13.0:compile[m [1m(default-compile)[m @ [36mnexusivr-ai-engine[0;1m ---[m
+[[1;34mINFO[m] Recompiling the module because of [1mchanged source code[m.
+[[1;34mINFO[m] Compiling 218 source files with javac [debug release 21] to target/classes
+[[1;34mINFO[m] /home/mohesham/Desktop/IVR-Platform/IVR-AI-engine/src/main/java/com/nexusivr/ai/model/IvrPlan.java: /home/mohesham/Desktop/IVR-Platform/IVR-AI-engine/src/main/java/com/nexusivr/ai/model/IvrPlan.java uses unchecked or unsafe operations.
+[[1;34mINFO[m] /home/mohesham/Desktop/IVR-Platform/IVR-AI-engine/src/main/java/com/nexusivr/ai/model/IvrPlan.java: Recompile with -Xlint:unchecked for details.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:testResources[m [1m(default-testResources)[m @ [36mnexusivr-ai-engine[0;1m ---[m
+[[1;34mINFO[m] Not copying test resources
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.13.0:testCompile[m [1m(default-testCompile)[m @ [36mnexusivr-ai-engine[0;1m ---[m
+[[1;34mINFO[m] Not compiling test sources
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-surefire-plugin:3.2.5:test[m [1m(default-test)[m @ [36mnexusivr-ai-engine[0;1m ---[m
+[[1;34mINFO[m] Tests are skipped.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-war-plugin:3.4.0:war[m [1m(default-war)[m @ [36mnexusivr-ai-engine[0;1m ---[m
+[[1;34mINFO[m] Packaging webapp
+[[1;34mINFO[m] Assembling webapp [nexusivr-ai-engine] in [/home/mohesham/Desktop/IVR-Platform/IVR-AI-engine/target/nexusivr-ai-engine]
+[[1;34mINFO[m] Processing war project
+[[1;34mINFO[m] Copying webapp resources [/home/mohesham/Desktop/IVR-Platform/IVR-AI-engine/src/main/webapp]
+[[1;34mINFO[m] Building war: /home/mohesham/Desktop/IVR-Platform/IVR-AI-engine/target/nexusivr-ai-engine.war
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mcargo-maven3-plugin:1.10.13:run[m [1m(default-cli)[m @ [36mnexusivr-ai-engine[0;1m ---[m
+[[1;34mINFO[m] Resolved container artifact org.codehaus.cargo:cargo-core-container-tomcat:jar:1.10.13 for container tomcat10x
+[[1;34mINFO[m] Tomcat 10.x Embedded starting...
+Aug 07, 2026 12:42:36 PM org.apache.coyote.AbstractProtocol init
+INFO: Initializing ProtocolHandler ["http-nio-8081"]
+Aug 07, 2026 12:42:36 PM org.apache.catalina.core.StandardService startInternal
+INFO: Starting service [Tomcat]
+Aug 07, 2026 12:42:36 PM org.apache.catalina.core.StandardEngine startInternal
+INFO: Starting Servlet engine: [Apache Tomcat/10.1.23]
+Aug 07, 2026 12:42:36 PM org.apache.coyote.AbstractProtocol start
+INFO: Starting ProtocolHandler ["http-nio-8081"]
+Aug 07, 2026 12:42:36 PM org.apache.catalina.startup.ContextConfig getDefaultWebXmlFragment
+INFO: No global web.xml found
+Aug 07, 2026 12:42:37 PM org.apache.jasper.servlet.TldScanner scanJars
+INFO: At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+[main] INFO com.nexusivr.ai.config.AppServletContextListener - Initializing NexusIVR AI Engine Web Application Context...
+[main] INFO com.nexusivr.ai.config.LlmConfig - LlmConfig: Loaded application.properties successfully.
+[main] INFO com.nexusivr.ai.config.LlmConfig - LlmConfig: Loaded .env file from: /home/mohesham/Desktop/IVR-Platform/IVR-AI-engine/.env
+[main] INFO com.nexusivr.ai.config.GlobalAiConfig - GlobalAiConfig: Reset to defaults. Provider: openrouter, Model: openai.gpt-oss-20b-1:0, Temperature: 0.7, Timeout: 35s
+[main] INFO com.nexusivr.ai.ai.ProviderManager - ProviderManager: Creating client for provider=openrouter, model=openai.gpt-oss-20b-1:0, temperature=0.7, timeout=35s
+[main] INFO com.nexusivr.ai.ai.OpenAiCompatibleClient - OpenAiCompatibleClient: Initialized for openrouter using model=openai.gpt-oss-20b-1:0
+[main] INFO com.nexusivr.ai.config.AppServletContextListener - NexusIVR AI Engine Web Application Context initialized successfully.
+[[1;34mINFO[m] Tomcat 10.x Embedded started on port [8081]
+[[1;34mINFO[m] Press Ctrl-C to stop the container...
+[http-nio-8081-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-2] INFO com.nexusivr.ai.dao.DatabaseManager - Initializing HikariCP DataSource for PostgreSQL: jdbc:postgresql://ep-empty-cell-ay0ibimz-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require&channelBinding=require
+[http-nio-8081-exec-2] INFO com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+[http-nio-8081-exec-2] INFO com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@53ba4c1d
+[http-nio-8081-exec-2] INFO com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+[http-nio-8081-exec-2] INFO com.nexusivr.ai.dao.DatabaseManager - HikariCP DataSource initialized successfully.
+[http-nio-8081-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session a35a7a4d-37f9-4250-90ba-90b3956ea133: 6 messages returned.
+[http-nio-8081-exec-4] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
+[http-nio-8081-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/a35a7a4d-37f9-4250-90ba-90b3956ea133, SessionStr: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=a35a7a4d-37f9-4250-90ba-90b3956ea133, snapshotId=null, provider=null, model=null, autoRefine=null
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=10, Connections=23.
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=100.
+[http-nio-8081-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 4 sessions returned.
+[http-nio-8081-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-4] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session a35a7a4d-37f9-4250-90ba-90b3956ea133: 6 messages returned.
+[http-nio-8081-exec-9] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
+[http-nio-8081-exec-9] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=a35a7a4d-37f9-4250-90ba-90b3956ea133, snapshotId=null, provider=null, model=null, autoRefine=null
+[http-nio-8081-exec-9] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=10, Connections=23.
+[http-nio-8081-exec-9] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=100.
+[http-nio-8081-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/a35a7a4d-37f9-4250-90ba-90b3956ea133, SessionStr: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session a35a7a4d-37f9-4250-90ba-90b3956ea133 to 'عاوز اعمل تصميم لهيئه المعاشات المصريه في وزراه التضامن الاجتماعي': true
+[http-nio-8081-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 4 sessions returned.
+[http-nio-8081-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session a35a7a4d-37f9-4250-90ba-90b3956ea133 to 'عاوز اعمل تصميم لهيئه المعاشات المصريه في وزراه التضامن الاجتماعي': true
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=a35a7a4d-37f9-4250-90ba-90b3956ea133, snapshotId=null, provider=null, model=null, autoRefine=null
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=10, Connections=23.
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=100.
+[http-nio-8081-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-4] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
+[http-nio-8081-exec-4] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=a35a7a4d-37f9-4250-90ba-90b3956ea133, snapshotId=null, provider=null, model=null, autoRefine=null
+[http-nio-8081-exec-4] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=10, Connections=23.
+[http-nio-8081-exec-4] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=100.
+[http-nio-8081-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 4 sessions returned.
+[http-nio-8081-exec-9] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-9] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 4 sessions returned.
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session a35a7a4d-37f9-4250-90ba-90b3956ea133: 6 messages returned.
+[http-nio-8081-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
+[http-nio-8081-exec-8] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=a35a7a4d-37f9-4250-90ba-90b3956ea133, snapshotId=null, provider=null, model=null, autoRefine=null
+[http-nio-8081-exec-8] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=10, Connections=23.
+[http-nio-8081-exec-8] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=100.
+[http-nio-8081-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/a35a7a4d-37f9-4250-90ba-90b3956ea133, SessionStr: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session a35a7a4d-37f9-4250-90ba-90b3956ea133 to 'عاوز اعمل تصميم لهيئه المعاشات المصريه في وزراه التضامن الاجتماعي': true
+[http-nio-8081-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session a35a7a4d-37f9-4250-90ba-90b3956ea133: 6 messages returned.
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=a35a7a4d-37f9-4250-90ba-90b3956ea133, snapshotId=null, provider=null, model=null, autoRefine=null
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=10, Connections=23.
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=100.
+[http-nio-8081-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/a35a7a4d-37f9-4250-90ba-90b3956ea133, SessionStr: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session a35a7a4d-37f9-4250-90ba-90b3956ea133 to 'عاوز اعمل تصميم لهيئه المعاشات المصريه في وزراه التضامن الاجتماعي': true
+[http-nio-8081-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: SAVE_DRAFT
+[http-nio-8081-exec-1] INFO com.nexusivr.ai.service.FlowDraftService - [FlowDraftService] Saved and verified draft JSON successfully to /home/mohesham/Desktop/IVR-Platform/IVR-engine/draft/00000000-0000-0000-0000-000000000001/ivr_flow_draft_v1.json (version v1, size=8686 bytes)
+[http-nio-8081-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-9] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-8] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
+[http-nio-8081-exec-8] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=a35a7a4d-37f9-4250-90ba-90b3956ea133, snapshotId=null, provider=null, model=null, autoRefine=null
+[http-nio-8081-exec-8] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=10, Connections=23.
+[http-nio-8081-exec-8] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=100.
+[http-nio-8081-exec-2] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 4 sessions returned.
+[http-nio-8081-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: null, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-9] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session a35a7a4d-37f9-4250-90ba-90b3956ea133: 6 messages returned.
+[http-nio-8081-exec-10] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched all sessions for tenant 00000000-0000-0000-0000-000000000001: 4 sessions returned.
+[http-nio-8081-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] GET Request -> URI: /nexusivr-ai-engine/api/v1/ai/history, QuerySessionId: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=a35a7a4d-37f9-4250-90ba-90b3956ea133, snapshotId=null, provider=null, model=null, autoRefine=null
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=10, Connections=23.
+[http-nio-8081-exec-3] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=100.
+[http-nio-8081-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/a35a7a4d-37f9-4250-90ba-90b3956ea133, SessionStr: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-5] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session a35a7a4d-37f9-4250-90ba-90b3956ea133 to 'عاوز اعمل تصميم لهيئه المعاشات المصريه في وزراه التضامن الاجتماعي': true
+[http-nio-8081-exec-7] INFO com.nexusivr.ai.controller.BaseAiServlet - Fetched history for session a35a7a4d-37f9-4250-90ba-90b3956ea133: 6 messages returned.
+[http-nio-8081-exec-1] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: FLOW_ANALYSIS, FlowGenerator invoked: false
+[http-nio-8081-exec-1] INFO com.nexusivr.ai.service.AiOperationRouter - [AiOperationRouter] Dispatching operation=VALIDATE_FLOW for session=a35a7a4d-37f9-4250-90ba-90b3956ea133, snapshotId=null, provider=null, model=null, autoRefine=null
+[http-nio-8081-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Stage: FlowModel. Nodes=10, Connections=23.
+[http-nio-8081-exec-1] INFO com.nexusivr.ai.service.ModelFlowValidator - [ModelFlowValidator] Validation Result: VALID_WITH_WARNINGS. Errors count=0, Warnings count=6. Score=100.
+[http-nio-8081-exec-4] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiConversationHistoryServlet] PATCH Request -> URI: /nexusivr-ai-engine/api/v1/ai/history/a35a7a4d-37f9-4250-90ba-90b3956ea133, SessionStr: a35a7a4d-37f9-4250-90ba-90b3956ea133, Tenant: 00000000-0000-0000-0000-000000000001
+[http-nio-8081-exec-4] INFO com.nexusivr.ai.controller.BaseAiServlet - Updated title for session a35a7a4d-37f9-4250-90ba-90b3956ea133 to 'عاوز اعمل تصميم لهيئه المعاشات المصريه في وزراه التضامن الاجتماعي': true
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.controller.BaseAiServlet - [AiFlowServlet] Intent detected: PUBLISH_FLOW
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.service.FlowModelValidator - [FlowModelValidator] Validation start. Nodes=10, Connections=23
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.service.ModelToVxmlExporter - [ModelToVxmlExporter] Exporting FlowModel to VoiceXML: nodes=10, connections=23
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.service.FlowModelValidator - [FlowModelValidator] Validation Result: VALID_WITH_WARNINGS (Valid (6 warnings)). Errors count=0, Warnings count=6. Score=82.
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.service.ModelToVxmlExporter - [ModelToVxmlExporter] Exporting FlowModel to VoiceXML: nodes=10, connections=23
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.service.FlowPublishService - [FlowPublishService] Published VXML scenario successfully to /home/mohesham/Desktop/IVR-Platform/IVR-engine/scenarios/00000000-0000-0000-0000-000000000001/published_flow.vxml
+[http-nio-8081-exec-6] INFO com.nexusivr.ai.service.FlowPublishService - [FlowPublishService] Executing add_extension.sh: /home/mohesham/Desktop/IVR-Platform/IVR-engine/add_extension.sh with ext='1234', business='published_flow', vxml_path='00000000-0000-0000-0000-000000000001/published_flow'
+[http-nio-8081-exec-6] WARN com.nexusivr.ai.service.FlowPublishService - [FlowPublishService] add_extension.sh failed with exit 1. Stderr: sudo: 3 incorrect password attempts, Stdout: 

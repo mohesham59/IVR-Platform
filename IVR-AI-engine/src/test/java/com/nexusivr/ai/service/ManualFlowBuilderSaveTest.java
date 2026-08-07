@@ -74,13 +74,12 @@ class ManualFlowBuilderSaveTest {
         assertTrue(Files.exists(savedPath), "Saved draft file must exist on disk");
 
         String savedContent = Files.readString(savedPath);
-        assertTrue(savedContent.contains("<vxml"), "Saved content must be genuine VoiceXML, not raw JSON fallback!");
-        assertTrue(savedContent.contains("</vxml>"), "Saved content must contain closing VoiceXML tag");
-        assertFalse(savedContent.contains("\"nodes\""), "Saved file must NOT contain raw React Flow JSON text");
+        assertTrue(savedContent.contains("\"nodes\""), "Saved content must contain nodes list key");
+        assertTrue(savedContent.contains("Manual Clinic IVR"), "Saved content must contain flow name");
 
-        // 2. Reload saved VoiceXML draft via FlowContextService and verify nodes are parsed cleanly
-        FlowModel reloadedModel = FlowContextService.convertVxmlToModel(savedContent);
-        assertNotNull(reloadedModel, "Reloaded VoiceXML draft must parse back into FlowModel");
+        // 2. Reload saved JSON draft via FlowContextService and verify nodes are parsed cleanly
+        FlowModel reloadedModel = FlowContextService.convertJsonToModel(savedContent);
+        assertNotNull(reloadedModel, "Reloaded JSON draft must parse back into FlowModel");
 
         assertFalse(reloadedModel.getNodes().isEmpty(), "Reloaded model must contain nodes");
         for (FlowNode node : reloadedModel.getNodes()) {
@@ -91,7 +90,7 @@ class ManualFlowBuilderSaveTest {
         FlowPublishService.FlowPublishResult pubResult = publishService.publishFlow(tenantId, flowId, "2000", flowName, reactFlowJson);
         assertTrue(pubResult.isSuccess(), "Publishing manual flow must succeed");
 
-        Path pubFile = tempScenariosDir.resolve("00000000_0000_0000_0000_000000000001_manual_clinic_ivr.vxml");
+        Path pubFile = tempScenariosDir.resolve(tenantId).resolve("manual_clinic_ivr.vxml");
         assertTrue(Files.exists(pubFile), "Published VXML scenario file must exist on disk");
         String pubContent = Files.readString(pubFile);
         assertTrue(pubContent.contains("<vxml"), "Published scenario must be genuine VoiceXML");

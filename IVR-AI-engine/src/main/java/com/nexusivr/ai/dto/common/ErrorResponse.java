@@ -24,6 +24,7 @@ public class ErrorResponse {
     private String actualProviderUsed;
     private boolean fallbackUsed;
     private String fallbackReason;
+    private java.util.List<String> providersAttempted;
 
     public ErrorResponse() {
         this.details = new HashMap<>();
@@ -120,6 +121,13 @@ public class ErrorResponse {
     public String getFallbackReason() { return fallbackReason; }
     public void setFallbackReason(String fallbackReason) { this.fallbackReason = fallbackReason; }
 
+    public java.util.List<String> getProvidersAttempted() {
+        return providersAttempted;
+    }
+    public void setProvidersAttempted(java.util.List<String> providersAttempted) {
+        this.providersAttempted = providersAttempted;
+    }
+
     @Override
     public String toString() {
         return "ErrorResponse{" +
@@ -134,6 +142,7 @@ public class ErrorResponse {
                 ", actualProviderUsed='" + actualProviderUsed + '\'' +
                 ", fallbackUsed=" + fallbackUsed +
                 ", fallbackReason='" + fallbackReason + '\'' +
+                ", providersAttempted=" + providersAttempted +
                 '}';
     }
 
@@ -150,11 +159,12 @@ public class ErrorResponse {
                 Objects.equals(selectedProvider, that.selectedProvider) &&
                 Objects.equals(actualProviderUsed, that.actualProviderUsed) &&
                 fallbackUsed == that.fallbackUsed &&
-                Objects.equals(fallbackReason, that.fallbackReason);
+                Objects.equals(fallbackReason, that.fallbackReason) &&
+                Objects.equals(providersAttempted, that.providersAttempted);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(code, message, details, timestamp, failureReason, retryAfterSeconds, providerStatuses, selectedProvider, actualProviderUsed, fallbackUsed, fallbackReason);
+        return Objects.hash(code, message, details, timestamp, failureReason, retryAfterSeconds, providerStatuses, selectedProvider, actualProviderUsed, fallbackUsed, fallbackReason, providersAttempted);
     }
 }

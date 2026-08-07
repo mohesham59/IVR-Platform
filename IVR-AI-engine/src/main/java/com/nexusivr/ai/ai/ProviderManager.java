@@ -462,6 +462,11 @@ public class ProviderManager {
                                                    String userPrompt, String callerLabel,
                                                    List<QuotaWarning> quotaWarnings, String domain,
                                                    boolean structuredOutput) {
+        UUID currentSessionId = com.nexusivr.ai.service.GenerationCancellationRegistry.getCurrentSessionId();
+        if (currentSessionId != null && com.nexusivr.ai.service.GenerationCancellationRegistry.isCancelled(currentSessionId)) {
+            throw new com.nexusivr.ai.service.exception.GenerationCancelledException("Generation request was cancelled.");
+        }
+
         List<String> providersToTry = new ArrayList<>(PROVIDER_PRIORITY);
 
         // If a specific provider was requested, try it first, then fall back to priority order.
@@ -490,6 +495,10 @@ public class ProviderManager {
         List<com.nexusivr.ai.dto.common.ProviderAttemptDto> providerAttempts = new ArrayList<>();
 
         for (String targetProvider : providersToTry) {
+            UUID checkSessionId = com.nexusivr.ai.service.GenerationCancellationRegistry.getCurrentSessionId();
+            if (checkSessionId != null && com.nexusivr.ai.service.GenerationCancellationRegistry.isCancelled(checkSessionId)) {
+                throw new com.nexusivr.ai.service.exception.GenerationCancelledException("Generation request was cancelled.");
+            }
             if (!isProviderAvailable(targetProvider)) {
                 ProviderHealth health = getHealth(targetProvider);
                 CircuitBreaker breaker = getCircuitBreaker(targetProvider);
@@ -595,15 +604,17 @@ public class ProviderManager {
             return null;
         }
 
+        boolean templateGeneratorAttempted = false;
         logger.warn("[AI_PROVIDER] [{}] All real LLM providers exhausted after retries. Invoking last-resort TemplateGenerator circuit-breaker.", callerLabel);
         try {
+            templateGeneratorAttempted = true;
             TemplateGenerator templateGen = new TemplateGenerator(getProviderDefaultModel("template-generator"), domain);
             AiResponse templateResponse = structuredOutput
                     ? templateGen.generateStructuredResponse(systemInstruction, userPrompt, List.of(), domain)
                     : templateGen.generateResponse(systemInstruction, userPrompt, List.of());
             if (templateResponse != null && templateResponse.getContent() != null && !templateResponse.getContent().isBlank()) {
                 logger.info("[AI_PROVIDER] [{}] TemplateGenerator circuit-breaker generated fallback response successfully for domain='{}'.",
-                        callerLabel, domain);
+                         callerLabel, domain);
                 return new AiResponse(
                         templateResponse.getContent(),
                         "template-generator",
@@ -649,7 +660,18 @@ public class ProviderManager {
         }
 
         Map<String, String> providerStatuses = collectProviderStatuses(providersToTry);
-        throw new ProviderException(originalRequestedProvider, errorMsg, reason, providerStatuses);
+        
+        String actualProvider = templateGeneratorAttempted ? "template-generator" : (lastAttemptedProvider != null ? lastAttemptedProvider : originalRequestedProvider);
+        boolean fallback = providerAttempts.size() > 1 || templateGeneratorAttempted;
+        List<String> attemptedList = new ArrayList<>();
+        for (com.nexusivr.ai.dto.common.ProviderAttemptDto attempt : providerAttempts) {
+            attemptedList.add(attempt.getProvider());
+        }
+        if (templateGeneratorAttempted) {
+            attemptedList.add("template-generator");
+        }
+
+        throw new ProviderException(originalRequestedProvider, errorMsg, reason, providerStatuses, "none", false, attemptedList);
     }
 
     private AiResponse attemptWithRetries(LlmClient client, String provider, String model, double temp,
@@ -659,6 +681,10 @@ public class ProviderManager {
         String errorContent = null;
 
         for (int attempt = 1; attempt <= MAX_RETRIES_PER_PROVIDER; attempt++) {
+            UUID checkSessionId = com.nexusivr.ai.service.GenerationCancellationRegistry.getCurrentSessionId();
+            if (checkSessionId != null && com.nexusivr.ai.service.GenerationCancellationRegistry.isCancelled(checkSessionId)) {
+                throw new com.nexusivr.ai.service.exception.GenerationCancelledException("Generation request was cancelled.");
+            }
             logger.info("[ProviderManager] [{}] Attempt {}/{} on provider '{}' (model='{}', structuredOutput={}).",
                     callerLabel, attempt, MAX_RETRIES_PER_PROVIDER, provider, model, structuredOutput);
 

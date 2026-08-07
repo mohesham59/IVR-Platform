@@ -57,6 +57,9 @@ public class ModelToVxmlExporter {
             version = "2.1";
         }
         sb.append("<vxml version=\"").append(escapeXml(version)).append("\" xmlns=\"http://www.w3.org/2001/vxml\">\n");
+        if (model.getName() != null && !model.getName().isBlank()) {
+            sb.append("  <meta name=\"flow-name\" content=\"").append(escapeXml(model.getName())).append("\"/>\n");
+        }
 
         Map<String, List<FlowConnection>> outgoing = new HashMap<>();
         for (FlowConnection conn : model.getConnections()) {
@@ -133,7 +136,7 @@ public class ModelToVxmlExporter {
             sb.append("      <prompt>").append(escapeXml(promptText)).append("</prompt>\n");
         }
 
-        Set<String> seenDtmfs = new HashSet<>();
+        Map<String, String> seenDtmfToTarget = new HashMap<>();
 
         if (node.getMenu() != null && !node.getMenu().getChoices().isEmpty()) {
             for (FlowChoice choice : node.getMenu().getChoices()) {
@@ -144,15 +147,36 @@ public class ModelToVxmlExporter {
                     dtmf = "1";
                 }
 
-                if (seenDtmfs.contains(dtmf)) {
-                    continue;
-                }
-                seenDtmfs.add(dtmf);
-
                 String target = choice.getTargetNodeId();
+                if (target == null || target.isBlank()) {
+                    target = outgoing.stream()
+                            .filter(conn -> Objects.equals(conn.getSourcePort(), choice.getKey()))
+                            .findFirst()
+                            .map(FlowConnection::getTargetNodeId)
+                            .orElse(null);
+                }
                 if (target == null || target.isBlank()) {
                     target = outgoing.stream().findFirst().map(FlowConnection::getTargetNodeId).orElse(null);
                 }
+
+                if (seenDtmfToTarget.containsKey(dtmf)) {
+                    if (Objects.equals(seenDtmfToTarget.get(dtmf), target)) {
+                        continue;
+                    }
+                    String[] allDtmfs = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "*", "#"};
+                    boolean allocated = false;
+                    for (String candidate : allDtmfs) {
+                        if (!seenDtmfToTarget.containsKey(candidate)) {
+                            dtmf = candidate;
+                            allocated = true;
+                            break;
+                        }
+                    }
+                    if (!allocated) {
+                        continue;
+                    }
+                }
+                seenDtmfToTarget.put(dtmf, target);
 
                 sb.append("      <choice dtmf=\"").append(escapeXml(dtmf)).append("\"");
                 if (target != null && !target.isBlank()) {
@@ -173,14 +197,14 @@ public class ModelToVxmlExporter {
             for (FlowConnection conn : outgoing) {
                 if (conn.getTargetNodeId() != null && !conn.getTargetNodeId().isBlank()) {
                     String dtmf = extractDtmfFromKey(conn.getSourcePort());
-                    if ("1".equals(dtmf) && seenDtmfs.contains("1")) {
+                    if ("1".equals(dtmf) && seenDtmfToTarget.containsKey("1")) {
                         dtmf = String.valueOf(digitCounter);
                     }
-                    if (seenDtmfs.contains(dtmf)) {
+                    if (seenDtmfToTarget.containsKey(dtmf)) {
                         digitCounter++;
                         dtmf = String.valueOf(digitCounter);
                     }
-                    seenDtmfs.add(dtmf);
+                    seenDtmfToTarget.put(dtmf, conn.getTargetNodeId());
 
                     sb.append("      <choice dtmf=\"").append(escapeXml(dtmf))
                       .append("\" next=\"#").append(escapeXml(conn.getTargetNodeId())).append("\"/>\n");
@@ -290,16 +314,15 @@ public class ModelToVxmlExporter {
 
     private void renderTransfer(StringBuilder sb, FlowNode node, List<FlowConnection> outgoing) {
         sb.append("    <block>\n");
-        if (node.getTransfer() != null && node.getTransfer().getDestination() != null) {
-            sb.append("      <prompt>").append(escapeXml(getNodePrompt(node))).append("</prompt>\n");
-            sb.append("      <transfer dest=\"").append(escapeXml(node.getTransfer().getDestination())).append("\"/>\n");
-        } else {
-            sb.append("      <prompt>").append(escapeXml(getNodePrompt(node))).append("</prompt>\n");
-            for (FlowConnection conn : outgoing) {
-                if (conn.getTargetNodeId() != null && !conn.getTargetNodeId().isBlank()) {
-                    sb.append("      <transfer dest=\"#").append(escapeXml(conn.getTargetNodeId())).append("\"/>\n");
-                    break;
-                }
+        sb.append("      <prompt>").append(escapeXml(getNodePrompt(node))).append("</prompt>\n");
+        String dest = (node.getTransfer() != null && node.getTransfer().getDestination() != null)
+                ? node.getTransfer().getDestination()
+                : "TRANSFER_TARGET_PLACEHOLDER";
+        sb.append("      <transfer dest=\"").append(escapeXml(dest)).append("\"/>\n");
+        for (FlowConnection conn : outgoing) {
+            if (conn.getTargetNodeId() != null && !conn.getTargetNodeId().isBlank()) {
+                sb.append("      <goto next=\"#").append(escapeXml(conn.getTargetNodeId())).append("\"/>\n");
+                break;
             }
         }
         sb.append("    </block>\n");
@@ -483,7 +506,35 @@ public class ModelToVxmlExporter {
 
     private void renderAi(StringBuilder sb, FlowNode node, List<FlowConnection> outgoing) {
         sb.append("    <block>\n");
-        if (node.getAi() != null && node.getAi().getAgentId() != null && !node.getAi().getAgentId().isBlank()) {
+        if (node.getAi() != null && node.getAi().isRoutingMode()) {
+            sb.append("      <prompt>").append(escapeXml(getNodePrompt(node))).append("</prompt>\n");
+            sb.append("      <ai role=\"").append(escapeXml(node.getAi().getRole())).append("\"");
+            
+            // Build options string
+            StringBuilder optSb = new StringBuilder();
+            Map<String, String> opts = node.getAi().getRoutingOptions();
+            if (opts != null && !opts.isEmpty()) {
+                for (Map.Entry<String, String> entry : opts.entrySet()) {
+                    if (optSb.length() > 0) optSb.append(",");
+                    optSb.append(entry.getKey()).append(":").append(entry.getValue());
+                }
+            } else {
+                for (FlowConnection conn : outgoing) {
+                    if (!"nomatch".equals(conn.getSourcePort()) && conn.getTargetNodeId() != null && !conn.getTargetNodeId().isBlank()) {
+                        if (optSb.length() > 0) optSb.append(",");
+                        optSb.append(conn.getSourcePort()).append(":").append(conn.getTargetNodeId());
+                    }
+                }
+            }
+            sb.append(" options=\"").append(escapeXml(optSb.toString())).append("\"/>\n");
+            
+            // Render nomatch/fallback goto if present
+            for (FlowConnection conn : outgoing) {
+                if ("nomatch".equals(conn.getSourcePort()) && conn.getTargetNodeId() != null && !conn.getTargetNodeId().isBlank()) {
+                    sb.append("      <goto next=\"#").append(escapeXml(conn.getTargetNodeId())).append("\"/>\n");
+                }
+            }
+        } else if (node.getAi() != null && node.getAi().getAgentId() != null && !node.getAi().getAgentId().isBlank()) {
             sb.append("      <subdialog src=\"ai://").append(escapeXml(node.getAi().getAgentId())).append("\"");
             if (node.getAi().getMaxTurns() > 0) {
                 sb.append(" maxturns=\"").append(node.getAi().getMaxTurns()).append("\"");
@@ -491,13 +542,19 @@ public class ModelToVxmlExporter {
             sb.append(">\n");
             sb.append("        <prompt>").append(escapeXml(getNodePrompt(node))).append("</prompt>\n");
             sb.append("      </subdialog>\n");
+            for (FlowConnection conn : outgoing) {
+                if (conn.getTargetNodeId() != null && !conn.getTargetNodeId().isBlank()) {
+                    sb.append("      <goto next=\"#").append(escapeXml(conn.getTargetNodeId())).append("\"/>\n");
+                    break;
+                }
+            }
         } else {
             sb.append("      <prompt>").append(escapeXml(getNodePrompt(node))).append("</prompt>\n");
-        }
-        for (FlowConnection conn : outgoing) {
-            if (conn.getTargetNodeId() != null && !conn.getTargetNodeId().isBlank()) {
-                sb.append("      <goto next=\"#").append(escapeXml(conn.getTargetNodeId())).append("\"/>\n");
-                break;
+            for (FlowConnection conn : outgoing) {
+                if (conn.getTargetNodeId() != null && !conn.getTargetNodeId().isBlank()) {
+                    sb.append("      <goto next=\"#").append(escapeXml(conn.getTargetNodeId())).append("\"/>\n");
+                    break;
+                }
             }
         }
         sb.append("    </block>\n");

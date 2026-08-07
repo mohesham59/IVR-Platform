@@ -25,6 +25,9 @@ public class ProviderException extends ServiceException {
     private final String providerName;
     private final int statusCode;
     private final Map<String, String> providerStatuses;
+    private final String actualProviderUsed;
+    private final boolean fallbackUsed;
+    private final java.util.List<String> providersAttempted;
 
     public ProviderException(String providerName, String message, Throwable cause, FailureReason reason) {
         this(providerName, message, cause, reason, Collections.emptyMap());
@@ -39,7 +42,14 @@ public class ProviderException extends ServiceException {
     }
 
     public ProviderException(String providerName, String message, int statusCode, FailureReason reason) {
-        this(providerName, message, null, reason, Collections.emptyMap());
+        super("PROVIDER_ERROR", "Provider [" + providerName + "] failed: " + message, null);
+        this.reason = reason != null ? reason : FailureReason.PROVIDER_ERROR;
+        this.providerName = providerName;
+        this.statusCode = statusCode;
+        this.providerStatuses = Collections.emptyMap();
+        this.actualProviderUsed = "none";
+        this.fallbackUsed = false;
+        this.providersAttempted = Collections.emptyList();
     }
 
     public ProviderException(String providerName, String message, Throwable cause, FailureReason reason, Map<String, String> providerStatuses) {
@@ -48,6 +58,9 @@ public class ProviderException extends ServiceException {
         this.providerName = providerName;
         this.statusCode = 0;
         this.providerStatuses = providerStatuses != null ? new HashMap<>(providerStatuses) : new HashMap<>();
+        this.actualProviderUsed = "none";
+        this.fallbackUsed = false;
+        this.providersAttempted = Collections.emptyList();
     }
 
     public ProviderException(String providerName, String message, FailureReason reason, Map<String, String> providerStatuses) {
@@ -56,6 +69,22 @@ public class ProviderException extends ServiceException {
         this.providerName = providerName;
         this.statusCode = 0;
         this.providerStatuses = providerStatuses != null ? new HashMap<>(providerStatuses) : new HashMap<>();
+        this.actualProviderUsed = "none";
+        this.fallbackUsed = false;
+        this.providersAttempted = Collections.emptyList();
+    }
+
+    public ProviderException(String providerName, String message, FailureReason reason, 
+                             Map<String, String> providerStatuses, String actualProviderUsed, 
+                             boolean fallbackUsed, java.util.List<String> providersAttempted) {
+        super("PROVIDER_ERROR", "Provider [" + providerName + "] failed: " + message, null);
+        this.reason = reason != null ? reason : FailureReason.PROVIDER_ERROR;
+        this.providerName = providerName;
+        this.statusCode = 0;
+        this.providerStatuses = providerStatuses != null ? new HashMap<>(providerStatuses) : new HashMap<>();
+        this.actualProviderUsed = actualProviderUsed;
+        this.fallbackUsed = fallbackUsed;
+        this.providersAttempted = providersAttempted != null ? new java.util.ArrayList<>(providersAttempted) : Collections.emptyList();
     }
 
     public FailureReason getReason() {
@@ -72,5 +101,17 @@ public class ProviderException extends ServiceException {
 
     public Map<String, String> getProviderStatuses() {
         return Collections.unmodifiableMap(providerStatuses);
+    }
+
+    public String getActualProviderUsed() {
+        return actualProviderUsed;
+    }
+
+    public boolean isFallbackUsed() {
+        return fallbackUsed;
+    }
+
+    public java.util.List<String> getProvidersAttempted() {
+        return Collections.unmodifiableList(providersAttempted);
     }
 }

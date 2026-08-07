@@ -14,7 +14,6 @@ public class ChatRequest {
     private Channel channel;
     private String userMessage;
     private String flowContext;
-    private Boolean autoRefine;
 
     public ChatRequest() {
     }
@@ -78,13 +77,5 @@ public class ChatRequest {
 
     public void setFlowContext(String flowContext) {
         this.flowContext = flowContext;
-    }
-
-    public Boolean getAutoRefine() {
-        return autoRefine;
-    }
-
-    public void setAutoRefine(Boolean autoRefine) {
-        this.autoRefine = autoRefine;
     }
 }

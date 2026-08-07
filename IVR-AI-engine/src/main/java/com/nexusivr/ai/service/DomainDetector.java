@@ -49,10 +49,17 @@ public class DomainDetector {
                 "hospital", "clinic", "doctor", "patient", "medical", "health",
                 "pharmacy", "appointment", "triage", "nurse", "emergency room",
                 "prescription", "healthcare", "health care", "urgent care",
-                "diagnosis", "treatment", "surgery", "wellness"
+                "diagnosis", "treatment", "surgery", "wellness",
+                "مستشفى", "المستشفى", "دكتور", "الدكتور", "دكاترة", "الدكاترة",
+                "طبيب", "الطبيب", "مريض", "المريض", "كشف", "الكشف",
+                "روشتة", "الروشتة", "صيدلية", "الصيدلية", "حجز معاد", "حجز المعاد",
+                "حجز موعد", "حجز الموعد", "مستوصف", "المستوصف", "عيادة", "العيادة",
+                "تحاليل", "التحاليل", "طوارئ", "الطوارئ"
         });
         HIGH_WEIGHT_KEYWORDS.put("healthcare", new String[]{
-                "hospital", "clinic", "healthcare", "triage", "prescription", "surgery"
+                "hospital", "clinic", "healthcare", "triage", "prescription", "surgery",
+                "مستشفى", "المستشفى", "عيادة", "العيادة", "روشتة", "الروشتة",
+                "مستوصف", "المستوصف", "صيدلية", "الصيدلية"
         });
 
         // ── education ────────────────────────────────────────────────────────
@@ -60,20 +67,31 @@ public class DomainDetector {
                 "university", "college", "campus", "admissions", "enrollment",
                 "financial aid", "student services", "registrar", "academic",
                 "professor", "degree", "transcript", "student", "school",
-                "tuition", "lecture", "curriculum"
+                "tuition", "lecture", "curriculum",
+                "جامعة", "الجامعة", "كلية", "الكلية", "مدرسة", "المدرسة",
+                "طالب", "الطالب", "طلاب", "الطلاب", "محاضرة", "المحاضرة",
+                "دكتور جامعة", "دكاترة جامعة", "شؤون طلاب", "شؤون الطلاب",
+                "شئون طلاب", "شئون الطلاب", "تعليم", "التعليم", "كورسات", "الكورسات",
+                "منهج", "المنهج", "تسجيل", "التسجيل"
         });
         HIGH_WEIGHT_KEYWORDS.put("education", new String[]{
-                "university", "college", "campus", "registrar", "admissions"
+                "university", "college", "campus", "registrar", "admissions",
+                "جامعة", "الجامعة", "كلية", "الكلية", "شؤون طلاب", "شؤون الطلاب",
+                "شئون طلاب", "شئون الطلاب", "محاضرة", "المحاضرة"
         });
 
         // ── insurance ────────────────────────────────────────────────────────
         DOMAIN_RULES.put("insurance", new String[]{
                 "insurance", "claim", "policy", "premium", "insure",
                 "adjuster", "liability", "deductible", "beneficiary", "underwrite",
-                "policyholder", "reimbursement"
+                "policyholder", "reimbursement",
+                "تأمين", "التأمين", "بوليصة", "البوليصة", "قسط", "القسط",
+                "تعويض", "التعويض", "مطالبة", "المطالبة", "تأميني", "التأميني",
+                "حوادث", "الحوادث", "شركة تأمين", "شركة التأمين"
         });
         HIGH_WEIGHT_KEYWORDS.put("insurance", new String[]{
-                "insurance", "insure", "adjuster", "deductible", "underwrite"
+                "insurance", "insure", "adjuster", "deductible", "underwrite",
+                "تأمين", "التأمين", "بوليصة", "البوليصة", "تأميني", "التأميني"
         });
 
         // ── government ───────────────────────────────────────────────────────
@@ -81,10 +99,18 @@ public class DomainDetector {
                 "government", "permit", "tax", "municipal", "city", "county",
                 "citizen", "public service", "county clerk", "dmv",
                 "passport", "voting", "ordinance", "zoning", "federal",
-                "legislation", "regulation"
+                "legislation", "regulation", "جوازات", "الجوازات", "هيئة", "الهيئة", 
+                "حكومي", "الحكومي", "حكومية", "الحكومية", "passports authority", "jawazat",
+                "مصلحة", "المصلحة", "سجل مدني", "السجل المدني", "شهر عقاري", "الشهر العقاري",
+                "ضرائب", "الضرائب", "معاشات", "المعاشات", "ترخيص", "الترخيص", "تراخيص", "التراخيص",
+                "مرور", "المرور", "فيزا", "الفيزا", "تأشيرة", "التأشيرة", "بطاقة شخصية", "البطاقة الشخصية",
+                "شئون مدنية", "الشئون المدنية", "مصلحة الضرائب", "مصلحة ضرائب"
         });
         HIGH_WEIGHT_KEYWORDS.put("government", new String[]{
-                "government", "municipal", "dmv", "passport", "ordinance", "legislation"
+                "government", "municipal", "dmv", "passport", "ordinance", "legislation",
+                "جوازات", "الجوازات", "هيئة", "الهيئة", "passports authority", "jawazat",
+                "سجل مدني", "السجل المدني", "شهر عقاري", "الشهر العقاري", "ضرائب", "الضرائب",
+                "معاشات", "المعاشات", "مصلحة", "المصلحة", "مرور", "المرور"
         });
 
         // ── airline ──────────────────────────────────────────────────────────
@@ -92,10 +118,16 @@ public class DomainDetector {
                 "airline", "flight", "baggage", "boarding", "airport",
                 "flight status", "itinerary", "frequent flyer",
                 "departure", "arrival", "gate", "carry-on", "airfare",
-                "plane ticket", "flight booking"
+                "plane ticket", "flight booking",
+                "طيارة", "الطيارة", "طيران", "الطيران", "تذكرة", "التذكرة",
+                "مطار", "المطار", "شنط", "الشنط", "حجز رحلة", "حجز الرحلة",
+                "رحلة طيران", "رحلة الطيران", "تذاكر", "التذاكر", "مغادرة", "المغادرة",
+                "وصول", "الوصول", "تذكرة طيران", "تذكرة الطيران"
         });
         HIGH_WEIGHT_KEYWORDS.put("airline", new String[]{
-                "airline", "flight", "airport", "boarding", "airfare", "frequent flyer"
+                "airline", "flight", "airport", "boarding", "airfare", "frequent flyer",
+                "طيارة", "الطيارة", "طيران", "الطيران", "مطار", "المطار",
+                "تذكرة طيران", "تذكرة الطيران"
         });
 
         // ── hospitality ──────────────────────────────────────────────────────
@@ -109,12 +141,18 @@ public class DomainDetector {
                 "suite", "hospitality", "reception", "valet",
                 "guest services", "bell desk", "amenities",
                 "reservations", "hotel reservation", "hotel booking",
-                "spa", "bed and breakfast", "b&b"
+                "spa", "bed and breakfast", "b&b",
+                "فندق", "الفندق", "أوضة", "الأوضة", "غرفة", "الغرفة",
+                "حجز أوضة", "حجز الأوضة", "حجز غرفة", "حجز الغرفة", "ريسبشن", "الريسبشن",
+                "روم سيرفيس", "الروم سيرفيس", "نزيل", "النزيل", "لوكاندة", "اللوكاندة",
+                "حجز فندق", "حجز الفندق"
         });
         HIGH_WEIGHT_KEYWORDS.put("hospitality", new String[]{
                 "hotel", "concierge", "hospitality", "housekeeping",
                 "front desk", "room service", "valet", "lodging",
-                "guest services", "bell desk"
+                "guest services", "bell desk",
+                "فندق", "الفندق", "لوكاندة", "اللوكاندة", "حجز أوضة", "حجز الأوضة",
+                "حجز غرفة", "حجز الغرفة", "ريسبشن", "الريسبشن"
         });
 
         // ── restaurant ───────────────────────────────────────────────────────
@@ -123,20 +161,32 @@ public class DomainDetector {
                 "dining", "cafe", "food delivery", "takeaway",
                 "restaurant menu", "food menu", "dining menu",
                 "reservation", "hostess", "chef", "dish", "cuisine",
-                "bakery", "diner", "eatery"
+                "bakery", "diner", "eatery",
+                "مطعم", "المطعم", "أوردر", "الأوردر", "طلب", "الطلب",
+                "توصيل", "التوصيل", "ديليفري", "الديليفري", "دليفري", "الدليفري",
+                "حجز ترابيزة", "حجز الترابيزة", "مينيو", "المينيو", "أكل", "الأكل",
+                "وجبة", "الوجبة"
         });
         HIGH_WEIGHT_KEYWORDS.put("restaurant", new String[]{
-                "restaurant", "pizza", "bistro", "dining", "takeout", "cuisine", "chef"
+                "restaurant", "pizza", "bistro", "dining", "takeout", "cuisine", "chef",
+                "مطعم", "المطعم", "أوردر", "الأوردر", "ديليفري", "الديليفري",
+                "دليفري", "الدليفري", "حجز ترابيزة", "حجز الترابيزة"
         });
 
         // ── retail ───────────────────────────────────────────────────────────
         DOMAIN_RULES.put("retail", new String[]{
                 "retail", "store", "shop", "order status", "refund", "return",
                 "mall", "purchase", "product", "warranty",
-                "ecommerce", "e-commerce", "shopping", "cart"
+                "ecommerce", "e-commerce", "shopping", "cart",
+                "محل", "المحل", "دكان", "الدكان", "شوبينج", "الشوبينج",
+                "شراء", "الشراء", "مرتجع", "المرتجع", "استرجاع", "الاسترجاع",
+                "فاتورة", "الفاتورة", "ضمان", "الضمان", "منتج", "المنتج",
+                "طلب شراء", "طلب الشراء", "تسوق", "التسوق"
         });
         HIGH_WEIGHT_KEYWORDS.put("retail", new String[]{
-                "retail", "ecommerce", "e-commerce", "refund", "warranty"
+                "retail", "ecommerce", "e-commerce", "refund", "warranty",
+                "شوبينج", "الشوبينج", "مرتجع", "المرتجع", "استرجاع", "الاسترجاع",
+                "دكان", "الدكان"
         });
 
         // ── telecom ──────────────────────────────────────────────────────────
@@ -144,10 +194,16 @@ public class DomainDetector {
                 "telecom", "mobile", "sim", "cellular", "roaming",
                 "broadband", "internet provider", "cable tv", "calling plan",
                 "landline", "voip", "data plan", "signal strength", "coverage area",
-                "network operator", "phone plan"
+                "network operator", "phone plan",
+                "شحن", "الشحن", "خط", "الخط", "شريحة", "الشريحة",
+                "باقة", "الباقة", "إنترنت", "الإنترنت", "نت", "النت",
+                "رصيد شحن", "رصيد الشحن", "فاتورة خط", "فاتورة الخط", "شبكة", "الشبكة",
+                "واي فاي", "الواي فاي", "اتصالات", "الاتصالات"
         });
         HIGH_WEIGHT_KEYWORDS.put("telecom", new String[]{
-                "telecom", "sim", "cellular", "roaming", "broadband", "voip", "landline"
+                "telecom", "sim", "cellular", "roaming", "broadband", "voip", "landline",
+                "شريحة", "الشريحة", "باقة", "الباقة", "اتصالات", "الاتصالات",
+                "شحن", "الشحن"
         });
 
         // ── technical_support ────────────────────────────────────────────────
@@ -157,11 +213,15 @@ public class DomainDetector {
                 "l1 support", "l2 support", "tier 1", "tier 2",
                 "sysadmin", "troubleshoot", "troubleshooting",
                 "network outage", "incident ticket", "bug report",
-                "deployment", "api issue"
+                "deployment", "api issue",
+                "الدعم الفني", "دعم فني", "عطل", "العطل", "مشكلة", "المشكلة",
+                "تصليح", "التصليح", "صيانة", "الصيانة", "سيستم", "السيستم",
+                "وقع", "مش شغال", "بايظ", "عطلان", "العطلان", "تذكرة دعم"
         });
         HIGH_WEIGHT_KEYWORDS.put("technical_support", new String[]{
                 "technical support", "tech support", "it support",
-                "helpdesk", "troubleshooting", "sysadmin"
+                "helpdesk", "troubleshooting", "sysadmin",
+                "الدعم الفني", "دعم فني", "مش شغال", "بايظ", "عطلان", "العطلان"
         });
 
         // ── banking ──────────────────────────────────────────────────────────
@@ -173,11 +233,18 @@ public class DomainDetector {
                 "account balance", "atm", "mortgage", "investment portfolio",
                 "checking account", "savings account", "pin number", "fraud alert",
                 "wire transfer", "bank teller", "bank deposit", "withdrawal",
-                "credit score", "loan application", "overdraft"
+                "credit score", "loan application", "overdraft",
+                "بنك", "البنك", "حساب", "الحساب", "فلوس", "الفلوس",
+                "كارت", "الكارت", "قرض", "القرض", "تحويل", "التحويل",
+                "فيزا بنك", "فيزا البنك", "رصيد حساب", "رصيد الحساب", "كشف حساب", "كشف الحساب",
+                "سحب", "السحب", "ايداع", "الايداع", "شيك", "الشيك",
+                "فوائد", "الفوائد", "شحنة بنكية", "الشحنة البنكية"
         });
         HIGH_WEIGHT_KEYWORDS.put("banking", new String[]{
                 "bank", "banking", "mortgage", "atm", "overdraft",
-                "wire transfer", "credit score", "loan application"
+                "wire transfer", "credit score", "loan application",
+                "بنك", "البنك", "قرض", "القرض", "شيك", "الشيك",
+                "كشف حساب", "كشف الحساب"
         });
     }
 

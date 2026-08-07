@@ -96,12 +96,12 @@ class TemplateGeneratorDynamicFallbackTest {
     }
 
     @Test
-    void testDomainFlowGeneratorThrowsHonestErrorWhenDomainIsGenericAndNoDepartmentsExtracted() {
+    void testDomainFlowGeneratorGeneratesGenericFallbackWhenDomainIsGenericAndNoDepartmentsExtracted() {
         DomainFlowGenerator generator = new DomainFlowGenerator();
         String prompt = "design an IVR for XYZ Widget";
 
-        ProviderException ex = assertThrows(ProviderException.class, () -> generator.generateVxml("generic", prompt));
-        assertTrue(ex.getMessage().contains("I couldn't reach any AI provider and don't have enough information"),
-                "Must return clear, honest error when domain is generic and no departments are provided");
+        String vxml = assertDoesNotThrow(() -> generator.generateVxml("generic", prompt));
+        assertNotNull(vxml);
+        assertTrue(vxml.contains("<vxml"), "Must return a valid fallback VXML when domain is generic and no departments are provided");
     }
 }

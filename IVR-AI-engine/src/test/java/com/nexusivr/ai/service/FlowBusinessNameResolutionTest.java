@@ -84,17 +84,17 @@ class FlowBusinessNameResolutionTest {
         String resolvedBaseName = FlowDraftService.getBaseName(tenantId, flowId, longGreeting);
         assertFalse(resolvedBaseName.contains("welcome"), "Base name must not contain 'welcome'");
         assertFalse(resolvedBaseName.contains("hospitality_services"), "Base name must not contain spoken prompt text");
-        assertEquals("00000000_0000_0000_0000_000000000001_ivr_flow", resolvedBaseName);
+        assertEquals("ivr_flow", resolvedBaseName);
 
         // 2. Assert buildDraftFilename produces clean draft filename
         String draftFilename = FlowDraftService.buildDraftFilename(tenantId, flowId, longGreeting, 1);
-        assertEquals("00000000_0000_0000_0000_000000000001_ivr_flow_draft_v1.vxml", draftFilename);
+        assertEquals("ivr_flow_draft_v1.json", draftFilename);
         assertFalse(draftFilename.contains("welcome"));
 
         // 3. Test explicit clean business name (e.g. "Hospitality IVR")
         String cleanBusinessName = "Hospitality IVR";
         String cleanBaseName = FlowDraftService.getBaseName(tenantId, flowId, cleanBusinessName);
-        assertEquals("00000000_0000_0000_0000_000000000001_hospitality_ivr", cleanBaseName);
+        assertEquals("hospitality_ivr", cleanBaseName);
 
         // 4. Publish using clean business name
         FlowModel model = new FlowModel();
@@ -110,7 +110,7 @@ class FlowBusinessNameResolutionTest {
         assertTrue(result.isSuccess());
 
         // Verify VXML scenario file on disk uses clean business name
-        Path publishedFile = tempScenariosDir.resolve("00000000_0000_0000_0000_000000000001_hospitality_ivr.vxml");
+        Path publishedFile = tempScenariosDir.resolve(tenantId).resolve("hospitality_ivr.vxml");
         assertTrue(Files.exists(publishedFile), "Published file must use clean business name");
         assertFalse(publishedFile.getFileName().toString().contains("welcome"), "Published filename must never contain greeting text");
     }

@@ -150,6 +150,10 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
   const [isSaved, setIsSaved] = useState(false)
   const [isPublished, setIsPublished] = useState(false)
   const [aiPanelOpen, setAiPanelOpen] = useState(true)
+  const [showPublishModal, setShowPublishModal] = useState(false)
+  const [publishExtension, setPublishExtension] = useState('')
+  const [publishFilename, setPublishFilename] = useState('')
+  const [isPublishing, setIsPublishing] = useState(false)
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId: string } | null>(null)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editingTitleValue, setEditingTitleValue] = useState('')
@@ -1379,9 +1383,27 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
     addLog(`Applied Flow Optimization: ${result.summary}`, 'info')
   }, [nodes, edges, pushHistory, addLog])
 
-  const handleExportVxml = () => {
-    downloadVxml(flowName, nodes, edges)
-    addLog('Exported flow as VoiceXML (.vxml)', 'info')
+  const handleExportVxml = async () => {
+    try {
+      const flowJsonStr = JSON.stringify({ name: flowName, nodes, edges })
+      const { vxml } = await aiApi.exportVxml(flowJsonStr)
+      const blob = new Blob([vxml], { type: 'application/voicexml+xml' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      const slug = flowName
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '') || 'ivr_flow'
+      a.download = `${slug}.vxml`
+      a.click()
+      URL.revokeObjectURL(url)
+      addLog('Exported flow as VoiceXML (.vxml)', 'info')
+    } catch (err: any) {
+      console.error('[IVRBuilder] Failed to export VXML:', err)
+      addLog(`Export failed: ${err.message || err}`, 'error')
+    }
   }
 
 
@@ -1412,10 +1434,10 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
             addLog(`Received ${result.nodes.length} node(s) and ${(result.edges || []).length} edge(s) from VXML converter`, 'info')
 
             const hasValidPositions = result.nodes.every(
-              n => typeof n.x === 'number' && typeof n.y === 'number' && (n.x !== 0 || n.y !== 0)
+              (n: any) => typeof n.x === 'number' && typeof n.y === 'number' && (n.x !== 0 || n.y !== 0)
             )
 
-            let renderableNodes = result.nodes.map((n, idx) => ({
+            let renderableNodes = result.nodes.map((n: any, idx: number) => ({
               ...n,
               x: typeof n.x === 'number' && n.x !== 0 ? n.x : 100 + (idx % 4) * 260,
               y: typeof n.y === 'number' && n.y !== 0 ? n.y : 100 + Math.floor(idx / 4) * 160,
@@ -1625,37 +1647,30 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
     return true
   })
 
-  const handlePublish = useCallback(async () => {
+  const handlePublish = useCallback(() => {
     const btn = document.activeElement as HTMLButtonElement
     if (btn) btn.blur()
-    const errors = validationItems.filter(i => i.type === 'error')
-    if (errors.length > 0) {
-      addLog(`Publish blocked: Flow contains ${errors.length} validation errors.`, 'error')
-      alert(`Cannot publish: Please fix the ${errors.length} validation error(s) first.`)
-      return
-    }
+    
+    // Convert flowName to a safe lowercase slug filename
+    const slug = flowName.trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
+    
+    setPublishFilename(slug ? `${slug}.vxml` : 'published_flow.vxml')
+    setPublishExtension('')
+    setShowPublishModal(true)
+  }, [flowName])
 
-    const unconfiguredTransfers = nodes.filter(n =>
-      (n.type === 'transfer' || n.type === 'extension') &&
-      isPlaceholderDestination(n.transferDestination ?? n.dest ?? '')
-    )
-
-    if (unconfiguredTransfers.length > 0) {
-      const firstRole = unconfiguredTransfers[0].transferDestination ?? unconfiguredTransfers[0].dest ?? 'placeholder'
-      addLog(`Publish blocked: ${unconfiguredTransfers.length} Transfer node(s) have unconfigured destinations (e.g. '${firstRole}').`, 'error')
-      alert(`Cannot publish: ${unconfiguredTransfers.length} Transfer node(s) have unconfigured placeholder destinations (e.g. '${firstRole}'). Please enter dialable extension numbers in the node properties panel before publishing.`)
-
-      setRightTab('props')
-      setSelectedId(unconfiguredTransfers[0].id)
-      return
-    }
-
+  const handlePublishSubmit = useCallback(async () => {
     addLog(`Publishing scenario "${flowName}" to backend...`, 'info')
-
+    setIsPublishing(true)
     try {
+      const resolvedSlug = publishFilename.replace(/\.vxml$/, '')
       const result = await aiApi.publishFlow({
         flowId: sessionId || `flow_${Date.now()}`,
-        flowName,
+        flowName: resolvedSlug,
+        extension: publishExtension.trim() || undefined,
         flowJson: JSON.stringify({ nodes, edges }),
       })
 
@@ -1676,14 +1691,18 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
       } else {
         const extMsg = result.extensionMessage ? ` (${result.extensionMessage})` : ''
         addLog(`Published production version v${versionsList.length + 1} to ${result.filePath}${extMsg}`, 'info')
+        alert(`Published successfully!\n\nScenario: ${result.filename}\nExtension: ${publishExtension.trim() || 'Auto-allocated'}\nPath: ${result.filePath}`)
       }
 
+      setShowPublishModal(false)
       setTimeout(() => setIsPublished(false), 2500)
     } catch (err: any) {
-      addLog(`Failed to publish flow to backend: ${err.message}`, 'error')
+      addLog(`Publish failed: ${err.message}`, 'error')
       alert(`Publish failed: ${err.message}`)
+    } finally {
+      setIsPublishing(false)
     }
-  }, [validationItems, addLog, flowName, versionsList, sessionId, nodes, edges])
+  }, [flowName, publishFilename, publishExtension, sessionId, nodes, edges, versionsList, addLog])
 
   const handleSave = useCallback(async () => {
     const btn = document.activeElement as HTMLButtonElement
@@ -1718,6 +1737,7 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
       setTimeout(() => setIsSaved(false), 2000)
     } catch (err: any) {
       addLog(`Save failed: ${err.message || 'Backend draft write did not confirm success'}`, 'error')
+      alert(`Save failed: ${err.message || 'Backend draft write did not confirm success'}`)
     }
   }, [flowName, versionsList, sessionId, nodes, edges, addLog])
 
@@ -1868,11 +1888,11 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
             </span>
           )}
           {!isEditingTitle && (
-            <Pencil
-              className="w-3 h-3 text-[#9CA3AF] cursor-pointer hover:text-[#2563EB] flex-shrink-0 transition-colors"
-              onClick={handleTitleEditStart}
-              title="Rename flow"
-            />
+            <span title="Rename flow" onClick={handleTitleEditStart} className="inline-flex items-center">
+              <Pencil
+                className="w-3 h-3 text-[#9CA3AF] cursor-pointer hover:text-[#2563EB] flex-shrink-0 transition-colors"
+              />
+            </span>
           )}
           <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold bg-[#FEF9C3] text-[#A16207] flex-shrink-0">DRAFT</span>
         </div>
@@ -2182,6 +2202,113 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
               </button>
             )
           )}
+        </div>
+      )}
+
+      {showPublishModal && (
+        <div className="fixed inset-0 bg-[#0F172A]/40 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 flex flex-col gap-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-[#EFF6FF] flex items-center justify-center text-[#2563EB]">
+                  <Zap className="w-5 h-5" />
+                </div>
+                <h3 className="text-base font-bold text-[#1E293B]">Publish IVR Flow</h3>
+              </div>
+
+              <p className="text-xs text-[#64748B]">
+                Publish your current flow to the production Asterisk server. This will generate a VoiceXML scenario file and optionally register an extension to handle calls.
+              </p>
+
+              {/* Warnings check */}
+              {(() => {
+                const unconfiguredTransfers = nodes.filter(n =>
+                  (n.type === 'transfer' || n.type === 'extension') &&
+                  isPlaceholderDestination(n.transferDestination ?? n.dest ?? '')
+                );
+                if (unconfiguredTransfers.length > 0) {
+                  return (
+                    <div className="bg-[#FEF3C7] border-l-4 border-[#D97706] text-[#92400E] p-3 rounded-lg text-[11px] flex flex-col gap-1">
+                      <span className="font-bold flex items-center gap-1">
+                        ⚠️ Non-Blocking Notice
+                      </span>
+                      <span>
+                        This flow has {unconfiguredTransfers.length} unconfigured transfer destination(s) (e.g. 'placeholder'). The deployed VXML will contain literal placeholder strings for those nodes.
+                      </span>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-[#475569]">Target VXML File</label>
+                  <input
+                    type="text"
+                    value={publishFilename}
+                    onChange={e => setPublishFilename(e.target.value)}
+                    placeholder="scenario_name.vxml"
+                    className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg text-xs outline-none focus:border-[#2563EB] transition-colors"
+                  />
+                  <span className="text-[10px] text-[#94A3B8]">
+                    VXML scenarios are saved directly to <code className="bg-[#F8FAFC] px-1 py-0.5 rounded border border-[#E2E8F0]">IVR-engine/scenarios/</code>
+                  </span>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-[#475569]">Asterisk Extension Number</label>
+                  <input
+                    type="text"
+                    value={publishExtension}
+                    onChange={e => setPublishExtension(e.target.value.replace(/[^0-9]/g, ''))}
+                    placeholder="e.g. 1234"
+                    className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg text-xs outline-none focus:border-[#2563EB] transition-colors"
+                  />
+                  <span className="text-[10px] text-[#94A3B8]">
+                    Leave blank to automatically allocate the next available extension.
+                  </span>
+                </div>
+
+                <div className="bg-[#0F172A] border border-[#1E293B] p-3.5 rounded-lg flex flex-col gap-2 relative">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#94A3B8]">Deployment Command</span>
+                    <span className="text-[9px] font-bold uppercase tracking-wider bg-[#1E293B] text-[#94A3B8] px-1.5 py-0.5 rounded">SHELL SCRIPT</span>
+                  </div>
+                  <div className="text-xs font-mono break-all text-[#34D399] select-all bg-[#1E293B]/40 p-2 rounded flex items-center gap-1.5">
+                    <span className="text-[#64748B] select-none">$</span>
+                    <span>add_extension.sh {publishExtension.trim() || 'auto'} {publishFilename.replace(/\.vxml$/, '')}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#F1F5F9]">
+                <button
+                  type="button"
+                  onClick={() => setShowPublishModal(false)}
+                  disabled={isPublishing}
+                  className="px-4 py-2 border border-[#E2E8F0] text-[#475569] hover:bg-[#F8FAFC] text-xs font-semibold rounded-lg transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePublishSubmit}
+                  disabled={isPublishing || !publishFilename.trim()}
+                  className="px-4 py-2 bg-[#2563EB] text-white hover:bg-[#1D4ED8] text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {isPublishing ? (
+                    <>
+                      <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Publishing...
+                    </>
+                  ) : (
+                    'Publish & Register'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

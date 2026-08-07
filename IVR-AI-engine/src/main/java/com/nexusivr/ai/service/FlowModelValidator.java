@@ -288,6 +288,8 @@ public class FlowModelValidator {
             }
         }
 
+        checkDeadEndCycles(model, adjacency, issues);
+
         List<String> vxmlErrors = validateVoiceXml(model);
         for (String vxmlError : vxmlErrors) {
             issues.add(new ValidationIssueDto(ValidationSeverity.ERROR, "INVALID_VOICEXML", vxmlError, null, null));
@@ -469,6 +471,136 @@ public class FlowModelValidator {
         long convergingPaths = issues.stream().filter(i -> "CONVERGING_PATHS".equals(i.getCode())).count();
         score -= convergingPaths * 3;
 
+        long deadEndCycles = issues.stream().filter(i -> "DEAD_END_CYCLE".equals(i.getCode())).count();
+        score -= deadEndCycles * 10;
+
         return Math.max(0, Math.min(100, score));
+    }
+
+    private void checkDeadEndCycles(FlowModel model, Map<String, List<FlowConnection>> adjacency, List<ValidationIssueDto> issues) {
+        List<FlowNode> startNodes = model.getNodes().stream()
+                .filter(n -> n.getType() == FlowNodeType.START)
+                .collect(Collectors.toList());
+        if (startNodes.isEmpty()) return;
+        String startId = startNodes.get(0).getId();
+
+        Set<String> reachable = new HashSet<>();
+        Queue<String> queue = new LinkedList<>();
+        queue.add(startId);
+        reachable.add(startId);
+        while (!queue.isEmpty()) {
+            String cur = queue.poll();
+            List<FlowConnection> out = adjacency.get(cur);
+            if (out != null) {
+                for (FlowConnection conn : out) {
+                    String t = conn.getTargetNodeId();
+                    if (t != null && !t.isBlank() && !reachable.contains(t)) {
+                        reachable.add(t);
+                        queue.add(t);
+                    }
+                }
+            }
+        }
+
+        Set<String> endNodes = model.getNodes().stream()
+                .filter(n -> n.getType() == FlowNodeType.END || n.getType() == FlowNodeType.DISCONNECT)
+                .map(FlowNode::getId)
+                .collect(Collectors.toSet());
+
+        Map<String, List<String>> reverseAdjacency = new HashMap<>();
+        for (Map.Entry<String, List<FlowConnection>> entry : adjacency.entrySet()) {
+            String src = entry.getKey();
+            for (FlowConnection conn : entry.getValue()) {
+                String tgt = conn.getTargetNodeId();
+                if (tgt != null && !tgt.isBlank()) {
+                    reverseAdjacency.computeIfAbsent(tgt, k -> new ArrayList<>()).add(src);
+                }
+            }
+        }
+
+        Set<String> canReachEnd = new HashSet<>(endNodes);
+        Queue<String> revQueue = new LinkedList<>(endNodes);
+        while (!revQueue.isEmpty()) {
+            String cur = revQueue.poll();
+            List<String> preds = reverseAdjacency.get(cur);
+            if (preds != null) {
+                for (String pred : preds) {
+                    if (!canReachEnd.contains(pred)) {
+                        canReachEnd.add(pred);
+                        revQueue.add(pred);
+                    }
+                }
+            }
+        }
+
+        Set<String> deadEnds = new HashSet<>();
+        for (String nodeId : reachable) {
+            if (!canReachEnd.contains(nodeId)) {
+                deadEnds.add(nodeId);
+            }
+        }
+
+        if (!deadEnds.isEmpty()) {
+            Set<String> visited = new HashSet<>();
+            Set<String> stack = new LinkedHashSet<>();
+            for (String nodeId : deadEnds) {
+                if (!visited.contains(nodeId)) {
+                    List<String> cyclePath = findCycleInDeadEnds(nodeId, adjacency, deadEnds, visited, stack);
+                    if (cyclePath != null) {
+                        Map<String, FlowNode> nodeMap = model.getNodes().stream()
+                                .collect(Collectors.toMap(FlowNode::getId, n -> n));
+                        String pathString = cyclePath.stream()
+                                .map(id -> {
+                                    FlowNode n = nodeMap.get(id);
+                                    return n != null && n.getTitle() != null ? n.getTitle() : id;
+                                })
+                                .collect(Collectors.joining(" -> "));
+                        
+                        issues.add(new ValidationIssueDto(
+                                ValidationSeverity.ERROR,
+                                "DEAD_END_CYCLE",
+                                "Dead-end cycle with no path to End Call detected: " + pathString,
+                                cyclePath.get(0),
+                                null
+                        ));
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    private List<String> findCycleInDeadEnds(String nodeId, Map<String, List<FlowConnection>> adjacency,
+                                            Set<String> deadEnds, Set<String> visited, Set<String> stack) {
+        visited.add(nodeId);
+        stack.add(nodeId);
+
+        List<FlowConnection> outgoing = adjacency.get(nodeId);
+        if (outgoing != null) {
+            for (FlowConnection conn : outgoing) {
+                String target = conn.getTargetNodeId();
+                if (target == null || !deadEnds.contains(target)) continue;
+                if (stack.contains(target)) {
+                    List<String> path = new ArrayList<>();
+                    boolean startAdding = false;
+                    for (String s : stack) {
+                        if (s.equals(target)) {
+                            startAdding = true;
+                        }
+                        if (startAdding) {
+                            path.add(s);
+                        }
+                    }
+                    path.add(target);
+                    return path;
+                } else if (!visited.contains(target)) {
+                    List<String> path = findCycleInDeadEnds(target, adjacency, deadEnds, visited, stack);
+                    if (path != null) return path;
+                }
+            }
+        }
+
+        stack.remove(nodeId);
+        return null;
     }
 }

@@ -386,4 +386,86 @@ public class FlowModelValidatorTest {
         assertTrue(response.getIssues().stream().anyMatch(i -> "CONVERGING_PATHS".equals(i.getCode())),
                 "Validator must issue CONVERGING_PATHS warning when 6 department paths converge into End Call");
     }
+
+    @Test
+    void testDuplicateDtmfInMenuNodeProducesValidationError() {
+        FlowModel model = new FlowModel();
+        model.setName("Duplicate DTMF");
+
+        FlowNode start = new FlowNode("n1", FlowNodeType.START, "Start");
+        FlowNode menu = new FlowNode("n2", FlowNodeType.MENU, "Menu");
+        FlowNode end = new FlowNode("n3", FlowNodeType.END, "End");
+
+        start.setPrompt(new FlowPrompt("Start"));
+        menu.setPrompt(new FlowPrompt("Choose"));
+
+        FlowMenu flowMenu = new FlowMenu();
+        flowMenu.addChoice(new FlowChoice("key1", "Option 1", "n3"));
+        flowMenu.addChoice(new FlowChoice("key2", "Option 2", "n3"));
+        // Force duplicate DTMF values
+        flowMenu.getChoices().get(0).setDtmf("1");
+        flowMenu.getChoices().get(1).setDtmf("1");
+        menu.setMenu(flowMenu);
+
+        model.addNode(start);
+        model.addNode(menu);
+        model.addNode(end);
+
+        model.addConnection(new FlowConnection("e1", "n1", "out", "n2", "in"));
+        model.addConnection(new FlowConnection("e2", "n2", "key1", "n3", "in"));
+        model.addConnection(new FlowConnection("e3", "n2", "key2", "n3", "in"));
+
+        FlowModelValidator validator = new FlowModelValidator();
+        FlowValidationResponse response = validator.validate(model);
+
+        assertFalse(response.isValid(), "Flow validation must fail due to duplicate DTMF keys");
+        assertTrue(response.getIssues().stream().anyMatch(i ->
+                i.getSeverity() == ValidationSeverity.ERROR &&
+                ("INVALID_MENU".equals(i.getCode()) || "INVALID_VOICEXML".equals(i.getCode()))
+        ));
+    }
+
+    @Test
+    void testExporterResolvesMenuDtmfMappingCorrectly() {
+        FlowModel model = new FlowModel();
+        model.setName("DTMF Resolution");
+
+        FlowNode start = new FlowNode("n1", FlowNodeType.START, "Start");
+        FlowNode menu = new FlowNode("n2", FlowNodeType.MENU, "Menu");
+        FlowNode target1 = new FlowNode("n3", FlowNodeType.PROMPT, "Target 1");
+        FlowNode target2 = new FlowNode("n4", FlowNodeType.PROMPT, "Target 2");
+        FlowNode end = new FlowNode("n5", FlowNodeType.END, "End");
+
+        start.setPrompt(new FlowPrompt("Start"));
+        menu.setPrompt(new FlowPrompt("Choose"));
+        target1.setPrompt(new FlowPrompt("One"));
+        target2.setPrompt(new FlowPrompt("Two"));
+
+        FlowMenu flowMenu = new FlowMenu();
+        // targetNodeId is initially empty to simulate frontend React Flow serialization
+        flowMenu.addChoice(new FlowChoice("key1", "Option 1", ""));
+        flowMenu.addChoice(new FlowChoice("key2", "Option 2", ""));
+        flowMenu.getChoices().get(0).setDtmf("1");
+        flowMenu.getChoices().get(1).setDtmf("2");
+        menu.setMenu(flowMenu);
+
+        model.addNode(start);
+        model.addNode(menu);
+        model.addNode(target1);
+        model.addNode(target2);
+        model.addNode(end);
+
+        model.addConnection(new FlowConnection("e1", "n1", "out", "n2", "in"));
+        model.addConnection(new FlowConnection("e2", "n2", "key1", "n3", "in"));
+        model.addConnection(new FlowConnection("e3", "n2", "key2", "n4", "in"));
+        model.addConnection(new FlowConnection("e4", "n3", "out", "n5", "in"));
+        model.addConnection(new FlowConnection("e5", "n4", "out", "n5", "in"));
+
+        ModelToVxmlExporter exporter = new ModelToVxmlExporter();
+        String vxml = exporter.export(model);
+
+        assertNotNull(vxml);
+        assertTrue(vxml.contains("choice dtmf=\"1\" next=\"#n3\""), "DTMF 1 must route to target 1 (n3)");
+        assertTrue(vxml.contains("choice dtmf=\"2\" next=\"#n4\""), "DTMF 2 must route to target 2 (n4)");
+    }
 }

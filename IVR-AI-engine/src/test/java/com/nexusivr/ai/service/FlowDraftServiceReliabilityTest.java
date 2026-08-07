@@ -61,18 +61,18 @@ class FlowDraftServiceReliabilityTest {
             assertTrue(Files.size(savedPath) > 0, "Saved file version " + i + " must not be empty (0 bytes)");
 
             String filename = savedPath.getFileName().toString();
-            assertTrue(filename.endsWith("_draft_v" + i + ".vxml"),
-                    "Filename must end with expected version suffix _draft_v" + i + ".vxml, but got: " + filename);
+            assertTrue(filename.endsWith("_draft_v" + i + ".json"),
+                    "Filename must end with expected version suffix _draft_v" + i + ".json, but got: " + filename);
 
-            String vxmlContent = Files.readString(savedPath);
-            assertTrue(vxmlContent.contains("<?xml"), "File must contain XML header");
-            assertTrue(vxmlContent.contains("<vxml"), "File must contain <vxml> root element");
-            assertTrue(vxmlContent.contains("Welcome step " + i), "File must contain step-specific prompt for version " + i);
+            String jsonContent = Files.readString(savedPath);
+            assertTrue(jsonContent.contains("{"), "File must contain JSON starting curly brace");
+            assertTrue(jsonContent.contains("nodes"), "File must contain nodes list key");
+            assertTrue(jsonContent.contains("Welcome step " + i), "File must contain step-specific prompt for version " + i);
         }
 
         // Verify that ALL 10 files exist concurrently in the drafts directory
         List<Path> allFiles;
-        try (var stream = Files.list(tempDraftsDir)) {
+        try (var stream = Files.list(tempDraftsDir.resolve(tenantId))) {
             allFiles = stream.toList();
         }
         assertEquals(saveCount, allFiles.size(), "Drafts directory must contain exactly " + saveCount + " distinct versioned files");
@@ -102,10 +102,13 @@ class FlowDraftServiceReliabilityTest {
                 "Exception message must clearly inform the user of invalid node data: " + ex.getMessage());
 
         // Verify no file was written to disk
-        try (var stream = Files.list(tempDraftsDir)) {
-            assertEquals(0, stream.count(), "No draft file should be created on disk when save fails validation");
-        } catch (IOException e) {
-            fail("Directory inspection error: " + e.getMessage());
+        Path tenantScopedDir = tempDraftsDir.resolve(tenantId);
+        if (Files.exists(tenantScopedDir)) {
+            try (var stream = Files.list(tenantScopedDir)) {
+                assertEquals(0, stream.count(), "No draft file should be created on disk when save fails validation");
+            } catch (IOException e) {
+                fail("Directory inspection error: " + e.getMessage());
+            }
         }
     }
 
@@ -116,18 +119,44 @@ class FlowDraftServiceReliabilityTest {
         String flowId = "ver_flow_300";
         String flowName = "Version Calc Flow";
 
-        // Create legacy file using exact base name: <base>_draft.vxml
+        // Create legacy file using exact base name: <base>_draft.json
         Path legacyFile = tempDraftsDir.resolve(FlowDraftService.buildDraftFilename(tenantId, flowId, flowName, null));
-        Files.writeString(legacyFile, "<vxml></vxml>");
+        Files.writeString(legacyFile, "{}");
 
         int nextVer = FlowDraftService.getNextDraftVersion(tempDraftsDir, tenantId, flowId, flowName);
         assertEquals(2, nextVer, "Next version over legacy file should be 2");
 
-        // Create version 2 file using exact base name: <base>_draft_v2.vxml
+        // Create version 2 file using exact base name: <base>_draft_v2.json
         Path v2File = tempDraftsDir.resolve(FlowDraftService.buildDraftFilename(tenantId, flowId, flowName, 2));
-        Files.writeString(v2File, "<vxml></vxml>");
+        Files.writeString(v2File, "{}");
 
         nextVer = FlowDraftService.getNextDraftVersion(tempDraftsDir, tenantId, flowId, flowName);
         assertEquals(3, nextVer, "Next version over v2 file should be 3");
+    }
+
+    @Test
+    @DisplayName("Draft filenames correctly omit tenant UUID and session-ID fragments, and map to clean business names")
+    void testDraftFilenameResolutionAestheticAndScopingRules() {
+        String tenantId = "00000000-0000-0000-0000-000000000001";
+        String flowId = "flow_a35a7a4d_d0f7d3fb";
+        String flowName = "Grievances Department Flow";
+
+        // Generate base name and full draft filename
+        String baseName = FlowDraftService.getDraftBaseName(tenantId, flowId, flowName);
+        String draftFilename = FlowDraftService.buildDraftFilename(tenantId, flowId, flowName, 1);
+
+        // Assert: No UUID prefix in either name
+        assertFalse(baseName.contains(tenantId), "Base name must not contain the tenant UUID");
+        assertFalse(draftFilename.contains(tenantId), "Draft filename must not contain the tenant UUID");
+
+        // Assert: No session-ID/flow-ID fragment
+        assertFalse(baseName.contains("a35a7a4d"), "Base name must not contain session-ID fragment");
+        assertFalse(draftFilename.contains("a35a7a4d"), "Draft filename must not contain session-ID fragment");
+        assertFalse(baseName.contains("d0f7d3fb"), "Base name must not contain session-ID fragment");
+        assertFalse(draftFilename.contains("d0f7d3fb"), "Draft filename must not contain session-ID fragment");
+
+        // Assert: Correct clean business title slug is generated
+        assertEquals("grievances_department_flow", baseName);
+        assertEquals("grievances_department_flow_draft_v1.json", draftFilename);
     }
 }

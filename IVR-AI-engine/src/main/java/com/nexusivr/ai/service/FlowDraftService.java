@@ -60,17 +60,21 @@ public class FlowDraftService {
 
         String dirPathStr = resolveDraftsDir();
         Path dirPath = Paths.get(dirPathStr);
-
-        try {
-            if (!Files.exists(dirPath)) {
-                Files.createDirectories(dirPath);
-            }
-        } catch (Exception e) {
-            logger.error("[FlowDraftService] Failed to create draft directory at {}: {}", dirPath.toAbsolutePath(), e.getMessage());
-            throw new ServiceException("Failed to save draft: directory is not writable (" + dirPath.toAbsolutePath() + ")", e);
+        Path tenantScopedDir = dirPath;
+        if (tenantId != null && !tenantId.isBlank()) {
+            tenantScopedDir = dirPath.resolve(tenantId.trim());
         }
 
-        String vxmlContent;
+        try {
+            if (!Files.exists(tenantScopedDir)) {
+                Files.createDirectories(tenantScopedDir);
+            }
+        } catch (Exception e) {
+            logger.error("[FlowDraftService] Failed to create draft directory at {}: {}", tenantScopedDir.toAbsolutePath(), e.getMessage());
+            throw new ServiceException("Failed to save draft: directory is not writable (" + tenantScopedDir.toAbsolutePath() + ")", e);
+        }
+
+        String jsonContent;
         String trimmed = flowJson.trim();
         FlowModel model = null;
 
@@ -98,35 +102,39 @@ public class FlowDraftService {
         }
 
         if (model != null && model.getNodes() != null && !model.getNodes().isEmpty()) {
-            if (flowName != null && !flowName.isBlank() && (model.getName() == null || model.getName().isBlank() || "Imported IVR Flow".equalsIgnoreCase(model.getName()))) {
-                model.setName(flowName);
+            if (flowName != null && !flowName.isBlank()) {
+                model.setName(flowName.trim());
+            } else if (model.getName() != null && !model.getName().isBlank()) {
+                flowName = model.getName().trim();
             }
-            vxmlContent = exporter.export(model);
-        } else if (trimmed.startsWith("<") && trimmed.contains("<vxml")) {
-            vxmlContent = trimmed;
+            jsonContent = new com.google.gson.GsonBuilder()
+                    .registerTypeAdapter(FlowNodeType.class, new com.nexusivr.ai.model.flow.FlowNodeTypeAdapter())
+                    .setPrettyPrinting()
+                    .create()
+                    .toJson(model);
         } else {
             logger.error("[FlowDraftService] Cannot save draft: flow data could not be parsed into a valid FlowModel");
             throw new ValidationException("Could not save — flow contains invalid node data or no nodes");
         }
 
 
-        if (vxmlContent == null || vxmlContent.isBlank() || !vxmlContent.contains("<vxml")) {
-            logger.error("[FlowDraftService] Exported VXML content is empty or invalid");
-            throw new ValidationException("Could not save — exported VoiceXML content is empty or invalid");
+        if (jsonContent == null || jsonContent.isBlank() || !jsonContent.contains("nodes")) {
+            logger.error("[FlowDraftService] Exported JSON content is empty or invalid");
+            throw new ValidationException("Could not save — exported JSON content is empty or invalid");
         }
 
         int targetVersion;
         if (version != null && version > 0) {
             targetVersion = version;
         } else {
-            targetVersion = getNextDraftVersion(dirPath, tenantId, flowId, flowName);
+            targetVersion = getNextDraftVersion(tenantScopedDir, tenantId, flowId, flowName);
         }
 
         String filename = buildDraftFilename(tenantId, flowId, flowName, targetVersion);
-        Path targetPath = dirPath.resolve(filename);
+        Path targetPath = tenantScopedDir.resolve(filename);
 
         try {
-            byte[] bytes = vxmlContent.getBytes(StandardCharsets.UTF_8);
+            byte[] bytes = jsonContent.getBytes(StandardCharsets.UTF_8);
             try (java.nio.channels.FileChannel channel = java.nio.channels.FileChannel.open(
                     targetPath,
                     StandardOpenOption.CREATE,
@@ -143,7 +151,7 @@ public class FlowDraftService {
                 throw new ServiceException("Failed to save draft: write verification failed for " + targetPath.toAbsolutePath(), null);
             }
 
-            logger.info("[FlowDraftService] Saved and verified draft VXML successfully to {} (version v{}, size={} bytes)",
+            logger.info("[FlowDraftService] Saved and verified draft JSON successfully to {} (version v{}, size={} bytes)",
                     targetPath.toAbsolutePath(), targetVersion, Files.size(targetPath));
         } catch (IOException e) {
             logger.error("[FlowDraftService] Failed to write draft file to {}: {}", targetPath.toAbsolutePath(), e.getMessage());
@@ -154,9 +162,9 @@ public class FlowDraftService {
     }
 
     public static int getNextDraftVersion(Path dirPath, String tenantId, String flowId, String flowName) {
-        String baseName = getBaseName(tenantId, flowId, flowName);
-        Pattern versionPattern = Pattern.compile(Pattern.quote(baseName) + "_draft_v(\\d+)\\.vxml");
-        Pattern legacyPattern = Pattern.compile(Pattern.quote(baseName) + "_draft\\.vxml");
+        String baseName = getDraftBaseName(tenantId, flowId, flowName);
+        Pattern versionPattern = Pattern.compile(Pattern.quote(baseName) + "_draft_v(\\d+)\\.json");
+        Pattern legacyPattern = Pattern.compile(Pattern.quote(baseName) + "_draft\\.json");
         int maxVersion = 0;
         try (var stream = Files.list(dirPath)) {
             for (Path path : stream.toList()) {
@@ -182,9 +190,9 @@ public class FlowDraftService {
     }
 
     public static String buildDraftFilename(String tenantId, String flowId, String flowName, Integer version) {
-        String baseName = getBaseName(tenantId, flowId, flowName);
+        String baseName = getDraftBaseName(tenantId, flowId, flowName);
         String versionSuffix = (version != null && version > 0) ? "_draft_v" + version : "_draft";
-        return baseName + versionSuffix + ".vxml";
+        return baseName + versionSuffix + ".json";
     }
 
     public static boolean isSpokenGreeting(String text) {
@@ -204,22 +212,47 @@ public class FlowDraftService {
 
     public static String getBaseName(String tenantId, String flowId, String flowName) {
         String baseName = null;
-        if (flowName != null && !flowName.isBlank() && !isSpokenGreeting(flowName)) {
-            baseName = flowName.toLowerCase().trim()
+        String cleanFlowName = flowName;
+        if (cleanFlowName != null) {
+            cleanFlowName = cleanFlowName.replaceAll("^[\\s\\\\n\\\\r]+", "").replaceAll("[\\s\\\\n\\\\r]+$", "").trim();
+        }
+
+        if (cleanFlowName != null && !cleanFlowName.isBlank() && !isSpokenGreeting(cleanFlowName)) {
+            baseName = cleanFlowName.toLowerCase().trim()
                     .replaceAll("[^a-z0-9]+", "_")
                     .replaceAll("^_+|_+$", "");
         }
         if (baseName == null || baseName.isBlank()) {
             baseName = "ivr_flow";
         }
-        
-        // Ensure it's short and descriptive
-        if (baseName.length() > 30) {
-            baseName = baseName.substring(0, 30);
-            // Don't end on an underscore if truncated
+
+        if (baseName.length() > 60) {
+            String truncated = baseName.substring(0, 60);
+            int lastUnderscore = truncated.lastIndexOf('_');
+            if (lastUnderscore > 0) {
+                baseName = truncated.substring(0, lastUnderscore);
+            } else {
+                baseName = truncated;
+            }
             baseName = baseName.replaceAll("_+$", "");
         }
         
+        return baseName;
+    }
+
+    public static String getDraftBaseName(String tenantId, String flowId, String flowName) {
+        String baseName = getBaseName(tenantId, flowId, flowName);
+        int maxLen = 60;
+        if (baseName.length() > maxLen) {
+            String truncated = baseName.substring(0, maxLen);
+            int lastUnderscore = truncated.lastIndexOf('_');
+            if (lastUnderscore > 0) {
+                baseName = truncated.substring(0, lastUnderscore);
+            } else {
+                baseName = truncated;
+            }
+            baseName = baseName.replaceAll("_+$", "");
+        }
         return baseName;
     }
 }
