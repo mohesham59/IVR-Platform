@@ -138,7 +138,7 @@ public class VoicePromptsUploadServlet extends BaseAiServlet {
             if (downloadFile != null && !downloadFile.isBlank()) {
                 String fp = dao.getFilePathByName(downloadFile);
                 if (fp == null) {
-                    fp = new File(TARGET_DIRS[0], new File(downloadFile).getName()).getAbsolutePath();
+                    fp = new File(BASE_SOUND_DIRS[0], new File(downloadFile).getName()).getAbsolutePath();
                 }
                 File f = new File(fp);
                 if (f.exists() && f.isFile()) {
@@ -189,7 +189,7 @@ public class VoicePromptsUploadServlet extends BaseAiServlet {
                 return;
             }
             
-            File targetFile = new File(TARGET_DIRS[0], new File(fileName).getName());
+            File targetFile = new File(BASE_SOUND_DIRS[0], new File(fileName).getName());
             boolean deleted = false;
             if (targetFile.exists() && targetFile.isFile()) {
                 deleted = targetFile.delete();
