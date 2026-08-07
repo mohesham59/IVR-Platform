@@ -149,6 +149,13 @@ public class ModelToVxmlExporter {
 
                 String target = choice.getTargetNodeId();
                 if (target == null || target.isBlank()) {
+                    target = outgoing.stream()
+                            .filter(conn -> Objects.equals(conn.getSourcePort(), choice.getKey()))
+                            .findFirst()
+                            .map(FlowConnection::getTargetNodeId)
+                            .orElse(null);
+                }
+                if (target == null || target.isBlank()) {
                     target = outgoing.stream().findFirst().map(FlowConnection::getTargetNodeId).orElse(null);
                 }
 
