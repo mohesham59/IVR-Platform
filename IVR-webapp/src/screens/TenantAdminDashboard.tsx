@@ -7,7 +7,7 @@ import {
   Bot, Radio, History, BarChart3, Settings, Bell, Search,
   ChevronDown, LogOut, Clock, CheckCircle,
   PhoneMissed, PhoneCall, Headphones, List, ChevronLeft, ChevronRight,
-  ArrowUpRight, ArrowDownRight, Layers,
+  ArrowUpRight, ArrowDownRight, Layers, Moon,
 } from 'lucide-react'
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
@@ -88,6 +88,17 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
   const [collapsed, setCollapsed] = useState(false)
   const [activeWorkspaceName, setActiveWorkspaceName] = useState<string>('Loading...')
   const [currentUser, setCurrentUser] = useState<{username: string, isSuperadmin: boolean} | null>(null)
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark')
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
+  }, [darkMode])
 
   useEffect(() => {
     const fetchActiveWorkspace = async () => {
@@ -244,6 +255,14 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
               <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse" />
               <span className="text-[#15803D] text-xs font-semibold">18 Active Calls</span>
             </div>
+
+            {/* Dark mode */}
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${darkMode ? 'bg-[#1F2937] text-white' : 'text-[#6B7280] hover:bg-[#F3F4F6]'}`}
+            >
+              <Moon className="w-4 h-4" />
+            </button>
 
             {/* Notifications */}
             <button className="relative w-8 h-8 rounded-lg flex items-center justify-center text-[#6B7280] hover:bg-[#F3F4F6] transition-colors">
