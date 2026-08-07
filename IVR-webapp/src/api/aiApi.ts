@@ -74,6 +74,13 @@ export interface AnalyticsApiResponse {
   totalMessages: number;
 }
 
+export interface TelephonyAnalytics {
+  liveCalls: number;
+  recentCalls: Array<{ caller: string; status: string; duration: string; scenario: string }>;
+  callVolume: Array<{ time: string; inbound: number; outbound: number }>;
+  callDist: Array<{ name: string; value: number; color: string }>;
+}
+
 export interface SummarizationApiResponse {
   summary: string;
   keyPoints: string[];
@@ -391,4 +398,13 @@ export const aiApi = {
       method: 'POST',
     });
   },
+
+  /**
+   * Fetch telephony analytics for dashboards
+   */
+  async fetchTelephonyAnalytics(): Promise<TelephonyAnalytics> {
+    return request<TelephonyAnalytics>('/telephony/analytics', {
+      method: 'GET',
+    });
+  }
 };

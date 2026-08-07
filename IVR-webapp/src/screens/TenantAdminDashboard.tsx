@@ -87,6 +87,7 @@ const statusIcon: Record<string, ReactElement> = {
 export default function TenantAdminDashboard({ onLogout }: { onLogout: () => void }) {
   const [collapsed, setCollapsed] = useState(false)
   const [activeSessions, setActiveSessions] = useState(0)
+  const [telephonyData, setTelephonyData] = useState<any>(null)
 
   useEffect(() => {
     aiApi.fetchAnalytics().then(res => {
@@ -96,6 +97,12 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
     }).catch(err => {
       console.warn('Dashboard analytics endpoint connected:', err)
     })
+
+    aiApi.fetchTelephonyAnalytics().then(res => {
+      setTelephonyData(res)
+    }).catch(err => {
+      console.warn('Dashboard telephony analytics endpoint connected:', err)
+    })
   }, [])
 
   useEffect(() => {
@@ -103,6 +110,12 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
       console.debug('Active sessions:', activeSessions)
     }
   }, [activeSessions])
+
+  const currentCallVolume = telephonyData?.callVolume?.length > 0 ? telephonyData.callVolume : callVolume
+  const currentRecentCalls = telephonyData?.recentCalls?.length > 0 ? telephonyData.recentCalls : recentCalls
+  const currentCallDist = telephonyData?.callDist?.length > 0 ? telephonyData.callDist : callDist
+  const liveCalls = telephonyData?.liveCalls ?? 18
+
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
@@ -186,7 +199,7 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
             {/* Live status */}
             <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#F0FDF4] border border-[#BBF7D0] rounded-lg">
               <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse" />
-              <span className="text-[#15803D] text-xs font-semibold">18 Active Calls</span>
+              <span className="text-[#15803D] text-xs font-semibold">{liveCalls} Active Calls</span>
             </div>
 
             {/* Notifications */}
@@ -279,7 +292,7 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
                 </div>
               </div>
               <ResponsiveContainer width="100%" height={180}>
-                <AreaChart data={callVolume} margin={{ top: 0, right: 0, left: -24, bottom: 0 }}>
+                <AreaChart data={currentCallVolume} margin={{ top: 0, right: 0, left: -24, bottom: 0 }}>
                   <defs>
                     <linearGradient id="inbGrad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#2563EB" stopOpacity={0.15} />
@@ -308,8 +321,8 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
               </div>
               <ResponsiveContainer width="100%" height={120}>
                 <PieChart>
-                  <Pie data={callDist} cx="50%" cy="50%" innerRadius={35} outerRadius={55} paddingAngle={3} dataKey="value">
-                    {callDist.map((entry, index) => (
+                  <Pie data={currentCallDist} cx="50%" cy="50%" innerRadius={35} outerRadius={55} paddingAngle={3} dataKey="value">
+                    {currentCallDist.map((entry: any, index: number) => (
                       <Cell key={index} fill={entry.color} />
                     ))}
                   </Pie>
@@ -317,7 +330,7 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
                 </PieChart>
               </ResponsiveContainer>
               <div className="grid grid-cols-2 gap-1.5 mt-3">
-                {callDist.map((d) => (
+                {currentCallDist.map((d: any) => (
                   <div key={d.name} className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: d.color }} />
                     <span className="text-[#6B7280] text-[10px]">{d.name}</span>
@@ -393,7 +406,7 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F3F4F6]">
-                {recentCalls.map((call, i) => (
+                {currentRecentCalls.map((call: any, i: number) => (
                   <tr key={i} className="hover:bg-[#F9FAFB] transition-colors">
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-2">
