@@ -27,12 +27,11 @@ import com.nexusivr.ai.dao.VoicePromptDao;
 )
 public class VoicePromptsUploadServlet extends BaseAiServlet {
 
-    // Target directory or alternative
-    private static final String[] TARGET_DIRS = {
-            "/home/seif/NetBeansProjects/IVR/assets/custom voice prompts",
-            "/var/lib/asterisk/sounds/en",
+    // Base directories for sounds
+    private static final String[] BASE_SOUND_DIRS = {
             "/var/lib/asterisk/sounds",
-            "/tmp/nexusivr/sounds"
+            "/tmp/nexusivr/sounds",
+            "/home/seif/NetBeansProjects/IVR/assets/custom voice prompts"
     };
 
     @Override
@@ -61,16 +60,29 @@ public class VoicePromptsUploadServlet extends BaseAiServlet {
                 username = "Tenant Admin";
             }
 
+            // Determine language code
+            String langCode = "en";
+            if (language.toLowerCase().contains("arabic") || language.toLowerCase().contains("ar")) {
+                langCode = "ar";
+            } else if (language.toLowerCase().contains("french") || language.toLowerCase().contains("fr")) {
+                langCode = "fr";
+            } else if (language.toLowerCase().contains("spanish") || language.toLowerCase().contains("es")) {
+                langCode = "es";
+            }
+
             // Find a writable directory
             Path targetPath = null;
-            for (String dirStr : TARGET_DIRS) {
-                File dir = new File(dirStr);
-                if (!dir.exists()) {
-                    dir.mkdirs();
-                }
-                if (dir.exists() && dir.canWrite()) {
-                    targetPath = Paths.get(dirStr, fileName);
-                    break;
+            for (String baseDirStr : BASE_SOUND_DIRS) {
+                File baseDir = new File(baseDirStr);
+                if (baseDir.exists() && baseDir.canWrite()) {
+                    File langDir = new File(baseDir, langCode);
+                    if (!langDir.exists()) {
+                        langDir.mkdirs();
+                    }
+                    if (langDir.exists() && langDir.canWrite()) {
+                        targetPath = Paths.get(langDir.getAbsolutePath(), fileName);
+                        break;
+                    }
                 }
             }
 

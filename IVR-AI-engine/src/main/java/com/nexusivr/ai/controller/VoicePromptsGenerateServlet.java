@@ -22,11 +22,10 @@ import com.google.gson.JsonObject;
 @WebServlet(urlPatterns = {"/api/v1/voice-prompts/generate"})
 public class VoicePromptsGenerateServlet extends BaseAiServlet {
 
-    private static final String[] TARGET_DIRS = {
-        "/home/seif/NetBeansProjects/IVR/assets/custom voice prompts",
-        "/var/lib/asterisk/sounds/en",
+    private static final String[] BASE_SOUND_DIRS = {
         "/var/lib/asterisk/sounds",
-        "/tmp/nexusivr/sounds"
+        "/tmp/nexusivr/sounds",
+        "/home/seif/NetBeansProjects/IVR/assets/custom voice prompts"
     };
 
     @Override
@@ -49,17 +48,27 @@ public class VoicePromptsGenerateServlet extends BaseAiServlet {
                 fileName += ".wav";
             }
 
-            String langCode = language.equals("Arabic (AR)") ? "ar" : "en";
+            String langCode = "en";
+            if (language.toLowerCase().contains("arabic") || language.toLowerCase().contains("ar")) {
+                langCode = "ar";
+            } else if (language.toLowerCase().contains("french") || language.toLowerCase().contains("fr")) {
+                langCode = "fr";
+            } else if (language.toLowerCase().contains("spanish") || language.toLowerCase().contains("es")) {
+                langCode = "es";
+            }
 
             Path targetDir = null;
-            for (String dirStr : TARGET_DIRS) {
-                File dir = new File(dirStr);
-                if (!dir.exists()) {
-                    dir.mkdirs();
-                }
-                if (dir.exists() && dir.canWrite()) {
-                    targetDir = dir.toPath();
-                    break;
+            for (String baseDirStr : BASE_SOUND_DIRS) {
+                File baseDir = new File(baseDirStr);
+                if (baseDir.exists() && baseDir.canWrite()) {
+                    File langDir = new File(baseDir, langCode);
+                    if (!langDir.exists()) {
+                        langDir.mkdirs();
+                    }
+                    if (langDir.exists() && langDir.canWrite()) {
+                        targetDir = langDir.toPath();
+                        break;
+                    }
                 }
             }
 

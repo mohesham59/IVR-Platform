@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # 1. Asterisk PBX
+  asterisk:
+    image: andrius/asterisk:latest
+    container_name: ivr-asterisk
+    # Using host network mode is easiest for VoIP/SIP/RTP so we don't have to map a huge range of RTP ports
+    network_mode: "host"
+    volumes:
+      # Map the host machine's asterisk config directory to the container
+      - /etc/asterisk:/etc/asterisk
+      # Mount the run directory to host so other containers can access the asterisk socket
+      - /var/run/asterisk:/var/run/asterisk
+      # Share audio/sounds directory so the webapp can upload/generate TTS directly to Asterisk
+      - ./asterisk-sounds:/var/lib/asterisk/sounds
+    restart: unless-stopped
+
+  # 2. IVR Engine (FastAGI Server)
+  ivr-engine:
+    build:
+      context: ./IVR-engine
+      dockerfile: Dockerfile
+    container_name: ivr-engine
+    # Using host network so Asterisk can easily reach it on localhost:4573
+    network_mode: "host"
+    volumes:
+      # Map scenarios so VXML files can be updated live without rebuilding
+      - ./IVR-engine/scenarios:/app/scenarios
+    restart: unless-stopped
+
+  # 3. IVR AI Engine (REST API)
+  ivr-ai-engine:
+    build:
+      context: ./IVR-AI-engine
+      dockerfile: Dockerfile
+    container_name: ivr-ai-engine
+    ports:
+      - "8080:8080"
+    volumes:
+      # Share scenarios folder with ivr-engine
+      - ./IVR-engine/scenarios:/app/IVR-engine/scenarios
+      # Share add_extension.sh script
+      - ./IVR-engine/add_extension.sh:/app/IVR-engine/add_extension.sh
+      # Mount asterisk config so add_extension.sh can edit extensions.conf
+      - /etc/asterisk:/etc/asterisk
+      # Mount asterisk run directory so 'asterisk -rx' works
+      - /var/run/asterisk:/var/run/asterisk
+      # Mount shared sounds directory so uploads/TTS save directly into Asterisk
+      - ./asterisk-sounds:/var/lib/asterisk/sounds
+    environment:
+      # Use host.docker.internal to talk to the local Ollama instance running on the host
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      # Connect to the remote NeonDB instance (extracted from application.properties / .env)
+      - DATABASE_URL=jdbc:postgresql://ep-empty-cell-ay0ibimz-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require
+      - DATABASE_USER=neondb_owner
+      - DATABASE_PASSWORD=npg_6OuHh2PKRUWk
+      # Point to Asterisk on the host
+      - AMI_HOST=host.docker.internal
+    # Need this to resolve host.docker.internal on Linux hosts
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # 4. IVR WebApp (React Frontend)
+  ivr-webapp:
+    build:
+      context: ./IVR-webapp
+      dockerfile: Dockerfile
+    container_name: ivr-webapp
+    ports:
+      - "3000:80"
+    depends_on:
+      - ivr-ai-engine
+    restart: unless-stopped
