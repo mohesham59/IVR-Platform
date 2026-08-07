@@ -96,6 +96,76 @@ public class OpenAiCompatibleClient implements LlmClient {
         return executeChat(systemPrompt, userPrompt, history, true);
     }
 
+    private JsonArray buildMessagesArray(String systemPrompt, String userPrompt, List<Message> history, boolean foldSystemPrompt) {
+        JsonArray messagesArray = new JsonArray();
+
+        if (foldSystemPrompt) {
+            String systemText = (systemPrompt != null) ? systemPrompt : "";
+            boolean folded = false;
+
+            if (history != null) {
+                for (Message msg : history) {
+                    JsonObject msgObj = new JsonObject();
+                    String role = msg.getRole() != null ? msg.getRole().name().toLowerCase() : "user";
+                    msgObj.addProperty("role", role);
+                    
+                    String content = msg.getContent() != null ? msg.getContent() : "";
+                    if (!folded && "user".equals(role) && !systemText.isBlank()) {
+                        content = "System Instructions:\n" + systemText + "\n\nUser Request:\n" + content;
+                        folded = true;
+                    }
+                    msgObj.addProperty("content", content);
+                    messagesArray.add(msgObj);
+                }
+            }
+
+            if (userPrompt != null && !userPrompt.isBlank()) {
+                JsonObject userMsg = new JsonObject();
+                userMsg.addProperty("role", "user");
+                String content = userPrompt;
+                if (!folded && !systemText.isBlank()) {
+                    content = "System Instructions:\n" + systemText + "\n\nUser Request:\n" + content;
+                    folded = true;
+                }
+                userMsg.addProperty("content", content);
+                messagesArray.add(userMsg);
+            }
+
+            if (!folded && !systemText.isBlank()) {
+                JsonObject userMsg = new JsonObject();
+                userMsg.addProperty("role", "user");
+                userMsg.addProperty("content", systemText);
+                messagesArray.add(userMsg);
+            }
+        } else {
+            if (systemPrompt != null && !systemPrompt.isBlank()) {
+                JsonObject sysMsg = new JsonObject();
+                sysMsg.addProperty("role", "system");
+                sysMsg.addProperty("content", systemPrompt);
+                messagesArray.add(sysMsg);
+            }
+
+            if (history != null) {
+                for (Message msg : history) {
+                    JsonObject msgObj = new JsonObject();
+                    String role = msg.getRole() != null ? msg.getRole().name().toLowerCase() : "user";
+                    msgObj.addProperty("role", role);
+                    msgObj.addProperty("content", msg.getContent() != null ? msg.getContent() : "");
+                    messagesArray.add(msgObj);
+                }
+            }
+
+            if (userPrompt != null && !userPrompt.isBlank()) {
+                JsonObject userMsg = new JsonObject();
+                userMsg.addProperty("role", "user");
+                userMsg.addProperty("content", userPrompt);
+                messagesArray.add(userMsg);
+            }
+        }
+
+        return messagesArray;
+    }
+
     private AiResponse executeChat(String systemPrompt, String userPrompt, List<Message> history, boolean jsonMode) {
         long startTime = System.currentTimeMillis();
 
@@ -140,32 +210,7 @@ public class OpenAiCompatibleClient implements LlmClient {
                 }
             }
 
-            JsonArray messagesArray = new JsonArray();
-
-            if (systemPrompt != null && !systemPrompt.isBlank()) {
-                JsonObject sysMsg = new JsonObject();
-                sysMsg.addProperty("role", "system");
-                sysMsg.addProperty("content", systemPrompt);
-                messagesArray.add(sysMsg);
-            }
-
-            if (history != null) {
-                for (Message msg : history) {
-                    JsonObject msgObj = new JsonObject();
-                    String role = msg.getRole() != null ? msg.getRole().name().toLowerCase() : "user";
-                    msgObj.addProperty("role", role);
-                    msgObj.addProperty("content", msg.getContent() != null ? msg.getContent() : "");
-                    messagesArray.add(msgObj);
-                }
-            }
-
-            if (userPrompt != null && !userPrompt.isBlank()) {
-                JsonObject userMsg = new JsonObject();
-                userMsg.addProperty("role", "user");
-                userMsg.addProperty("content", userPrompt);
-                messagesArray.add(userMsg);
-            }
-
+            JsonArray messagesArray = buildMessagesArray(systemPrompt, userPrompt, history, false);
             requestBody.add("messages", messagesArray);
 
             // Resolve endpoint URL path
@@ -198,13 +243,76 @@ public class OpenAiCompatibleClient implements LlmClient {
             HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
             long latencyMs = System.currentTimeMillis() - startTime;
 
+            JsonObject responseJson;
             if (response.statusCode() >= 400) {
+                String responseBodyText = response.body();
                 logger.error("OpenAiCompatibleClient [{}]: HTTP {} returned. Latency: {}ms, Body: {}",
-                        providerName, response.statusCode(), latencyMs, response.body());
-                return new AiResponse(providerName.toUpperCase() + " API returned HTTP error status: " + response.statusCode(), requestModel, 0, 0, true, null, null, response.statusCode());
-            }
+                        providerName, response.statusCode(), latencyMs, responseBodyText);
 
-            JsonObject responseJson = JsonParser.parseString(response.body()).getAsJsonObject();
+                boolean isSystemMsgError = responseBodyText != null && 
+                        (responseBodyText.contains("system message") || responseBodyText.contains("ValidationException")) &&
+                        (responseBodyText.contains("support") || responseBodyText.contains("doesn't support"));
+
+                if (isSystemMsgError && systemPrompt != null && !systemPrompt.isBlank()) {
+                    logger.warn("OpenAiCompatibleClient [{}]: Model does not support system messages. Retrying with system prompt folded into user prompt.", providerName);
+
+                    JsonObject retryRequestBody = new JsonObject();
+                    if (isStudentProxy) {
+                        retryRequestBody.addProperty("model_id", requestModel);
+                    } else if (isItiApi) {
+                        retryRequestBody.addProperty("model_id", requestModel);
+                    } else {
+                        retryRequestBody.addProperty("model", requestModel);
+                    }
+                    retryRequestBody.addProperty("temperature", temperature);
+                    if (jsonMode && !isStudentProxy) {
+                        if ("ollama".equals(providerName)) {
+                            retryRequestBody.addProperty("format", "json");
+                        } else {
+                            JsonObject responseFormat = new JsonObject();
+                            responseFormat.addProperty("type", "json_object");
+                            retryRequestBody.add("response_format", responseFormat);
+                        }
+                    }
+                    if ("ollama".equals(providerName)) {
+                        retryRequestBody.addProperty("stream", false);
+                    }
+
+                    JsonArray retryMessagesArray = buildMessagesArray(systemPrompt, userPrompt, history, true);
+                    retryRequestBody.add("messages", retryMessagesArray);
+
+                    HttpRequest.Builder retryHttpReqBuilder = HttpRequest.newBuilder()
+                            .uri(URI.create(endpointUrl))
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(retryRequestBody)));
+
+                    if (!apiKey.isBlank()) {
+                        retryHttpReqBuilder.header("Authorization", "Bearer " + apiKey);
+                    }
+
+                    if ("openrouter".equalsIgnoreCase(providerName) && !isStudentProxy) {
+                        retryHttpReqBuilder.header("HTTP-Referer", "https://nexusivr.com");
+                        retryHttpReqBuilder.header("X-Title", "NexusIVR");
+                    }
+
+                    HttpRequest retryHttpRequest = retryHttpReqBuilder.timeout(Duration.ofSeconds(timeoutSeconds)).build();
+                    long retryStartTime = System.currentTimeMillis();
+                    response = httpClient.send(retryHttpRequest, HttpResponse.BodyHandlers.ofString());
+                    latencyMs = System.currentTimeMillis() - retryStartTime;
+
+                    if (response.statusCode() >= 400) {
+                        logger.error("OpenAiCompatibleClient [{}]: Retry HTTP {} returned. Latency: {}ms, Body: {}",
+                                providerName, response.statusCode(), latencyMs, response.body());
+                        return new AiResponse(providerName.toUpperCase() + " API returned HTTP error status on retry: " + response.statusCode(), requestModel, 0, 0, true, null, null, response.statusCode());
+                    }
+
+                    responseJson = JsonParser.parseString(response.body()).getAsJsonObject();
+                } else {
+                    return new AiResponse(providerName.toUpperCase() + " API returned HTTP error status: " + response.statusCode(), requestModel, 0, 0, true, null, null, response.statusCode());
+                }
+            } else {
+                responseJson = JsonParser.parseString(response.body()).getAsJsonObject();
+            }
             String content = "";
 
             if (isItiApi && responseJson.has("output_text")) {
