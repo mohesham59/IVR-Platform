@@ -65,8 +65,9 @@ class FlowPublishServiceTest {
         // Filename is derived from resolvedBusinessName (clinic_flow)
         assertEquals("clinic_flow.vxml", result.getFilename());
 
-        Path expectedFile = tempScenariosDir.resolve("tenant_100").resolve("clinic_flow.vxml");
-        assertTrue(Files.exists(expectedFile), "Published .vxml file must exist in tenant subdirectory");
+        // Flows publish flat into the scenarios root (the engine only loads scenarios/<name>.vxml)
+        Path expectedFile = tempScenariosDir.resolve("clinic_flow.vxml");
+        assertTrue(Files.exists(expectedFile), "Published .vxml file must exist in the scenarios root");
 
         String fileContent = Files.readString(expectedFile);
         assertNotNull(fileContent);
@@ -83,7 +84,7 @@ class FlowPublishServiceTest {
         String flowId = "flow_clinic_01";
 
         publishService.publishFlow(tenantId, flowId, null, "Clinic Flow", vxml1);
-        Path targetPath = tempScenariosDir.resolve("tenant_100").resolve("clinic_flow.vxml");
+        Path targetPath = tempScenariosDir.resolve("clinic_flow.vxml");
         assertTrue(Files.exists(targetPath));
 
         // Create updated model
@@ -94,7 +95,7 @@ class FlowPublishServiceTest {
         publishService.publishFlow(tenantId, flowId, null, "Clinic Flow", vxml2);
 
         // Verify directory contains VXML and JSON scenario files (no duplicates)
-        try (var stream = Files.list(tempScenariosDir.resolve("tenant_100"))) {
+        try (var stream = Files.list(tempScenariosDir)) {
             long count = stream.count();
             assertEquals(2, count, "Republishing should overwrite existing .vxml and .json files");
         }
@@ -342,8 +343,8 @@ class FlowPublishServiceTest {
         assertEquals(expectedBaseName + ".vxml", result.getFilename());
 
         // 2. Verify scenario VXML and JSON files exist on disk with exact base name
-        assertTrue(Files.exists(scenariosFolder.resolve(tenantId).resolve(expectedBaseName + ".vxml")), "VXML scenario file must exist with exact business name");
-        assertTrue(Files.exists(scenariosFolder.resolve(tenantId).resolve(expectedBaseName + ".json")), "JSON scenario file must exist with exact business name");
+        assertTrue(Files.exists(scenariosFolder.resolve(expectedBaseName + ".vxml")), "VXML scenario file must exist with exact business name");
+        assertTrue(Files.exists(scenariosFolder.resolve(expectedBaseName + ".json")), "JSON scenario file must exist with exact business name");
 
         // 3. Verify the business argument passed to add_extension.sh equals expectedBaseName BYTE-FOR-BYTE
         assertTrue(result.getExtensionMessage().contains("REGISTERED_BUSINESS=" + expectedBaseName),

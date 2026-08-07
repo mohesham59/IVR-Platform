@@ -116,10 +116,12 @@ public class FlowPublishService {
         String dirPathStr = resolveScenariosDir();
         Path dirPath = Paths.get(dirPathStr);
 
+        // Publish flat into the scenarios root. The IVR engine's VxmlLoader only
+        // resolves files from scenarios/<name>.vxml and the AGI handler sanitizes
+        // scenario names to [A-Za-z0-9_-] (no '/'), so tenant-scoped subdirectories
+        // are not loadable. Business names are slugified from flowId+flowName, which
+        // keeps collisions unlikely even without tenant scoping.
         Path tenantScopedDir = dirPath;
-        if (tenantId != null && !tenantId.isBlank()) {
-            tenantScopedDir = dirPath.resolve(tenantId.trim());
-        }
 
         try {
             if (!Files.exists(tenantScopedDir)) {
@@ -277,11 +279,16 @@ public class FlowPublishService {
             return new ScriptExecutionResult(false, 127, "add_extension.sh script not found", "Script path does not exist");
         }
 
-        boolean runWithSudo = true;
-        for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
-            if (element.getClassName().startsWith("org.junit.") || element.getClassName().startsWith("org.apache.maven.surefire.")) {
-                runWithSudo = false;
-                break;
+        boolean runWithSudo = false;
+        boolean runningAsRoot = "root".equalsIgnoreCase(System.getProperty("user.name"));
+        boolean sudoAvailable = Files.isExecutable(Paths.get("/usr/bin/sudo"));
+        if (!runningAsRoot && sudoAvailable) {
+            for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
+                if (element.getClassName().startsWith("org.junit.") || element.getClassName().startsWith("org.apache.maven.surefire.")) {
+                    runWithSudo = false;
+                    break;
+                }
+                runWithSudo = true;
             }
         }
 
@@ -295,9 +302,6 @@ public class FlowPublishService {
         command.add(businessName);
 
         String vxmlFilePath = businessName;
-        if (tenantId != null && !tenantId.isBlank()) {
-            vxmlFilePath = tenantId.trim() + "/" + businessName;
-        }
         command.add(vxmlFilePath);
 
         logger.info("[FlowPublishService] Executing add_extension.sh: {} with ext='{}', business='{}', vxml_path='{}'",

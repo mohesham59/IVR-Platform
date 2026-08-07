@@ -1577,10 +1577,8 @@ public class UnifiedAiEngine {
             String trimmed = normalized.trim();
 
             try {
-                javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
-                factory.setNamespaceAware(false);
-                factory.setValidating(false);
-                factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+                javax.xml.parsers.DocumentBuilderFactory factory =
+                        com.nexusivr.ai.util.SecureXmlFactory.newDocumentBuilderFactory(false);
                 javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
                 builder.parse(new org.xml.sax.InputSource(new java.io.StringReader(trimmed)));
             } catch (Exception e) {
@@ -1669,10 +1667,8 @@ public class UnifiedAiEngine {
         }
 
         try {
-            javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(false);
-            factory.setValidating(false);
-            factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            javax.xml.parsers.DocumentBuilderFactory factory =
+                    com.nexusivr.ai.util.SecureXmlFactory.newDocumentBuilderFactory(false);
             javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
             builder.parse(new org.xml.sax.InputSource(new java.io.StringReader(trimmed)));
             return true;

@@ -28,11 +28,7 @@ import com.nexusivr.ai.dao.VoicePromptDao;
 public class VoicePromptsUploadServlet extends BaseAiServlet {
 
     // Base directories for sounds
-    private static final String[] BASE_SOUND_DIRS = {
-            "/var/lib/asterisk/sounds",
-            "/tmp/nexusivr/sounds",
-            "/home/seif/NetBeansProjects/IVR/assets/custom voice prompts"
-    };
+    private static final String[] BASE_SOUND_DIRS = com.nexusivr.ai.util.SoundDirs.resolveBaseSoundDirs();
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

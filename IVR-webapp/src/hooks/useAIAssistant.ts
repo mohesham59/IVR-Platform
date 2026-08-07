@@ -85,6 +85,12 @@ export interface UseAIAssistantReturn {
   getNodeIconSymbol: (type: string) => string
   repairDoubleEncodedUtf8: (str: string) => string
   pushToHistory: (msg: Message) => void
+  isListening: boolean
+  voiceError: string | null
+  toggleVoiceInput: () => void
+  handleFileUpload: (file: File) => void
+  attachedFileName: string | null
+  clearAttachedFile: () => void
 }
 
 export function detectDomain(text: string): { label: string; icon: string } | null {
@@ -243,6 +249,12 @@ export function useAIAssistant(options: UseAIAssistantOptions = {}): UseAIAssist
   }, [sessionId])
 
   const [historyError, setHistoryError] = useState<string | null>(null)
+
+  const [attachedFileName, setAttachedFileName] = useState<string | null>(null)
+  const attachedFileContentRef = useRef<string | null>(null)
+  const [isListening, setIsListening] = useState(false)
+  const [voiceError, setVoiceError] = useState<string | null>(null)
+  const recognitionRef = useRef<any>(null)
 
   const refreshSessions = useCallback(async () => {
     try {
@@ -797,9 +809,76 @@ export function useAIAssistant(options: UseAIAssistantOptions = {}): UseAIAssist
     }, delay)
   }, [])
 
+  const handleFileUpload = useCallback((file: File) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      attachedFileContentRef.current = String(reader.result ?? '')
+      setAttachedFileName(file.name)
+      setVoiceError(null)
+    }
+    reader.onerror = () => {
+      setVoiceError(`Could not read file "${file.name}". Please try again.`)
+    }
+    reader.readAsText(file)
+  }, [])
+
+  const clearAttachedFile = useCallback(() => {
+    attachedFileContentRef.current = null
+    setAttachedFileName(null)
+  }, [])
+
+  const toggleVoiceInput = useCallback(() => {
+    if (isListening) {
+      try {
+        recognitionRef.current?.stop?.()
+      } catch {
+        // already stopped
+      }
+      setIsListening(false)
+      return
+    }
+    const w = window as any
+    const SpeechRecognition = w.SpeechRecognition || w.webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      setVoiceError('Speech recognition is not supported in this browser')
+      return
+    }
+    setVoiceError(null)
+    try {
+      const rec = new SpeechRecognition()
+      rec.lang = 'en-US'
+      rec.interimResults = false
+      rec.maxAlternatives = 1
+      rec.onresult = (e: any) => {
+        const transcript = Array.from(e.results || []).map((r: any) => r[0]?.transcript ?? '').join(' ')
+        if (transcript) {
+          setInput(prev => (prev.trim() ? prev + ' ' + transcript : transcript))
+        }
+      }
+      rec.onerror = (e: any) => {
+        setIsListening(false)
+        setVoiceError(e?.error ? `Voice input error: ${e.error}` : 'Voice input failed')
+      }
+      rec.onend = () => {
+        setIsListening(false)
+      }
+      recognitionRef.current = rec
+      rec.start()
+      setIsListening(true)
+    } catch (err: any) {
+      setVoiceError(`Could not start voice input: ${err?.message ?? err}`)
+      setIsListening(false)
+    }
+  }, [isListening])
+
   const sendMessage = useCallback(async (textOverride?: string) => {
-    const text = (textOverride ?? input).trim()
-    if (!text) return
+    const base = (textOverride ?? input).trim()
+    if (!base && !attachedFileContentRef.current) return
+    const fileContent = textOverride ? null : attachedFileContentRef.current
+    const text = fileContent
+      ? `${base}\n\n[Attached file: ${attachedFileName ?? 'attachment'}]\n\n${fileContent}`
+      : base
+    clearAttachedFile()
 
     const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
     const userMsg: Message = { id: Date.now().toString(), role: 'user', text, ts: timeStr, type: 'text' }
@@ -1041,7 +1120,7 @@ export function useAIAssistant(options: UseAIAssistantOptions = {}): UseAIAssist
       setIsTyping(false)
       setGenerationStage('idle')
     }
-  }, [input, messages, sessionId, selectedSnapshotId, selectedProvider, onFlowGenerated, setActiveFlow, updateAndSaveMessages, advanceStage, buildFlowContextJson])
+  }, [input, messages, sessionId, selectedSnapshotId, selectedProvider, onFlowGenerated, setActiveFlow, updateAndSaveMessages, advanceStage, buildFlowContextJson, attachedFileName, clearAttachedFile])
 
   return {
     messages,
@@ -1089,5 +1168,11 @@ export function useAIAssistant(options: UseAIAssistantOptions = {}): UseAIAssist
     repairDoubleEncodedUtf8,
     pushToHistory,
     historyError,
+    isListening,
+    voiceError,
+    toggleVoiceInput,
+    handleFileUpload,
+    attachedFileName,
+    clearAttachedFile,
   }
 }

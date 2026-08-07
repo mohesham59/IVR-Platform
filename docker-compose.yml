@@ -27,6 +27,8 @@ services:
     volumes:
       # Map scenarios so VXML files can be updated live without rebuilding
       - ./IVR-engine/scenarios:/app/scenarios
+      # Share sounds directory so generated TTS/custom audio is visible to Asterisk
+      - ./asterisk-sounds:/var/lib/asterisk/sounds
     restart: unless-stopped
 
   # 3. IVR AI Engine (REST API)
@@ -48,6 +50,9 @@ services:
       - /var/run/asterisk:/var/run/asterisk
       # Mount shared sounds directory so uploads/TTS save directly into Asterisk
       - ./asterisk-sounds:/var/lib/asterisk/sounds
+    env_file:
+      # Pass the LLM provider + API keys from the repo-local .env
+      - ./IVR-AI-engine/.env
     environment:
       # Use host.docker.internal to talk to the local Ollama instance running on the host
       - OLLAMA_BASE_URL=http://host.docker.internal:11434

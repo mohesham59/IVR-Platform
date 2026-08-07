@@ -22,11 +22,7 @@ import com.google.gson.JsonObject;
 @WebServlet(urlPatterns = {"/api/v1/voice-prompts/generate"})
 public class VoicePromptsGenerateServlet extends BaseAiServlet {
 
-    private static final String[] BASE_SOUND_DIRS = {
-        "/var/lib/asterisk/sounds",
-        "/tmp/nexusivr/sounds",
-        "/home/seif/NetBeansProjects/IVR/assets/custom voice prompts"
-    };
+    private static final String[] BASE_SOUND_DIRS = com.nexusivr.ai.util.SoundDirs.resolveBaseSoundDirs();
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -43,6 +39,14 @@ public class VoicePromptsGenerateServlet extends BaseAiServlet {
                 sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "Missing fileName or text");
                 return;
             }
+
+            // Sanitize fileName to prevent path traversal (absolute paths or "..").
+            String baseName = new File(fileName).getName().trim();
+            if (baseName.isEmpty() || baseName.contains("/") || baseName.contains("\\") || baseName.contains("..")) {
+                sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid fileName");
+                return;
+            }
+            fileName = baseName;
 
             if (!fileName.toLowerCase().endsWith(".wav")) {
                 fileName += ".wav";
@@ -79,22 +83,23 @@ public class VoicePromptsGenerateServlet extends BaseAiServlet {
             Path targetWavFile = targetDir.resolve(fileName);
             String mp3File = targetWavFile.toString().replace(".wav", ".mp3");
 
-            // Python TTS Generation
+            // Python TTS Generation. Text/language/file are passed as process
+            // arguments (sys.argv), never interpolated into a -c script, so the
+            // payload cannot escape into shell/python code.
             ProcessBuilder pbTts = new ProcessBuilder(
                 "python3", "-c",
-                "from gtts import gTTS; tts=gTTS(" + quote(text) + ", lang='" + langCode + "'); tts.save(" + quote(mp3File) + ")"
+                "import sys; from gtts import gTTS; tts=gTTS(sys.argv[1], lang=sys.argv[2]); tts.save(sys.argv[3])",
+                text, langCode, mp3File
             );
-            Process pTts = pbTts.start();
-            int exitTts = pTts.waitFor();
+            int exitTts = runAndWait(pbTts);
 
             if (exitTts == 0 && Files.exists(Paths.get(mp3File))) {
                 // Convert to WAV using ffmpeg
                 ProcessBuilder pbFfmpeg = new ProcessBuilder(
                     "ffmpeg", "-y", "-i", mp3File, "-ar", "8000", "-ac", "1", "-codec:a", "pcm_s16le", targetWavFile.toString()
                 );
-                Process pFfmpeg = pbFfmpeg.start();
-                int exitFfmpeg = pFfmpeg.waitFor();
-                
+                int exitFfmpeg = runAndWait(pbFfmpeg);
+
                 Files.deleteIfExists(Paths.get(mp3File));
 
                 if (exitFfmpeg != 0 || !Files.exists(targetWavFile)) {
@@ -132,7 +137,36 @@ public class VoicePromptsGenerateServlet extends BaseAiServlet {
         }
     }
 
-    private static String quote(String text) {
-        return "\"" + text.replace("\"", "\\\"").replace("\n", " ") + "\"";
+    /**
+     * Runs a process, draining stdout/stderr concurrently to avoid pipe-buffer
+     * deadlocks, and enforces a timeout so a hung process cannot block a
+     * servlet thread forever.
+     */
+    private static int runAndWait(ProcessBuilder pb) throws IOException, InterruptedException {
+        Process p = pb.start();
+        Thread outReader = new Thread(() -> consume(p.getInputStream()), "vp-stdout");
+        Thread errReader = new Thread(() -> consume(p.getErrorStream()), "vp-stderr");
+        outReader.setDaemon(true);
+        errReader.setDaemon(true);
+        outReader.start();
+        errReader.start();
+
+        boolean finished = p.waitFor(120, java.util.concurrent.TimeUnit.SECONDS);
+        if (!finished) {
+            System.err.println("Voice prompt process timed out: " + String.join(" ", pb.command()));
+            p.destroyForcibly();
+            throw new IOException("Voice prompt process timed out: " + pb.command().get(0));
+        }
+        return p.exitValue();
+    }
+
+    private static void consume(java.io.InputStream stream) {
+        try (java.io.InputStream in = stream) {
+            byte[] buffer = new byte[1024];
+            while (in.read(buffer) != -1) {
+                // discard output
+            }
+        } catch (Exception ignored) {
+        }
     }
 }

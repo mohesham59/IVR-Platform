@@ -109,8 +109,8 @@ class FlowBusinessNameResolutionTest {
         FlowPublishService.FlowPublishResult result = publishService.publishFlow(tenantId, flowId, "1000", cleanBusinessName, exporter.export(model));
         assertTrue(result.isSuccess());
 
-        // Verify VXML scenario file on disk uses clean business name
-        Path publishedFile = tempScenariosDir.resolve(tenantId).resolve("hospitality_ivr.vxml");
+        // Verify VXML scenario file on disk uses clean business name (flat into scenarios root)
+        Path publishedFile = tempScenariosDir.resolve("hospitality_ivr.vxml");
         assertTrue(Files.exists(publishedFile), "Published file must use clean business name");
         assertFalse(publishedFile.getFileName().toString().contains("welcome"), "Published filename must never contain greeting text");
     }

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+  <meta name="flow-name" content="Frontend Flow"/>
+  <!-- Start (n1) -->
+  <form id="n1">
+    <block>
+      <prompt>Welcome to Bershka. For Arabic, press 1. For English, press 2.</prompt>
+      <goto next="#n2"/>
+    </block>
+  </form>
+  <!-- Main menu (n2) -->
+  <form id="n2">
+    <menu>
+      <prompt>Press 1 for booking a tailoring appointment. Press 2 for tracking your shipment. Press 3 to contact a customer support agent. Press 4 to file a complaint. Press 0 to speak with an agent.</prompt>
+      <choice dtmf="1" next="#n3">Key 1</choice>
+      <choice dtmf="2" next="#n4">Key 2</choice>
+      <choice dtmf="3" next="#n5">Key 3</choice>
+      <choice dtmf="0" next="#n3">Key 0</choice>
+      <choice dtmf="4" next="#n7"/>
+    </menu>
+  </form>
+  <!-- Tailoring (n3) -->
+  <form id="n3">
+    <block>
+      <prompt>Connecting you to a tailoring agent. Please wait.</prompt>
+      <transfer dest="Connecting you to a tailoring agent. Please wait."/>
+      <goto next="#n7"/>
+    </block>
+  </form>
+  <!-- Shipping (n4) -->
+  <form id="n4">
+    <block>
+      <prompt>Connecting you to the shipping department. Please wait.</prompt>
+      <transfer dest="Connecting you to the shipping department. Please wait."/>
+      <goto next="#n7"/>
+    </block>
+  </form>
+  <!-- Support (n5) -->
+  <form id="n5">
+    <block>
+      <prompt>Connecting you to a customer support agent. Please wait.</prompt>
+      <transfer dest="Connecting you to a customer support agent. Please wait."/>
+      <goto next="#n7"/>
+    </block>
+  </form>
+  <!-- Complaints (n6) -->
+  <form id="n6">
+    <block>
+      <prompt>Connecting you to the complaints department. Please wait.</prompt>
+      <transfer dest="Connecting you to the complaints department. Please wait."/>
+      <goto next="#n7"/>
+    </block>
+  </form>
+  <!-- Closing (n7) -->
+  <form id="n7">
+    <block>
+      <prompt>Thank you for calling Bershka. Have a great day!</prompt>
+      <disconnect/>
+    </block>
+  </form>
+</vxml>

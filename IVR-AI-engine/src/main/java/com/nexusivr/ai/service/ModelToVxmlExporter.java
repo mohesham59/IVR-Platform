@@ -106,11 +106,11 @@ public class ModelToVxmlExporter {
     }
 
     private void renderStart(StringBuilder sb, FlowNode node, List<FlowConnection> outgoing) {
-        renderPromptAndGoto(sb, node, outgoing, false);
+        renderPromptAndGoto(sb, node, outgoing, true);
     }
 
     private void renderPrompt(StringBuilder sb, FlowNode node, List<FlowConnection> outgoing) {
-        renderPromptAndGoto(sb, node, outgoing, false);
+        renderPromptAndGoto(sb, node, outgoing, true);
     }
 
     private void renderPromptAndGoto(StringBuilder sb, FlowNode node, List<FlowConnection> outgoing, boolean isBlock) {

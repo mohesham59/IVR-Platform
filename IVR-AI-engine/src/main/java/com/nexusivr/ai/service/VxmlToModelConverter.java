@@ -827,8 +827,7 @@ public class VxmlToModelConverter {
         // LLMs often output "Billing & Payments" instead of "Billing &amp; Payments",
         // causing SAXException: "The entity name must immediately follow the '&'".
         trimmed = sanitizeBareAmpersands(trimmed);
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(false);
+        DocumentBuilderFactory factory = com.nexusivr.ai.util.SecureXmlFactory.newDocumentBuilderFactory(false);
         DocumentBuilder builder = factory.newDocumentBuilder();
         return builder.parse(new org.xml.sax.InputSource(new StringReader(trimmed)));
     }

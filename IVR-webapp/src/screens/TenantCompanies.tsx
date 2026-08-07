@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import TenantLayout from '../components/TenantLayout'
+import { backendUrl } from '../api/backendUrl'
 import {
   Search, ChevronDown, ChevronLeft, ChevronRight, Filter, Building2, User, CheckCircle2, Circle, AlertCircle
 } from 'lucide-react'
@@ -49,10 +50,10 @@ export default function TenantCompanies({ onLogout }: { onLogout: () => void }) 
     setIsLoading(true)
     try {
       const token = localStorage.getItem('nexus_jwt_token')
-      const headers = token ? { Authorization: `Bearer ${token}` } : {}
+      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
       let res = await fetch('/api/v1/tenant/companies', { headers }).catch(() => null)
       if (!res || !res.ok) {
-        res = await fetch('http://localhost:8081/nexusivr-ai-engine/api/v1/tenant/companies', { headers })
+        res = await fetch(backendUrl('/api/v1/tenant/companies'), { headers })
       }
       const data = await res.json()
       if (data.success && Array.isArray(data.tenants)) {
@@ -87,7 +88,7 @@ export default function TenantCompanies({ onLogout }: { onLogout: () => void }) 
       }).catch(() => null)
 
       if (!res || !res.ok) {
-        res = await fetch('http://localhost:8081/nexusivr-ai-engine/api/v1/tenant/companies', {
+        res = await fetch(backendUrl('/api/v1/tenant/companies'), {
           method: 'POST',
           headers,
           body: JSON.stringify({ tenantId })
@@ -139,7 +140,7 @@ export default function TenantCompanies({ onLogout }: { onLogout: () => void }) 
   const activeCount = tenantsList.filter(t => t.isActive).length
 
   return (
-    <TenantLayout onLogout={onLogout}>
+    <TenantLayout onLogout={onLogout} pageTitle="Companies">
       <div className="p-6 space-[#111827]">
         {/* Header */}
         <div className="flex justify-between items-start mb-6">

@@ -12,6 +12,13 @@ export interface ValidationItem {
 
 export function isPlaceholderDestination(d: string): boolean {
   if (!d) return true
+  const normalized = d.trim()
+  if (!normalized) return true
+  const lower = normalized.toLowerCase()
+  if (/placeholder/i.test(lower)) return true
+  if (/^(enter|set|specify|type|insert|choose|add)\b/.test(lower)) return true
+  if (/^(destination|target|extension|number|recipient|transfer\s?number)$/.test(lower)) return true
+  if (!/[a-z0-9+#*]/i.test(normalized)) return true
   return false
 }
 

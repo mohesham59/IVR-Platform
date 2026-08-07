@@ -1,5 +1,6 @@
 import { useState, useEffect, type ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
+import { backendUrl } from '../api/backendUrl'
 import {
   Activity, BarChart3, Bell, Building2, ChevronDown, ChevronLeft, ChevronRight,
   CreditCard, LayoutDashboard, LogOut, Moon, Phone, ScrollText, Search, Settings, Users,
@@ -44,10 +45,10 @@ export default function SuperAdminLayout({ children, pageTitle, pageSubtitle, he
     const fetchUser = async () => {
       try {
         const token = localStorage.getItem('nexus_jwt_token')
-        const headers = token ? { Authorization: `Bearer ${token}` } : {}
+        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
         let res = await fetch('/api/v1/auth/me', { headers }).catch(() => null)
         if (!res || !res.ok) {
-          res = await fetch('http://localhost:8081/nexusivr-ai-engine/api/v1/auth/me', { headers })
+          res = await fetch(backendUrl('/api/v1/auth/me'), { headers })
         }
         const data = await res.json()
         if (data.success && data.user) {

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { backendUrl } from '../api/backendUrl'
 import { Eye, EyeOff, Phone, Cpu, Cloud, Zap, Shield, Globe, CheckCircle } from 'lucide-react'
 
 interface Props {
@@ -26,7 +27,7 @@ export default function LoginPage({ onLogin }: Props) {
       }).catch(() => null)
 
       if (!res) {
-        res = await fetch('http://localhost:8081/nexusivr-ai-engine/api/v1/auth/login', {
+        res = await fetch(backendUrl('/api/v1/auth/login'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })

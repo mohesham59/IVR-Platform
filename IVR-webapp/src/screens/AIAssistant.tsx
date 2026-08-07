@@ -12,7 +12,6 @@ import {
   type Message,
   extractVoicePrompts,
 } from '../hooks/useAIAssistant'
-import { exportAsVxml } from '../ivr/vxmlExporter'
 import { GenerationStepper } from '../components/GenerationStepper'
 import { aiApi } from '../api/aiApi'
 

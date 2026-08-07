@@ -38,24 +38,35 @@ public class AppServletContextListener implements ServletContextListener {
             if (conn == null) return;
             java.io.InputStream is = getClass().getResourceAsStream("/009_users_and_tenants.sql");
             if (is == null) {
-                java.io.File file = new java.io.File("/home/seif/NetBeansProjects/IVR/Database/AI-database/009_users_and_tenants.sql");
-                if (file.exists()) {
-                    is = new java.io.FileInputStream(file);
+                String envScript = System.getenv("NEXUSIVR_DB_SCRIPT");
+                if (envScript != null && !envScript.isBlank()) {
+                    java.io.File file = new java.io.File(envScript);
+                    if (file.exists()) {
+                        is = new java.io.FileInputStream(file);
+                    }
                 }
             }
-            if (is != null) {
-                String sqlContent = new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
-                try (java.sql.Statement stmt = conn.createStatement()) {
-                    for (String statement : sqlContent.split(";")) {
-                        String trimmed = statement.trim();
-                        if (!trimmed.isEmpty()) {
-                            try {
-                                stmt.execute(trimmed);
-                            } catch (Exception ignored) {}
-                        }
-                    }
-                    logger.info("Database schema and seeds verified successfully.");
+            if (is == null) {
+                java.io.File relative = new java.io.File("Database/AI-database/009_users_and_tenants.sql");
+                if (relative.exists()) {
+                    is = new java.io.FileInputStream(relative);
                 }
+            }
+            if (is == null) {
+                logger.warn("DB migration script not found on classpath, via NEXUSIVR_DB_SCRIPT, or relative to working dir. Skipping schema migration.");
+                return;
+            }
+            String sqlContent = new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+            try (java.sql.Statement stmt = conn.createStatement()) {
+                for (String statement : sqlContent.split(";")) {
+                    String trimmed = statement.trim();
+                    if (!trimmed.isEmpty()) {
+                        try {
+                            stmt.execute(trimmed);
+                        } catch (Exception ignored) {}
+                    }
+                }
+                logger.info("Database schema and seeds verified successfully.");
             }
         } catch (Exception e) {
             logger.warn("Database migration execution skipped or encountered an issue: {}", e.getMessage());

@@ -121,13 +121,13 @@ class SaveVsPublishIsolationTest {
         FlowPublishService.FlowPublishResult result = publishService.publishFlow(tenantId, flowId, "102", flowName, vxml);
         assertTrue(result.isSuccess());
 
-        // Assert scenarios directory contains exactly 1 VXML file after Publish
-        try (var stream = Files.list(tempScenariosDir.resolve(tenantId))) {
+        // Assert scenarios directory contains exactly 1 VXML file after Publish (published flat into the root)
+        try (var stream = Files.list(tempScenariosDir)) {
             long count = stream.filter(p -> p.getFileName().toString().endsWith(".vxml")).count();
             assertEquals(1, count, "IVR_ENGINE_SCENARIOS_DIR must contain exactly 1 VXML file after explicit Publish");
         }
 
-        Path publishedFile = tempScenariosDir.resolve(tenantId).resolve("billing_flow.vxml");
+        Path publishedFile = tempScenariosDir.resolve("billing_flow.vxml");
         assertTrue(Files.exists(publishedFile), "Published file must be in IVR_ENGINE_SCENARIOS_DIR == " + publishedFile);
         String content = Files.readString(publishedFile);
         assertTrue(content.contains("<vxml"), "Published scenario file must contain valid VXML markup");

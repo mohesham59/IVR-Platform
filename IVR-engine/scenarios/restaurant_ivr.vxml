@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+  <meta name="flow-name" content="Restaurant IVR"/>
+  <!-- Start (start) -->
+  <form id="start">
+    <block>
+      <prompt>Welcome to our restaurant ordering system! Please choose from our menu.</prompt>
+      <goto next="#menu"/>
+    </block>
+  </form>
+  <!-- Menu (menu) -->
+  <form id="menu">
+    <menu>
+      <prompt>Press 1 for pizza, Press 2 for burger, Press 0 for operator.</prompt>
+      <choice dtmf="1" next="#order_pizza"/>
+      <choice dtmf="2" next="#order_burger"/>
+      <choice dtmf="0" next="#operator"/>
+      <choice dtmf="3" next="#menu"/>
+    </menu>
+  </form>
+  <!-- Order pizza (order_pizza) -->
+  <form id="order_pizza">
+    <block>
+      <prompt>Your pizza will be prepared. Thank you for ordering.</prompt>
+      <goto next="#close"/>
+    </block>
+  </form>
+  <!-- Order burger (order_burger) -->
+  <form id="order_burger">
+    <block>
+      <prompt>Your burger will be prepared. Thank you for ordering.</prompt>
+      <goto next="#close"/>
+    </block>
+  </form>
+  <!-- Operator (operator) -->
+  <form id="operator">
+    <block>
+      <prompt>Please wait while we connect you to an operator.</prompt>
+      <transfer dest="TRANSFER_TARGET_PLACEHOLDER"/>
+    </block>
+  </form>
+  <!-- Close (close) -->
+  <form id="close">
+    <block>
+      <prompt>Thank you for your order. Have a great day!</prompt>
+      <disconnect/>
+    </block>
+  </form>
+</vxml>

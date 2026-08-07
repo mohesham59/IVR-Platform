@@ -36,8 +36,10 @@ public class VxmlScenarioEngine {
     private VxmlConfig config;
     private JVoiceXmlMain jvxml;
     private boolean initialized = false;
+    private volatile Throwable startupError;
 
     private final Map<String, VxmlSession> activeSessions = new ConcurrentHashMap<>();
+    private java.util.concurrent.ExecutorService executor;
 
     public VxmlScenarioEngine() {
         this.loader = new VxmlLoader("scenarios/");
@@ -86,6 +88,7 @@ public class VxmlScenarioEngine {
                 @Override
                 public void jvxmlStartupError(Throwable t) {
                     logger.error("JVoiceXML startup error: {}", t.getMessage(), t);
+                    startupError = t;
                     errorLatch.countDown();
                 }
 
@@ -106,14 +109,24 @@ public class VxmlScenarioEngine {
 
             boolean started = startedLatch.await(10, TimeUnit.SECONDS);
             if (!started && errorLatch.getCount() == 0) {
-                logger.warn("JVoiceXML did not respond in 10s, proceeding with fallback engine.");
+                String msg = "JVoiceXML failed to start: "
+                        + (startupError != null ? startupError.getMessage() : "unknown error");
+                logger.error(msg);
+                jvxml.shutdown();
+                throw new IllegalStateException(msg);
+            }
+            if (!started) {
+                logger.warn("JVoiceXML did not respond in 10s, continuing with AGI renderer fallback.");
+                jvxml = null;
             }
 
             initialized = true;
             logger.info("VxmlScenarioEngine initialized successfully.");
         } catch (Exception e) {
             logger.error("Failed to initialize JVoiceXML runtime: {}", e.getMessage(), e);
+            jvxml = null;
             initialized = true;
+            logger.warn("Continuing with AGI renderer fallback (JVoiceXML disabled).");
         }
     }
 
@@ -149,21 +162,57 @@ public class VxmlScenarioEngine {
             URI uri = loader.getVxmlUri(vxmlName);
             if (jvxml != null && uri != null && connInfo != null) {
                 try {
-                    Session jvxmlSession = jvxml.createSession(connInfo);
-                    jvxmlSession.call(uri);
-                    jvxmlSession.waitSessionEnd();
+                    final Session jvxmlSession = jvxml.createSession(connInfo);
+                    java.util.concurrent.Future<?> future = null;
+                    if (executor == null) {
+                        executor = java.util.concurrent.Executors.newSingleThreadExecutor();
+                    }
+                    future = executor.submit((java.util.concurrent.Callable<Void>) () -> {
+                        try {
+                            jvxmlSession.call(uri);
+                            jvxmlSession.waitSessionEnd();
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        } catch (org.jvoicexml.event.ErrorEvent ee) {
+                            throw new RuntimeException(ee);
+                        }
+                        return null;
+                    });
+                    try {
+                        future.get(30, TimeUnit.SECONDS);
+                    } catch (java.util.concurrent.TimeoutException te) {
+                        logger.warn("JVoiceXML session for {} timed out after 30s, continuing with AGI renderer.", vxmlName);
+                        try {
+                            jvxmlSession.hangup();
+                        } catch (Exception ignored) {
+                        }
+                        future.cancel(true);
+                    } catch (java.util.concurrent.ExecutionException ee) {
+                        logger.warn("JVoiceXML execution failed for {}: {}", vxmlName, ee.getCause() != null
+                                ? ee.getCause().getMessage() : ee.getMessage());
+                        vxmlSession.setLastError(ee.getCause() != null ? ee.getCause().getMessage() : ee.getMessage());
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        future.cancel(true);
+                    }
                     if (jvxmlSession.getLastError() != null) {
                         vxmlSession.setLastError(jvxmlSession.getLastError().getMessage());
+                        vxmlSession.setState(VxmlSession.SessionState.ERROR);
+                        return vxmlSession;
                     }
                 } catch (org.jvoicexml.event.ErrorEvent ee) {
                     logger.warn("JVoiceXML error event for {}: {}", vxmlName, ee.getMessage());
                     vxmlSession.setLastError(ee.getMessage());
+                    vxmlSession.setState(VxmlSession.SessionState.ERROR);
+                    return vxmlSession;
                 } catch (Exception e) {
                     logger.warn("JVoiceXML execution note for {}: {}", vxmlName, e.getMessage());
                 }
             }
 
-            vxmlSession.setState(VxmlSession.SessionState.COMPLETED);
+            if (vxmlSession.getState() != VxmlSession.SessionState.ERROR) {
+                vxmlSession.setState(VxmlSession.SessionState.COMPLETED);
+            }
             return vxmlSession;
         } catch (Exception e) {
             logger.error("Error executing VXML scenario '{}': {}", vxmlName, e.getMessage(), e);
@@ -199,6 +248,10 @@ public class VxmlScenarioEngine {
             }
         }
         activeSessions.clear();
+        if (executor != null) {
+            executor.shutdownNow();
+            executor = null;
+        }
         initialized = false;
         logger.info("VxmlScenarioEngine shut down complete.");
     }

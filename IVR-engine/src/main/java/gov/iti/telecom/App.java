@@ -69,7 +69,7 @@ public class App {
 
             // Wait for the runtime to start (or error)
             boolean started = startedLatch.await(10, TimeUnit.SECONDS);
-            boolean errored = errorLatch.await(10, TimeUnit.SECONDS) == false && errorLatch.getCount() == 0;
+            boolean errored = errorLatch.getCount() == 0;
 
             if (!started && !errored) {
                 System.err.println("Timeout waiting for JVoiceXML to start.");
@@ -99,9 +99,6 @@ public class App {
 
             // 6. Load and execute the VXML document
             File vxmlFile = new File("scenarios/hello.vxml");
-            if (!vxmlFile.exists()) {
-                vxmlFile = new File("/home/omar/windows/D/omar/Telecom_ITI/500_GarduationProject/vxml-try/jvoicexml-engine/scenarios/hello.vxml");
-            }
             URI vxmlUri = vxmlFile.toURI();
             System.out.println("Loading VXML from: " + vxmlUri);
 

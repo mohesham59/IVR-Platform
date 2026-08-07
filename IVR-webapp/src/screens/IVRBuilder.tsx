@@ -18,7 +18,6 @@ import { sanitizeFlow, generateUniqueId } from '../ivr/flowParser'
 import { validateGraph, analyzeGraph, reconnectAfterDelete, optimizeFlow } from '../ivr/graphEngine'
 import type { FlowNode, FlowEdge, NodeType, FlowVersion } from '../ivr/types'
 import AiAssistantPanel from '../components/AiAssistantPanel'
-import { downloadVxml } from '../ivr/vxmlExporter'
 
 interface LogEntry {
   id: string

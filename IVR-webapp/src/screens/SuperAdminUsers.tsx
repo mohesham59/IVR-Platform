@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import SuperAdminLayout from '../components/SuperAdminLayout'
+import { backendUrl } from '../api/backendUrl'
 import {
   Plus, Search, ChevronDown, MoreHorizontal,
   Pencil, KeyRound, Trash2, X,
@@ -46,7 +47,7 @@ export default function SuperAdminUsers({ onLogout }: { onLogout: () => void }) 
   const [statusFilter, setStatusFilter] = useState('All Status')
   const [search, setSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
-  const [isLoading, setIsLoading] = useState(false)
+  const [, setIsLoading] = useState(false)
 
   // Modal states
   const [modalConfig, setModalConfig] = useState<{
@@ -66,10 +67,10 @@ export default function SuperAdminUsers({ onLogout }: { onLogout: () => void }) 
     setIsLoading(true)
     try {
       const token = localStorage.getItem('nexus_jwt_token')
-      const headers = token ? { Authorization: `Bearer ${token}` } : {}
+      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
       let res = await fetch('/api/v1/super-admin/users', { headers }).catch(() => null)
       if (!res || !res.ok) {
-        res = await fetch('http://localhost:8081/nexusivr-ai-engine/api/v1/super-admin/users', { headers })
+        res = await fetch(backendUrl('/api/v1/super-admin/users'), { headers })
       }
       const data = await res.json()
       if (data.success && Array.isArray(data.users)) {
@@ -140,7 +141,7 @@ export default function SuperAdminUsers({ onLogout }: { onLogout: () => void }) 
       const doFetch = async (url: string, init: RequestInit) => {
         let r = await fetch(url, init).catch(() => null)
         if (!r || !r.ok) {
-          const directUrl = url.startsWith('http') ? url : `http://localhost:8081/nexusivr-ai-engine${url}`
+          const directUrl = url.startsWith('http') ? url : backendUrl(url)
           r = await fetch(directUrl, init)
         }
         return r

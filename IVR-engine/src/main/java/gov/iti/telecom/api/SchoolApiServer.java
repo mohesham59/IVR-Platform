@@ -17,10 +17,15 @@ import java.util.Map;
 
 public class SchoolApiServer {
 
-    // IMPORTANT: Update these credentials if your local Postgres setup is different
-    private static final String DB_URL = "jdbc:postgresql://localhost:5432/postgres";
-    private static final String DB_USER = "postgres";
-    private static final String DB_PASSWORD = "password"; // Use your local password here
+    // Local dev/demo server. Override with DB_URL / DB_USER / DB_PASSWORD env vars.
+    private static final String DB_URL = envOrDefault("DB_URL", "jdbc:postgresql://localhost:5432/postgres");
+    private static final String DB_USER = envOrDefault("DB_USER", "postgres");
+    private static final String DB_PASSWORD = envOrDefault("DB_PASSWORD", "password");
+
+    private static String envOrDefault(String name, String fallback) {
+        String value = System.getenv(name);
+        return (value == null || value.isBlank()) ? fallback : value;
+    }
 
     public static void main(String[] args) throws Exception {
         // Initialize simple HTTP server on port 8080

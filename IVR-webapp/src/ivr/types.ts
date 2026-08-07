@@ -10,6 +10,15 @@ export type NodeType =
   | 'variable'
   | 'ai'
   | 'end'
+  | 'queue'
+  | 'transfer'
+  | 'extension'
+  | 'record'
+  | 'hours'
+  | 'holiday'
+  | 'condition'
+  | 'database'
+  | 'webhook'
 
 export interface NodePort {
   id: string

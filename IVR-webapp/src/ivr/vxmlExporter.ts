@@ -449,9 +449,7 @@ function renderWebhook(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): st
    </form>`
  }
 
-function renderAi(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): string {
-   const resolvedEdge = edges.find(e => e.sourceId === node.id && e.sourcePort === 'resolved')
-   const escalateEdge = edges.find(e => e.sourceId === node.id && e.sourcePort === 'escalate')
+function renderAi(node: FlowNode, _nodes: FlowNode[], _edges: FlowEdge[]): string {
    const options = 'transfer:transfer_form, mobile balance:balance_form, complaint:complaint_form'
 
    return `

@@ -90,7 +90,7 @@ class ManualFlowBuilderSaveTest {
         FlowPublishService.FlowPublishResult pubResult = publishService.publishFlow(tenantId, flowId, "2000", flowName, reactFlowJson);
         assertTrue(pubResult.isSuccess(), "Publishing manual flow must succeed");
 
-        Path pubFile = tempScenariosDir.resolve(tenantId).resolve("manual_clinic_ivr.vxml");
+        Path pubFile = tempScenariosDir.resolve("manual_clinic_ivr.vxml");
         assertTrue(Files.exists(pubFile), "Published VXML scenario file must exist on disk");
         String pubContent = Files.readString(pubFile);
         assertTrue(pubContent.contains("<vxml"), "Published scenario must be genuine VoiceXML");

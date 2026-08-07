@@ -33,7 +33,7 @@ public class TtsEngine {
         try {
             Files.createDirectories(SOUNDS_DIRECTORY);
             String langCode = (lang != null && !lang.trim().isEmpty()) ? lang : "en";
-            String uniqueName = "tts-" + langCode + "-" + Math.abs(text.hashCode());
+            String uniqueName = "tts-" + langCode + "-" + contentHash(text);
             Path targetWavFile = SOUNDS_DIRECTORY.resolve(uniqueName + ".wav");
 
             if (!Files.exists(targetWavFile)) {
@@ -99,18 +99,19 @@ public class TtsEngine {
         String ulawFile = baseName + ".ulaw";
         String slnFile = baseName + ".sln";
 
+        // Text and language are passed as process arguments (no shell/string interpolation).
         ProcessBuilder pbTts = new ProcessBuilder(
             "python3", "-c",
-            "from gtts import gTTS; tts=gTTS(" + quote(text) + ", lang='" + langCode + "'); tts.save(" + quote(mp3File) + ")"
+            "import sys; from gtts import gTTS; tts=gTTS(sys.argv[1], lang=sys.argv[2]); tts.save(sys.argv[3])",
+            text, langCode, mp3File
         );
-        Process pTts = pbTts.start();
-        int exitTts = pTts.waitFor();
+        int exitTts = runAndWait(pbTts);
 
         if (exitTts == 0 && Files.exists(Paths.get(mp3File))) {
-            new ProcessBuilder("ffmpeg", "-y", "-i", mp3File, "-ar", "8000", "-ac", "1", "-codec:a", "pcm_s16le", wavFile).start().waitFor();
-            new ProcessBuilder("ffmpeg", "-y", "-i", mp3File, "-ar", "8000", "-ac", "1", "-codec:a", "libgsm", gsmFile).start().waitFor();
-            new ProcessBuilder("ffmpeg", "-y", "-i", mp3File, "-ar", "8000", "-ac", "1", "-codec:a", "pcm_mulaw", ulawFile).start().waitFor();
-            new ProcessBuilder("ffmpeg", "-y", "-i", mp3File, "-ar", "8000", "-ac", "1", "-f", "s16le", slnFile).start().waitFor();
+            runAndWait(new ProcessBuilder("ffmpeg", "-y", "-i", mp3File, "-ar", "8000", "-ac", "1", "-codec:a", "pcm_s16le", wavFile));
+            runAndWait(new ProcessBuilder("ffmpeg", "-y", "-i", mp3File, "-ar", "8000", "-ac", "1", "-codec:a", "libgsm", gsmFile));
+            runAndWait(new ProcessBuilder("ffmpeg", "-y", "-i", mp3File, "-ar", "8000", "-ac", "1", "-codec:a", "pcm_mulaw", ulawFile));
+            runAndWait(new ProcessBuilder("ffmpeg", "-y", "-i", mp3File, "-ar", "8000", "-ac", "1", "-f", "s16le", slnFile));
 
             new java.io.File(wavFile).setReadable(true, false);
             new java.io.File(gsmFile).setReadable(true, false);
@@ -123,7 +124,49 @@ public class TtsEngine {
         }
     }
 
-    private static String quote(String text) {
-        return "\"" + text.replace("\"", "\\\"").replace("\n", " ") + "\"";
+    /**
+     * Runs a process, draining stdout/stderr concurrently (avoids pipe-buffer
+     * deadlocks) and enforcing a timeout so a stuck process cannot hang a call.
+     */
+    private static int runAndWait(ProcessBuilder pb) throws IOException, InterruptedException {
+        Process p = pb.start();
+        Thread outReader = new Thread(() -> consume(p.getInputStream()), "tts-stdout");
+        Thread errReader = new Thread(() -> consume(p.getErrorStream()), "tts-stderr");
+        outReader.setDaemon(true);
+        errReader.setDaemon(true);
+        outReader.start();
+        errReader.start();
+
+        boolean finished = p.waitFor(120, java.util.concurrent.TimeUnit.SECONDS);
+        if (!finished) {
+            System.err.println("[TtsEngine] Process timed out: " + String.join(" ", pb.command()));
+            p.destroyForcibly();
+            throw new IOException("Process timed out: " + pb.command().get(0));
+        }
+        return p.exitValue();
+    }
+
+    private static void consume(java.io.InputStream stream) {
+        try (java.io.InputStream in = stream) {
+            byte[] buffer = new byte[1024];
+            while (in.read(buffer) != -1) {
+                // discard output
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    private static String contentHash(String text) {
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] digest = md.digest(text.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : digest) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.substring(0, 16);
+        } catch (Exception e) {
+            return Integer.toHexString(text.hashCode());
+        }
     }
 }

@@ -1,25 +1,38 @@
-.gitignore
+# Node / frontend build output
 node_modules/
 dist/
+dist-ssr/
+
+# Environment files & secrets
 .env
-.vscode/ 
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Maven build output
 target/
-git 
+*/target/
 
-## ignoring alll frontend  
+# IDE / editor
+.vscode/
+.idea/
+*.iml
+*.swp
 
-src/*.tsx 
-src/index.css
-src/ivr/
-src/components/
-
-*.html
-
+# OS / misc
+.DS_Store
+Thumbs.db
 .fuse_hidden*
+
+# Logs
+*.log
+logs/
+
+# Runtime / generated artifacts
 assets/
-
-# Exclude dynamic drafts
 IVR-engine/draft/
-
-# Exclude UUID-prefixed scenario files and subdirectories
 IVR-engine/scenarios/[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]-*
+
+# Docker shared TTS/sound volume (regenerated at runtime)
+asterisk-sounds/

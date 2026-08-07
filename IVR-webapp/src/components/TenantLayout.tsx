@@ -1,7 +1,8 @@
 import { useState, useEffect, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
+import { backendUrl } from '../api/backendUrl'
 import {
-  LayoutDashboard, Building2, Users, Phone, Server, List, Volume2, GitBranch,
+  LayoutDashboard, Building2, Phone, Server, List, Volume2, GitBranch,
   Bot, Radio, History, BarChart3, Settings, Bell, Search,
   ChevronDown, LogOut, ChevronLeft, ChevronRight, Layers, Moon,
 } from 'lucide-react'
@@ -59,10 +60,10 @@ export default function TenantLayout({
     const fetchActiveWorkspace = async () => {
       try {
         const token = localStorage.getItem('nexus_jwt_token')
-        const headers = token ? { Authorization: `Bearer ${token}` } : {}
+        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
         let res = await fetch('/api/v1/tenant/companies', { headers }).catch(() => null)
         if (!res || !res.ok) {
-          res = await fetch('http://localhost:8081/nexusivr-ai-engine/api/v1/tenant/companies', { headers })
+          res = await fetch(backendUrl('/api/v1/tenant/companies'), { headers })
         }
         const data = await res.json()
         if (data.success && Array.isArray(data.tenants)) {
@@ -81,10 +82,10 @@ export default function TenantLayout({
     const fetchUser = async () => {
       try {
         const token = localStorage.getItem('nexus_jwt_token')
-        const headers = token ? { Authorization: `Bearer ${token}` } : {}
+        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
         let res = await fetch('/api/v1/auth/me', { headers }).catch(() => null)
         if (!res || !res.ok) {
-          res = await fetch('http://localhost:8081/nexusivr-ai-engine/api/v1/auth/me', { headers })
+          res = await fetch(backendUrl('/api/v1/auth/me'), { headers })
         }
         const data = await res.json()
         if (data.success && data.user) {

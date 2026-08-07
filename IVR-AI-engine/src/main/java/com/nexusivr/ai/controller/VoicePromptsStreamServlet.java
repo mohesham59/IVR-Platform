@@ -15,12 +15,7 @@ import java.nio.file.Files;
 @WebServlet(urlPatterns = {"/api/v1/voice-prompts/stream"})
 public class VoicePromptsStreamServlet extends BaseAiServlet {
 
-    private static final String[] TARGET_DIRS = {
-            "/home/seif/NetBeansProjects/IVR/assets/custom voice prompts",
-            "/var/lib/asterisk/sounds/en",
-            "/var/lib/asterisk/sounds",
-            "/tmp/nexusivr/sounds"
-    };
+    private static final String[] TARGET_DIRS = com.nexusivr.ai.util.SoundDirs.resolveBaseSoundDirs();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
