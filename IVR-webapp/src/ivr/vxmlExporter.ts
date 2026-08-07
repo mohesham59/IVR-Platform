@@ -180,19 +180,28 @@ function renderDtmfInput(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): 
   const timeoutId = gotoId(timeoutEdge?.targetId, nodes)
   const varName = `var_${node.id.replace(/[^a-zA-Z0-9]/g, '_')}`
 
+  const audioFile = node.prompt ? node.prompt : slugify(node.title) + '.wav'
+  const invalidAudio = node.invalidPrompt ? `<audio src="${esc(node.invalidPrompt)}">Invalid input. Please try again.</audio>` : `<prompt>Invalid input. Please try again.</prompt>`
+  const timeoutAudio = node.timeoutPrompt ? `<audio src="${esc(node.timeoutPrompt)}">Timeout. Please try again.</audio>` : ''
+  const maxRetriesAttr = node.maxRetries ? ` max_retries="${node.maxRetries}"` : ''
+  const timeoutAttr = node.timeoutSecs ? ` timeout="${node.timeoutSecs}s"` : ''
+
   return `
   <!-- ══════════════════════════ DTMF INPUT ═════════════════════════════════ -->
   <form id="${toFormId(node)}">
-    <field name="${varName}" type="digits">
-      <prompt>${esc(node.subtitle || 'Please enter your selection followed by the pound sign.')}</prompt>
+    <field name="${varName}" type="digits"${maxRetriesAttr}${timeoutAttr}>
+      <prompt bargein="true">
+        <audio src="${esc(audioFile)}">${esc(node.subtitle || 'Please enter your selection followed by the pound sign.')}</audio>
+      </prompt>
       <filled>
         <goto next="#${successId}"/>
       </filled>
       <noinput>
+        ${timeoutAudio ? `<prompt>${timeoutAudio}</prompt>` : ''}
         <goto next="#${timeoutId}"/>
       </noinput>
       <nomatch>
-        <prompt>Invalid input. Please try again.</prompt>
+        ${invalidAudio}
         <reprompt/>
       </nomatch>
     </field>

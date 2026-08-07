@@ -283,6 +283,45 @@ function NodePropsContent({ node, onNodeChange, availablePrompts = [] }: { node:
           </>
         )}
 
+        {node.type === 'dtmf_input' && (
+          <>
+            <FieldRow label="Prompt File">
+              <SearchableSelectInput 
+                options={availablePrompts?.length ? availablePrompts : ['enter_account.wav', 'enter_pin.wav']} 
+                value={node.prompt}
+                onChange={v => handleUpdate({ prompt: v })}
+              />
+            </FieldRow>
+            <FieldRow label="Invalid Input Audio">
+              <SearchableSelectInput 
+                options={availablePrompts?.length ? availablePrompts : ['invalid_entry.wav']} 
+                value={node.invalidPrompt}
+                onChange={v => handleUpdate({ invalidPrompt: v })}
+              />
+            </FieldRow>
+            <FieldRow label="Timeout Audio">
+              <SearchableSelectInput 
+                options={availablePrompts?.length ? availablePrompts : ['timeout_msg.wav']} 
+                value={node.timeoutPrompt}
+                onChange={v => handleUpdate({ timeoutPrompt: v })}
+              />
+            </FieldRow>
+            <FieldRow label="Max Retries">
+              <SelectInput 
+                options={['1', '2', '3', '4', '5']} 
+                value={node.maxRetries?.toString() || '3'} 
+                onChange={v => handleUpdate({ maxRetries: parseInt(v) })}
+              />
+            </FieldRow>
+            <FieldRow label="Timeout (sec)">
+              <TextInput 
+                value={node.timeoutSecs?.toString() || '5'} 
+                onChange={v => handleUpdate({ timeoutSecs: parseInt(v) || 5 })}
+              />
+            </FieldRow>
+          </>
+        )}
+
         {node.type === 'api' && (
           <>
             <FieldRow label="Method">

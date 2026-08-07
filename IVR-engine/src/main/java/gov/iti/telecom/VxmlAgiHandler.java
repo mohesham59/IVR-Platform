@@ -515,8 +515,20 @@ public class VxmlAgiHandler extends BaseAgiScript {
                     }
                 }
 
+                String maxRetriesStr = child.getAttribute("max_retries");
                 int maxRetries = 3;
+                if (maxRetriesStr != null && !maxRetriesStr.isEmpty()) {
+                    try { maxRetries = Integer.parseInt(maxRetriesStr); } catch (Exception e) {}
+                }
+                
+                String timeoutStr = child.getAttribute("timeout");
                 int timeoutMs = 10000;
+                if (timeoutStr != null && !timeoutStr.isEmpty()) {
+                    if (timeoutStr.endsWith("s")) {
+                        try { timeoutMs = Integer.parseInt(timeoutStr.substring(0, timeoutStr.length() - 1)) * 1000; } catch (Exception e) {}
+                    }
+                }
+                
                 int attempts = 0;
                 boolean matched = false;
 
