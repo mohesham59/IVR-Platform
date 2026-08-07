@@ -23,7 +23,7 @@ To allow the Java backend to inject extensions and reload the dialplan automatic
 
 Run the following command **once** on your system:
 ```bash
-echo "$USER ALL=(ALL) NOPASSWD: /bin/bash /home/mohamed/IdeaProjects/IVR_project/IVR_platform/IVR-engine/add_extension.sh *" | sudo tee /etc/sudoers.d/nexus_ivr
+echo "$USER ALL=(ALL) NOPASSWD: /bin/bash /home/mohesham/Desktop/IVR-Platform/IVR-engine/add_extension.sh *" | sudo tee /etc/sudoers.d/nexus_ivr
 ```
 *(Note: The `*` at the end is absolutely critical to allow the backend to pass the extension number and business name as arguments to the script without triggering a password prompt).*
 
