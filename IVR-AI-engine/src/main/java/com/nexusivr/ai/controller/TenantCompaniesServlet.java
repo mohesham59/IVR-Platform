@@ -136,6 +136,22 @@ public class TenantCompaniesServlet extends BaseAiServlet {
 
             String targetTenantId = json.get("tenantId").getAsString();
 
+            TenantDao.Tenant targetTenant = tenantDao.findById(targetTenantId);
+            if (targetTenant == null) {
+                Map<String, Object> err = new LinkedHashMap<>();
+                err.put("success", false);
+                err.put("error", "Workspace not found");
+                sendJsonResponse(resp, HttpServletResponse.SC_NOT_FOUND, err);
+                return;
+            }
+            if (!"ACTIVE".equalsIgnoreCase(targetTenant.getStatus())) {
+                Map<String, Object> err = new LinkedHashMap<>();
+                err.put("success", false);
+                err.put("error", "Cannot activate an inactive or suspended workspace.");
+                sendJsonResponse(resp, HttpServletResponse.SC_FORBIDDEN, err);
+                return;
+            }
+
             boolean success = tenantDao.updateActiveTenant(currentUser.getId(), targetTenantId);
             if (success) {
                 // Update session user object

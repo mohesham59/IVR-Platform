@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import TenantLayout from '../components/TenantLayout'
 import {
-  Search, ChevronDown, ChevronLeft, ChevronRight, Filter, Building2, User, CheckCircle2, Circle
+  Search, ChevronDown, ChevronLeft, ChevronRight, Filter, Building2, User, CheckCircle2, Circle, AlertCircle
 } from 'lucide-react'
 
 export interface UserTenant {
@@ -43,6 +43,7 @@ export default function TenantCompanies({ onLogout }: { onLogout: () => void }) 
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [activeUpdatingId, setActiveUpdatingId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchTenants = async () => {
     setIsLoading(true)
@@ -111,9 +112,13 @@ export default function TenantCompanies({ onLogout }: { onLogout: () => void }) 
         window.dispatchEvent(new CustomEvent('workspace-updated', { 
           detail: { name: activeTenant ? activeTenant.displayName : 'Unknown Workspace' } 
         }))
+        setError(null)
+      } else {
+        setError(data.error || 'Failed to update active workspace')
       }
     } catch (e) {
       console.error('Failed to set active tenant:', e)
+      setError('A network error occurred while setting the active workspace.')
     } finally {
       setActiveUpdatingId(null)
     }
@@ -145,6 +150,13 @@ export default function TenantCompanies({ onLogout }: { onLogout: () => void }) 
             </p>
           </div>
         </div>
+
+        {error && (
+          <div className="mb-6 p-4 rounded-lg bg-[#FEF2F2] border border-[#FCA5A5] text-[#991B1B] text-sm flex items-center gap-2">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <p>{error}</p>
+          </div>
+        )}
 
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
