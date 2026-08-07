@@ -181,7 +181,10 @@ public class FlowContextService {
         try {
             com.google.gson.JsonObject obj = com.google.gson.JsonParser.parseString(json).getAsJsonObject();
             if (obj.has("connections") && !obj.has("edges")) {
-                FlowModel directModel = new com.google.gson.Gson().fromJson(json, FlowModel.class);
+                FlowModel directModel = new com.google.gson.GsonBuilder()
+                        .registerTypeAdapter(com.nexusivr.ai.model.flow.FlowNodeType.class, new com.nexusivr.ai.model.flow.FlowNodeTypeAdapter())
+                        .create()
+                        .fromJson(json, FlowModel.class);
                 if (directModel != null && directModel.getNodes() != null) {
                     return directModel;
                 }
@@ -229,6 +232,21 @@ public class FlowContextService {
                         }
                         node.setMenu(menu);
                     }
+
+                    if (type == FlowNodeType.TRANSFER) {
+                        String dest = null;
+                        if (nodeObj.has("transferDestination")) {
+                            dest = nodeObj.get("transferDestination").getAsString();
+                        } else if (nodeObj.has("dest")) {
+                            dest = nodeObj.get("dest").getAsString();
+                        } else if (nodeObj.has("subtitle")) {
+                            dest = nodeObj.get("subtitle").getAsString();
+                        }
+                        if (dest != null && !dest.isBlank()) {
+                            node.setTransfer(new com.nexusivr.ai.model.flow.FlowTransfer(dest));
+                        }
+                    }
+
                     model.addNode(node);
                 }
             }
