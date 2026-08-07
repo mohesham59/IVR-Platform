@@ -14,6 +14,9 @@ services:
       - /var/run/asterisk:/var/run/asterisk
       # Share audio/sounds directory so the webapp can upload/generate TTS directly to Asterisk
       - ./asterisk-sounds:/var/lib/asterisk/sounds
+      # Share the host /dev/shm so AGI <record>/<ai> recordings written by
+      # Asterisk are visible to the IVR engine (which runs in its own container)
+      - /dev/shm:/dev/shm
     restart: unless-stopped
 
   # 2. IVR Engine (FastAGI Server)
@@ -29,6 +32,9 @@ services:
       - ./IVR-engine/scenarios:/app/scenarios
       # Share sounds directory so generated TTS/custom audio is visible to Asterisk
       - ./asterisk-sounds:/var/lib/asterisk/sounds
+      # Share the host /dev/shm so the engine can read AGI <record>/<ai>
+      # recordings written there by the Asterisk container
+      - /dev/shm:/dev/shm
     restart: unless-stopped
 
   # 3. IVR AI Engine (REST API)
