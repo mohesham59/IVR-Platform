@@ -28,11 +28,7 @@ export const NODE_DEFS: Record<NodeType, NodeDef> = {
     category: 'Audio', color: '#3B82F6', bg: '#EFF6FF', textColor: '#1D4ED8', iconBg: '#DBEAFE',
     outputPorts: [{ id: 'out', label: 'Done', color: '#3B82F6' }],
   },
-  tts: {
-    type: 'tts', label: 'Text to Speech', description: 'Convert text to voice',
-    category: 'Audio', color: '#06B6D4', bg: '#ECFEFF', textColor: '#0E7490', iconBg: '#CFFAFE',
-    outputPorts: [{ id: 'out', label: 'Done', color: '#06B6D4' }],
-  },
+
   dtmf_menu: {
     type: 'dtmf_menu', label: 'DTMF Menu', description: 'Multi-option dial menu',
     category: 'Input', color: '#8B5CF6', bg: '#F5F3FF', textColor: '#6D28D9', iconBg: '#EDE9FE',
@@ -91,7 +87,6 @@ export const NODE_ICONS: Record<NodeType, string> = {
   start: '▶',
   greeting: '👋',
   playback: '🔊',
-  tts: '💬',
   dtmf_menu: '☎',
   dtmf_input: '🔢',
   voicemail: '📩',

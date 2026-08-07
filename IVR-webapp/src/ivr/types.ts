@@ -2,7 +2,6 @@ export type NodeType =
   | 'start'
   | 'greeting'
   | 'playback'
-  | 'tts'
   | 'dtmf_menu'
   | 'dtmf_input'
   | 'voicemail'
@@ -32,6 +31,10 @@ export interface FlowNode {
   transferDestination?: string
   dest?: string
   prompt?: string
+  invalidPrompt?: string
+  timeoutPrompt?: string
+  maxRetries?: number
+  timeoutSecs?: number
 }
 
 

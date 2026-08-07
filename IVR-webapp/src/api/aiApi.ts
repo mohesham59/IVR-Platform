@@ -87,16 +87,21 @@ export interface SentimentApiResponse {
 }
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
+  const url = endpoint.startsWith('/') && !endpoint.startsWith('/api/v1/ai') && !endpoint.startsWith('/chat') && !endpoint.startsWith('/provider') && !endpoint.startsWith('/prompts') && !endpoint.startsWith('/analytics') && endpoint.includes('/api/v1') ? endpoint : `${API_BASE_URL}${endpoint}`;
   const activeProvider = localStorage.getItem('ai_provider') || 'gemini';
   const activeSessionId = localStorage.getItem('nexus_ai_session_id') || '';
-  const headers = {
+  const token = localStorage.getItem('nexus_jwt_token');
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'X-Tenant-ID': DEFAULT_TENANT_ID,
     'X-AI-Provider': activeProvider,
     'X-Session-ID': activeSessionId,
-    ...(options.headers || {}),
+    ...(options.headers as any || {}),
   };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
 
   try {
     const res = await fetch(url, { ...options, headers });
@@ -254,6 +259,15 @@ export const aiApi = {
    */
   async fetchPrompts(): Promise<any> {
     return request<any>('/prompts', {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Fetch available voice prompts (.wav files)
+   */
+  async fetchVoicePrompts(): Promise<{ success: boolean; prompts: any[] }> {
+    return request<{ success: boolean; prompts: any[] }>('/api/v1/voice-prompts/upload', {
       method: 'GET',
     });
   },

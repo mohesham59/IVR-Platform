@@ -304,43 +304,112 @@ public class VxmlAgiHandler extends BaseAgiScript {
     }
 
     private void renderMenuElement(org.w3c.dom.Element menu, AgiChannel channel, VxmlSession session) throws Exception {
-        org.w3c.dom.NodeList prompts = menu.getElementsByTagName("prompt");
-        char choice = 0;
-        for (int p = 0; p < prompts.getLength(); p++) {
-            choice = processPromptElementAndGetDigit((org.w3c.dom.Element) prompts.item(p), channel, session);
-            if (choice != 0 && choice != '\0') {
-                break;
+        String maxRetriesStr = menu.getAttribute("max_retries");
+        int maxRetries = 3;
+        if (maxRetriesStr != null && !maxRetriesStr.isEmpty()) {
+            try { maxRetries = Integer.parseInt(maxRetriesStr); } catch (Exception e) {}
+        }
+        String timeoutStr = menu.getAttribute("timeout");
+        int timeoutMs = 10000;
+        if (timeoutStr != null && !timeoutStr.isEmpty()) {
+            if (timeoutStr.endsWith("s")) {
+                try { timeoutMs = Integer.parseInt(timeoutStr.substring(0, timeoutStr.length() - 1)) * 1000; } catch (Exception e) {}
             }
         }
 
-        if (choice == 0 || choice == '\0') {
-            choice = channel.waitForDigit(10000);
-        }
-
-        if (choice != 0 && choice != '\0') {
-            String choiceStr = String.valueOf(choice);
-            if (session != null) {
-                session.setVariable("user_choice", choiceStr);
-            }
-            System.out.println("[VxmlAgiHandler] DTMF choice received: " + choiceStr);
-
-            org.w3c.dom.NodeList choices = menu.getElementsByTagName("choice");
-            String targetFormId = null;
-            for (int c = 0; c < choices.getLength(); c++) {
-                org.w3c.dom.Element ch = (org.w3c.dom.Element) choices.item(c);
-                if (choiceStr.equals(ch.getAttribute("dtmf"))) {
-                    String next = ch.getAttribute("next");
-                    if (next != null && next.startsWith("#")) {
-                        targetFormId = next.substring(1);
+        int attempts = 0;
+        while (attempts < maxRetries) {
+            attempts++;
+            char choice = 0;
+            
+            org.w3c.dom.NodeList children = menu.getChildNodes();
+            for (int i = 0; i < children.getLength(); i++) {
+                if (children.item(i).getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                    org.w3c.dom.Element child = (org.w3c.dom.Element) children.item(i);
+                    if ("prompt".equals(child.getTagName())) {
+                        choice = processPromptElementAndGetDigit(child, channel, session);
+                        if (choice != 0 && choice != '\0') {
+                            break;
+                        }
                     }
-                    break;
                 }
             }
 
-            if (targetFormId != null) {
-                renderDialogById(menu.getOwnerDocument(), targetFormId, channel, session);
+            if (choice == 0 || choice == '\0') {
+                choice = channel.waitForDigit(timeoutMs);
+            }
+
+            if (choice == 0 || choice == '\0') {
+                System.out.println("[VxmlAgiHandler] DTMF choice timeout.");
+                if (handleFallbackBlock(menu, "noinput", channel, session)) {
+                    continue; // Reprompt requested
+                }
+                break; // Goto happened or no fallback block
+            } else {
+                String choiceStr = String.valueOf(choice);
+                if (session != null) {
+                    session.setVariable("user_choice", choiceStr);
+                }
+                System.out.println("[VxmlAgiHandler] DTMF choice received: " + choiceStr);
+
+                org.w3c.dom.NodeList choices = menu.getElementsByTagName("choice");
+                String targetFormId = null;
+                for (int c = 0; c < choices.getLength(); c++) {
+                    org.w3c.dom.Element ch = (org.w3c.dom.Element) choices.item(c);
+                    if (choiceStr.equals(ch.getAttribute("dtmf"))) {
+                        String next = ch.getAttribute("next");
+                        if (next != null && next.startsWith("#")) {
+                            targetFormId = next.substring(1);
+                        }
+                        break;
+                    }
+                }
+
+                if (targetFormId != null) {
+                    renderDialogById(menu.getOwnerDocument(), targetFormId, channel, session);
+                    return;
+                } else {
+                    System.out.println("[VxmlAgiHandler] Invalid DTMF choice: " + choiceStr);
+                    if (handleFallbackBlock(menu, "nomatch", channel, session)) {
+                        continue; // Reprompt requested
+                    }
+                    break; // Goto happened or no fallback block
+                }
             }
         }
+    }
+
+    private boolean handleFallbackBlock(org.w3c.dom.Element parent, String tagName, AgiChannel channel, VxmlSession session) throws Exception {
+        org.w3c.dom.NodeList children = parent.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            if (children.item(i).getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                org.w3c.dom.Element child = (org.w3c.dom.Element) children.item(i);
+                if (tagName.equals(child.getTagName())) {
+                    org.w3c.dom.NodeList fbChildren = child.getChildNodes();
+                    boolean reprompt = false;
+                    for (int j = 0; j < fbChildren.getLength(); j++) {
+                        if (fbChildren.item(j).getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                            org.w3c.dom.Element fbChild = (org.w3c.dom.Element) fbChildren.item(j);
+                            if ("prompt".equals(fbChild.getTagName())) {
+                                processPromptElement(fbChild, channel, session);
+                            } else if ("goto".equals(fbChild.getTagName())) {
+                                String next = fbChild.getAttribute("next");
+                                if (next != null && next.startsWith("#")) {
+                                    String targetFormId = next.substring(1);
+                                    System.out.println("[VxmlAgiHandler] Fallback <goto> jumping to dialog: " + targetFormId);
+                                    renderDialogById(parent.getOwnerDocument(), targetFormId, channel, session);
+                                }
+                                return false; // Goto executes, we don't reprompt
+                            } else if ("reprompt".equals(fbChild.getTagName())) {
+                                reprompt = true;
+                            }
+                        }
+                    }
+                    return reprompt;
+                }
+            }
+        }
+        return false;
     }
 
     private boolean renderFormElement(org.w3c.dom.Element form, AgiChannel channel, VxmlSession session) throws Exception {
@@ -446,40 +515,79 @@ public class VxmlAgiHandler extends BaseAgiScript {
                     }
                 }
 
-                StringBuilder inputStr = new StringBuilder();
-                char firstDigit = 0;
-                for (int fp = 0; fp < fieldPrompts.getLength(); fp++) {
-                    firstDigit = processPromptElementAndGetDigit((org.w3c.dom.Element) fieldPrompts.item(fp), channel, session);
-                    if (firstDigit != 0 && firstDigit != '\0') {
-                        if (firstDigit != '#')
-                            inputStr.append(firstDigit);
-                        break;
-                    }
-                }
+                int maxRetries = 3;
+                int timeoutMs = 10000;
+                int attempts = 0;
+                boolean matched = false;
 
-                if (firstDigit == 0 || firstDigit == '\0') {
-                    firstDigit = channel.waitForDigit(10000);
-                    if (firstDigit != 0 && firstDigit != '\0' && firstDigit != '#') {
-                        inputStr.append(firstDigit);
-                    }
-                }
-
-                if (inputStr.length() > 0 || firstDigit == '#') {
-                    while (true) {
-                        char nextDigit = channel.waitForDigit(5000); // 5 seconds timeout between digits
-                        if (nextDigit == 0 || nextDigit == '\0' || nextDigit == '#') {
+                while (attempts < maxRetries && !matched) {
+                    attempts++;
+                    StringBuilder inputStr = new StringBuilder();
+                    char firstDigit = 0;
+                    
+                    // Note: In standard VXML, prompts might only be played on the first attempt or reprompted.
+                    // For simplicity, we play them each loop iteration like menu.
+                    for (int fp = 0; fp < fieldPrompts.getLength(); fp++) {
+                        firstDigit = processPromptElementAndGetDigit((org.w3c.dom.Element) fieldPrompts.item(fp), channel, session);
+                        if (firstDigit != 0 && firstDigit != '\0') {
+                            if (firstDigit != '#')
+                                inputStr.append(firstDigit);
                             break;
                         }
-                        inputStr.append(nextDigit);
                     }
-                }
 
-                if (inputStr.length() > 0) {
-                    String varKey = (fieldName != null && !fieldName.isEmpty()) ? fieldName : "user_input";
-                    if (session != null) {
-                        session.setVariable(varKey, inputStr.toString());
+                    if (firstDigit == 0 || firstDigit == '\0') {
+                        firstDigit = channel.waitForDigit(timeoutMs);
+                        if (firstDigit != 0 && firstDigit != '\0' && firstDigit != '#') {
+                            inputStr.append(firstDigit);
+                        }
                     }
-                    System.out.println("[VxmlAgiHandler] Field " + varKey + " input: " + inputStr.toString());
+
+                    if (inputStr.length() > 0 || firstDigit == '#') {
+                        while (true) {
+                            char nextDigit = channel.waitForDigit(5000); // 5 seconds timeout between digits
+                            if (nextDigit == 0 || nextDigit == '\0' || nextDigit == '#') {
+                                break;
+                            }
+                            inputStr.append(nextDigit);
+                        }
+                    }
+
+                    if (inputStr.length() == 0) {
+                        System.out.println("[VxmlAgiHandler] Field " + fieldName + " input timeout.");
+                        if (handleFallbackBlock(child, "noinput", channel, session)) {
+                            continue;
+                        }
+                        break;
+                    } else {
+                        // Check grammar if applicable (for simplicity we just accept it if there's no grammar enforcement)
+                        boolean isValid = true;
+                        if (!grammarTokens.isEmpty() && !grammarTokens.contains(inputStr.toString())) {
+                            isValid = false;
+                        }
+
+                        if (isValid) {
+                            String varKey = (fieldName != null && !fieldName.isEmpty()) ? fieldName : "user_input";
+                            if (session != null) {
+                                session.setVariable(varKey, inputStr.toString());
+                            }
+                            System.out.println("[VxmlAgiHandler] Field " + varKey + " input: " + inputStr.toString());
+                            matched = true;
+                            
+                            // Handle <filled> block
+                            org.w3c.dom.NodeList filledNodes = child.getElementsByTagName("filled");
+                            if (filledNodes.getLength() > 0) {
+                                org.w3c.dom.Element filled = (org.w3c.dom.Element) filledNodes.item(0);
+                                renderFormElement(filled, channel, session);
+                            }
+                        } else {
+                            System.out.println("[VxmlAgiHandler] Field " + fieldName + " invalid input: " + inputStr.toString());
+                            if (handleFallbackBlock(child, "nomatch", channel, session)) {
+                                continue;
+                            }
+                            break;
+                        }
+                    }
                 }
             } else if ("ai".equals(tagName)) {
                 String role = child.getAttribute("role");

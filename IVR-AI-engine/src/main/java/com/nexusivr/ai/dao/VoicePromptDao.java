@@ -32,6 +32,7 @@ public class VoicePromptDao {
     private static final String DELETE_SQL = "DELETE FROM voice_prompts WHERE name = ?";
     
     private static final String FIND_ALL_SQL = "SELECT name, language, duration, type, created_by, file_path, size_bytes, updated_at FROM voice_prompts ORDER BY updated_at DESC";
+    private static final String FIND_BY_CREATED_BY_SQL = "SELECT name, language, duration, type, created_by, file_path, size_bytes, updated_at FROM voice_prompts WHERE created_by = ? ORDER BY updated_at DESC";
     
     private static final String FIND_BY_NAME_SQL = "SELECT file_path FROM voice_prompts WHERE name = ?";
 
@@ -99,6 +100,31 @@ public class VoicePromptDao {
             }
         } catch (SQLException e) {
             logger.error("Error retrieving voice prompts", e);
+        }
+        return prompts;
+    }
+    
+    public List<Map<String, Object>> findByCreatedBy(String createdBy) {
+        List<Map<String, Object>> prompts = new ArrayList<>();
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(FIND_BY_CREATED_BY_SQL)) {
+             ps.setString(1, createdBy);
+             try (ResultSet rs = ps.executeQuery()) {
+                 while (rs.next()) {
+                     Map<String, Object> p = new HashMap<>();
+                     p.put("name", rs.getString("name"));
+                     p.put("language", rs.getString("language"));
+                     p.put("duration", rs.getString("duration"));
+                     p.put("type", rs.getString("type"));
+                     p.put("createdBy", rs.getString("created_by"));
+                     p.put("filePath", rs.getString("file_path"));
+                     p.put("sizeBytes", rs.getLong("size_bytes"));
+                     p.put("updatedAt", rs.getTimestamp("updated_at"));
+                     prompts.add(p);
+                 }
+             }
+        } catch (SQLException e) {
+            logger.error("Error retrieving voice prompts for user", e);
         }
         return prompts;
     }

@@ -18,6 +18,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import com.nexusivr.ai.dao.VoicePromptDao;
+import com.nexusivr.ai.security.JwtUtil;
+import io.jsonwebtoken.Claims;
 
 @WebServlet(urlPatterns = {"/api/v1/voice-prompts/upload"})
 @MultipartConfig(
@@ -44,6 +46,19 @@ public class VoicePromptsUploadServlet extends BaseAiServlet {
                 return;
             }
 
+            String authHeader = req.getHeader("Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                sendJsonResponse(resp, HttpServletResponse.SC_UNAUTHORIZED, "Missing or invalid authorization header");
+                return;
+            }
+            String token = authHeader.substring(7);
+            Claims claims = JwtUtil.validateToken(token);
+            if (claims == null) {
+                sendJsonResponse(resp, HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
+                return;
+            }
+            String userUuid = claims.getSubject();
+
             String fileName = getSubmittedFileName(filePart);
             if (fileName == null || fileName.isBlank()) {
                 fileName = "uploaded_" + UUID.randomUUID().toString() + ".wav";
@@ -54,11 +69,6 @@ public class VoicePromptsUploadServlet extends BaseAiServlet {
             String language = req.getParameter("language");
             if (language == null || language.isBlank()) {
                 language = "English (US)";
-            }
-            
-            String username = req.getParameter("username");
-            if (username == null || username.isBlank()) {
-                username = "Tenant Admin";
             }
 
             // Find a writable directory
@@ -107,9 +117,9 @@ public class VoicePromptsUploadServlet extends BaseAiServlet {
             responseData.put("size", sizeStr);
             responseData.put("duration", durationStr);
             responseData.put("type", "Uploaded");
-            responseData.put("createdBy", username);
+            responseData.put("createdBy", userUuid);
 
-            new VoicePromptDao().upsert(fileName, language, durationStr, "Uploaded", username, targetPath.toString(), fileSize);
+            new VoicePromptDao().upsert(fileName, language, durationStr, "Uploaded", userUuid, targetPath.toString(), fileSize);
 
             sendJsonResponse(resp, HttpServletResponse.SC_OK, responseData);
 
@@ -140,8 +150,21 @@ public class VoicePromptsUploadServlet extends BaseAiServlet {
                 }
             }
             
+            String authHeader = req.getHeader("Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing or invalid authorization header");
+                return;
+            }
+            String token = authHeader.substring(7);
+            Claims claims = JwtUtil.validateToken(token);
+            if (claims == null) {
+                resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
+                return;
+            }
+            String userUuid = claims.getSubject();
+
             java.util.List<Map<String, Object>> filesList = new java.util.ArrayList<>();
-            java.util.List<Map<String, Object>> dbPrompts = dao.findAll();
+            java.util.List<Map<String, Object>> dbPrompts = dao.findByCreatedBy(userUuid);
             for (Map<String, Object> dbp : dbPrompts) {
                 Map<String, Object> fileData = new LinkedHashMap<>();
                 long id = System.currentTimeMillis();

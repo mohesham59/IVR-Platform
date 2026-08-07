@@ -147,7 +147,7 @@ export function safeNodeType(raw: string | undefined): NodeType {
   if (lower.includes('hour') || lower.includes('schedule') || lower.includes('time')) return 'hours'
   if (lower.includes('end') || lower.includes('hangup') || lower.includes('disconnect')) return 'end'
   if (lower.includes('play') || lower.includes('audio')) return 'playback'
-  if (lower.includes('tts') || lower.includes('speech') || lower.includes('say') || lower.includes('prompt')) return 'tts'
+  if (lower.includes('tts') || lower.includes('speech') || lower.includes('say') || lower.includes('prompt')) return 'playback'
   if (lower.includes('record')) return 'record'
   if (lower.includes('condition') || lower.includes('branch') || lower.includes('if')) return 'condition'
   if (lower.includes('api') || lower.includes('http') || lower.includes('rest')) return 'api'

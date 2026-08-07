@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.nexusivr.ai.security.JwtUtil;
+import io.jsonwebtoken.Claims;
 
 @WebServlet(urlPatterns = {"/api/v1/voice-prompts/generate"})
 public class VoicePromptsGenerateServlet extends BaseAiServlet {
@@ -44,6 +46,19 @@ public class VoicePromptsGenerateServlet extends BaseAiServlet {
                 sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "Missing fileName or text");
                 return;
             }
+
+            String authHeader = req.getHeader("Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                sendJsonResponse(resp, HttpServletResponse.SC_UNAUTHORIZED, "Missing or invalid authorization header");
+                return;
+            }
+            String token = authHeader.substring(7);
+            Claims claims = JwtUtil.validateToken(token);
+            if (claims == null) {
+                sendJsonResponse(resp, HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
+                return;
+            }
+            String userUuid = claims.getSubject();
 
             if (!fileName.toLowerCase().endsWith(".wav")) {
                 fileName += ".wav";
@@ -106,15 +121,13 @@ public class VoicePromptsGenerateServlet extends BaseAiServlet {
                 durationStr = String.format("%d:%02d", totalSeconds / 60, totalSeconds % 60);
             } catch (Exception ignored) {}
 
-            String username = "Tenant Admin"; // Mock logic for demo
-
-            new VoicePromptDao().upsert(fileName, language, durationStr, "AI Generated", username, targetWavFile.toString(), fileSize);
+            new VoicePromptDao().upsert(fileName, language, durationStr, "AI Generated", userUuid, targetWavFile.toString(), fileSize);
 
             Map<String, Object> responseData = new LinkedHashMap<>();
             responseData.put("success", true);
             responseData.put("name", fileName);
             responseData.put("type", "AI Generated");
-            responseData.put("createdBy", username);
+            responseData.put("createdBy", userUuid);
 
             sendJsonResponse(resp, HttpServletResponse.SC_OK, responseData);
 

@@ -4,7 +4,7 @@ import { NODE_DEFS, CATEGORIES, NODE_ICONS } from './nodeConfig'
 import type { NodeType } from './types'
 
 const FAVORITES: NodeType[] = ['dtmf_menu', 'greeting', 'ai']
-const RECENT: NodeType[] = ['tts', 'api']
+const RECENT: NodeType[] = ['api']
 
 interface Props {
   collapsed: boolean

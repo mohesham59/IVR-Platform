@@ -158,6 +158,18 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editingTitleValue, setEditingTitleValue] = useState('')
   const titleInputRef = useRef<HTMLInputElement>(null)
+
+  const [availablePrompts, setAvailablePrompts] = useState<string[]>([])
+  
+  useEffect(() => {
+    aiApi.fetchVoicePrompts()
+      .then(res => {
+        if (res?.success && res.prompts) {
+          setAvailablePrompts(res.prompts.map(p => p.name))
+        }
+      })
+      .catch(err => console.error('[IVRBuilder] Failed to fetch voice prompts:', err))
+  }, [])
   const [versionsList, setVersionsList] = useState<FlowVersion[]>(() => {
     const saved = localStorage.getItem(`nexus_builder_versions_${sessionId}`)
     if (saved) {
@@ -2187,6 +2199,7 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
           onSelectVersion={handleSelectVersion}
           nodes={nodes}
           edges={edges}
+          availablePrompts={availablePrompts}
         />
       </div>
 

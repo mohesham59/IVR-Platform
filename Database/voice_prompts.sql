@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS voice_prompts (
     language VARCHAR(50) NOT NULL,
     duration VARCHAR(20),  -- e.g., "0:14"
     type VARCHAR(50) NOT NULL, -- e.g., 'Uploaded', 'AI Generated'
-    created_by VARCHAR(255) NOT NULL,
+    created_by uuid NOT NULL,
     file_path TEXT NOT NULL,
     
     -- Additional recommended fields:

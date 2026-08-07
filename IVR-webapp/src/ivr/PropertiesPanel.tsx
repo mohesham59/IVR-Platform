@@ -28,10 +28,11 @@ interface Props {
   onRestoreVersion?: (version: FlowVersion) => void
   onSelectNode?: (nodeId?: string) => void
   onSaveVersion?: () => void
-  selectedVersionId?: string | null
+  selectedVersionId?: string
   onSelectVersion?: (version: FlowVersion | null) => void
   nodes?: FlowNode[]
   edges?: FlowEdge[]
+  availablePrompts?: string[]
 }
 
 function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
@@ -69,6 +70,59 @@ function SelectInput({ options, value, onChange }: { options: string[]; value?: 
   )
 }
 
+function SearchableSelectInput({ options, value, onChange }: { options: string[]; value?: string; onChange?: (v: string) => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  
+  const filtered = options.filter(o => o.toLowerCase().includes(search.toLowerCase()));
+  
+  return (
+    <div className="relative">
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full h-8 pl-2.5 pr-7 rounded-lg border border-[#E5E7EB] bg-white text-xs text-[#1F2937] flex items-center cursor-pointer overflow-hidden"
+      >
+        <span className="truncate">{value || 'Select a file...'}</span>
+        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF] pointer-events-none" />
+      </div>
+      
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div className="absolute z-50 w-full mt-1 bg-white border border-[#E5E7EB] rounded-lg shadow-lg overflow-hidden">
+            <div className="p-1.5 border-b border-[#E5E7EB]">
+              <input 
+                autoFocus
+                className="w-full px-2 py-1.5 text-xs border border-[#E5E7EB] rounded bg-gray-50 focus:outline-none focus:border-[#2563EB]"
+                placeholder="Search audio files..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+            </div>
+            <div className="max-h-48 overflow-y-auto">
+              {filtered.length > 0 ? filtered.map(o => (
+                <div 
+                  key={o} 
+                  className={`px-2.5 py-1.5 text-xs cursor-pointer hover:bg-[#EFF6FF] hover:text-[#2563EB] truncate ${value === o ? 'bg-[#EFF6FF] text-[#2563EB] font-medium' : 'text-[#1F2937]'}`}
+                  onClick={() => {
+                    onChange?.(o);
+                    setIsOpen(false);
+                    setSearch('');
+                  }}
+                >
+                  {o}
+                </div>
+              )) : (
+                <div className="px-2.5 py-2 text-xs text-[#9CA3AF] text-center">No results found</div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 function Toggle({ label, checked, onChange }: { label: string; checked?: boolean; onChange?: (val: boolean) => void }) {
   return (
     <div className="flex items-center justify-between">
@@ -85,7 +139,7 @@ function Toggle({ label, checked, onChange }: { label: string; checked?: boolean
   )
 }
 
-function NodePropsContent({ node, onNodeChange }: { node: FlowNode; onNodeChange?: (updated: FlowNode) => void }) {
+function NodePropsContent({ node, onNodeChange, availablePrompts = [] }: { node: FlowNode; onNodeChange?: (updated: FlowNode) => void; availablePrompts?: string[] }) {
   const def = NODE_DEFS[node.type] || { label: node.type, description: '', iconBg: '#EFF6FF', color: '#2563EB' }
 
   const handleUpdate = (fields: Partial<FlowNode>) => {
@@ -122,39 +176,110 @@ function NodePropsContent({ node, onNodeChange }: { node: FlowNode; onNodeChange
         {/* Type-specific fields */}
         {(node.type === 'greeting' || node.type === 'playback') && (
           <FieldRow label="Audio File">
-            <SelectInput
-              options={['welcome_hospital.wav', 'afterhours_msg.wav', 'hold_music.wav', 'beep.wav']}
-              value={node.subtitle || 'welcome_hospital.wav'}
+            <SearchableSelectInput
+              options={availablePrompts?.length ? availablePrompts : ['welcome_hospital.wav', 'afterhours_msg.wav', 'hold_music.wav', 'beep.wav']}
+              value={node.subtitle || (availablePrompts?.length ? availablePrompts[0] : 'welcome_hospital.wav')}
               onChange={v => handleUpdate({ subtitle: v })}
             />
           </FieldRow>
         )}
-        {node.type === 'tts' && (
-          <>
-            <FieldRow label="Text / Template">
-              <textarea
-                className="w-full px-2.5 py-2 rounded-lg border border-[#E5E7EB] bg-white text-xs text-[#1F2937] outline-none focus:border-[#2563EB] resize-none"
-                rows={3}
-                value={node.subtitle || 'Thank you for calling. Please stay on the line.'}
-                onChange={e => handleUpdate({ subtitle: e.target.value })}
-              />
-            </FieldRow>
-            <FieldRow label="Voice">
-              <SelectInput options={['Polly.Joanna (en-US)', 'Polly.Matthew (en-US)', 'Polly.Amy (en-GB)']} />
-            </FieldRow>
-          </>
-        )}
+
         {node.type === 'dtmf_menu' && (
           <>
             <FieldRow label="Prompt File">
-              <SelectInput options={['menu_main.wav', 'menu_billing.wav', 'menu_support.wav']} />
+              <SearchableSelectInput 
+                options={availablePrompts?.length ? availablePrompts : ['menu_main.wav', 'menu_billing.wav', 'menu_support.wav']} 
+                value={node.prompt}
+                onChange={v => handleUpdate({ prompt: v })}
+              />
+            </FieldRow>
+            <FieldRow label="Invalid Input Audio">
+              <SearchableSelectInput 
+                options={availablePrompts?.length ? availablePrompts : ['invalid_entry.wav']} 
+                value={node.invalidPrompt}
+                onChange={v => handleUpdate({ invalidPrompt: v })}
+              />
+            </FieldRow>
+            <FieldRow label="Timeout Audio">
+              <SearchableSelectInput 
+                options={availablePrompts?.length ? availablePrompts : ['timeout_msg.wav']} 
+                value={node.timeoutPrompt}
+                onChange={v => handleUpdate({ timeoutPrompt: v })}
+              />
             </FieldRow>
             <FieldRow label="Max Retries">
-              <SelectInput options={['1', '2', '3', '5']} value="3" />
+              <SelectInput 
+                options={['1', '2', '3', '4', '5']} 
+                value={node.maxRetries?.toString() || '3'} 
+                onChange={v => handleUpdate({ maxRetries: parseInt(v) })}
+              />
             </FieldRow>
             <FieldRow label="Timeout (sec)">
-              <TextInput value="5" />
+              <TextInput 
+                value={node.timeoutSecs?.toString() || '5'} 
+                onChange={v => handleUpdate({ timeoutSecs: parseInt(v) || 5 })}
+              />
             </FieldRow>
+            
+            <div className="mt-4 pt-3 border-t border-[#E5E7EB]">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-[#9CA3AF] text-[10px] font-semibold uppercase tracking-wider">Menu Options</h4>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    const newPorts = [...node.ports];
+                    const nextNum = node.ports.filter(p => p.id.startsWith('key')).length + 1;
+                    const digit = (nextNum % 10).toString();
+                    newPorts.unshift({ id: `key${digit}`, label: `Key ${digit}`, color: def.color, type: 'output' });
+                    handleUpdate({ ports: newPorts });
+                  }}
+                  className="text-xs text-[#2563EB] hover:underline font-medium"
+                >
+                  + Add Option
+                </button>
+              </div>
+              <div className="space-y-2">
+                {node.ports.filter(p => p.id !== 'timeout').map(port => {
+                  const digit = port.id.replace('key', '');
+                  return (
+                    <div key={port.id} className="flex gap-2 items-center">
+                      <div className="w-12 flex-shrink-0">
+                        <SelectInput 
+                          options={['0','1','2','3','4','5','6','7','8','9','*','#']}
+                          value={digit}
+                          onChange={v => {
+                            const newPorts = node.ports.map(p => 
+                              p.id === port.id ? { ...p, id: `key${v}`, label: `Key ${v}` } : p
+                            );
+                            handleUpdate({ ports: newPorts });
+                          }}
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <TextInput 
+                          value={port.label.replace(`Key ${digit}`, '').trim() || port.label} 
+                          onChange={v => {
+                            const newPorts = node.ports.map(p => 
+                              p.id === port.id ? { ...p, label: `Key ${digit} - ${v}` } : p
+                            );
+                            handleUpdate({ ports: newPorts });
+                          }}
+                        />
+                      </div>
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          handleUpdate({ ports: node.ports.filter(p => p.id !== port.id) });
+                        }}
+                        className="text-[#9CA3AF] hover:text-[#EF4444] transition-colors"
+                      >
+                        <XCircle className="w-4 h-4" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </>
         )}
 
@@ -424,6 +549,7 @@ export default function PropertiesPanel({
   selectedVersionId,
   onSelectVersion,
   nodes = [],
+  availablePrompts = [],
 }: Props) {
   const errCount = validationItems.filter(i => i.type === 'error').length
   const warnCount = validationItems.filter(i => i.type === 'warning').length
@@ -456,9 +582,9 @@ export default function PropertiesPanel({
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
         {activeTab === 'props' && (
-          selectedNode
-            ? <NodePropsContent node={selectedNode} onNodeChange={onNodeChange} />
-            : (
+          selectedNode ? (
+              <NodePropsContent node={selectedNode} onNodeChange={onNodeChange} availablePrompts={availablePrompts} />
+            ) : (
               <div className="space-y-4">
                 <div className="p-3 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB]">
                   <div className="flex items-center gap-2 mb-1">

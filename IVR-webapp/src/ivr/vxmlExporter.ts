@@ -96,7 +96,7 @@ function renderStart(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): stri
 function renderGreeting(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): string {
   const next = firstTarget(node.id, edges)
   const nextId = gotoId(next, nodes)
-  const promptFile = slugify(node.title) + '.wav'
+  const promptFile = node.subtitle ? node.subtitle : slugify(node.title) + '.wav'
   return `
   <!-- ═════════════════════════════ GREETING ════════════════════════════════ -->
   <form id="${toFormId(node)}">
@@ -112,7 +112,7 @@ function renderGreeting(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): s
 function renderPlayback(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): string {
   const next = firstTarget(node.id, edges)
   const nextId = gotoId(next, nodes)
-  const audioFile = slugify(node.title) + '.wav'
+  const audioFile = node.subtitle ? node.subtitle : slugify(node.title) + '.wav'
   return `
   <!-- ════════════════════════════ PLAYBACK ═════════════════════════════════ -->
   <form id="${toFormId(node)}">
@@ -125,18 +125,7 @@ function renderPlayback(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): s
   </form>`
 }
 
-function renderTts(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): string {
-  const next = firstTarget(node.id, edges)
-  const nextId = gotoId(next, nodes)
-  return `
-  <!-- ══════════════════════════ TEXT-TO-SPEECH ═════════════════════════════ -->
-  <form id="${toFormId(node)}">
-    <block>
-      <prompt>${esc(node.subtitle || toLabel(node))}</prompt>
-      <goto next="#${nextId}"/>
-    </block>
-  </form>`
-}
+
 
 function renderDtmfMenu(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): string {
   // Build choices from outgoing edges (one choice per port)
@@ -160,20 +149,25 @@ function renderDtmfMenu(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): s
     ? `<goto next="#${gotoId(timeoutEdge.targetId, nodes)}"/>`
     : `<reprompt/>`
 
-  const audioFile = slugify(node.title) + '.wav'
+  const audioFile = node.prompt ? node.prompt : slugify(node.title) + '.wav'
+  const invalidAudio = node.invalidPrompt ? `<audio src="${esc(node.invalidPrompt)}">Invalid input. Please try again.</audio>` : `<prompt>Invalid input. Please try again.</prompt>`
+  const timeoutAudio = node.timeoutPrompt ? `<audio src="${esc(node.timeoutPrompt)}">Timeout. Please try again.</audio>` : ''
+  const maxRetriesAttr = node.maxRetries ? ` max_retries="${node.maxRetries}"` : ''
+  const timeoutAttr = node.timeoutSecs ? ` timeout="${node.timeoutSecs}s"` : ''
 
   return `
   <!-- ═══════════════════════════ DTMF MENU ═════════════════════════════════ -->
-  <menu id="${toFormId(node)}">
+  <menu id="${toFormId(node)}"${maxRetriesAttr}${timeoutAttr}>
     <prompt bargein="true">
       <audio src="${esc(audioFile)}">${esc(toLabel(node))}</audio>
     </prompt>
 ${choices}
     <noinput>
+      ${timeoutAudio ? `<prompt>${timeoutAudio}</prompt>` : ''}
       ${timeoutGoto}
     </noinput>
     <nomatch>
-      <prompt>I did not understand your selection. Please try again.</prompt>
+      ${invalidAudio}
       <reprompt/>
     </nomatch>
   </menu>`
@@ -538,7 +532,7 @@ export function exportAsVxml(
       case 'start':      return renderStart(node, nodes, edges)
       case 'greeting':   return renderGreeting(node, nodes, edges)
       case 'playback':   return renderPlayback(node, nodes, edges)
-      case 'tts':        return renderTts(node, nodes, edges)
+
       case 'dtmf_menu':  return renderDtmfMenu(node, nodes, edges)
       case 'dtmf_input': return renderDtmfInput(node, nodes, edges)
       case 'queue':      return renderQueue(node, nodes, edges)
