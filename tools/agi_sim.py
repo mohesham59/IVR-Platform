@@ -44,6 +44,9 @@ def main():
     ap.add_argument("--script", default="default")
     ap.add_argument("--vxml", default="e2e-test")
     ap.add_argument("--digits", default="")
+    ap.add_argument("--barge", default=None,
+                    help="'N:D' = return DTMF digit D during the Nth DTMF-aware STREAM FILE "
+                         "(default N=1). Simulates a mid-prompt keypress.")
     ap.add_argument("--ai-wav", default=None)
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
@@ -53,6 +56,13 @@ def main():
     transcript = []
     max_ai_loops = 6
     ai_loop_count = 0
+    barge_at = None
+    barge_digit = None
+    if args.barge:
+        parts = args.barge.split(":")
+        barge_digit = parts[-1]
+        barge_at = int(parts[0]) if len(parts) == 2 else 1
+    stream_count = 0
 
     sock = socket.create_connection(("127.0.0.1", args.port), timeout=120)
     sock.settimeout(120)
@@ -89,6 +99,12 @@ def main():
                 else:
                     send("200 result=0")
             elif upper.startswith("STREAM FILE "):
+                if barge_digit and '"0123456789*#"'.lower() in cmd.lower():
+                    stream_count += 1
+                    if stream_count == barge_at:
+                        transcript.append("   [BARGE DTMF: %s]" % barge_digit)
+                        send("200 result=%d" % ord(barge_digit))
+                        continue
                 send("200 result=0 endpos=2000")
             elif upper.startswith("WAIT FOR DIGIT "):
                 if digits:

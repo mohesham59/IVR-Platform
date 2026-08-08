@@ -63,7 +63,7 @@
         </then>
       </if>
     </block>
-    <field name="menu_choice" type="digits">
+    <field name="menu_choice" type="digits" maxlen="1">
       <grammar>1 2 3 4 5 6 7 0</grammar>
       <filled>
         <if cond="'${menu_choice}' == '1'"><then><goto next="#book"/></then></if>
@@ -235,7 +235,7 @@
       <prompt xml:lang="en">Press 0 to return to the main menu.</prompt>
       <prompt xml:lang="ar">اضغط 0 للعودة إلى القائمة الرئيسية.</prompt>
     </block>
-    <field name="api_return" type="digits">
+    <field name="api_return" type="digits" maxlen="1">
       <grammar>0</grammar>
       <filled>
         <goto next="#main_menu"/>

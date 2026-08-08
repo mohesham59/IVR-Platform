@@ -89,6 +89,9 @@ public class VxmlAgiHandler extends BaseAgiScript {
     private static volatile VxmlScenarioEngine vxmlEngine;
     private static final Object ENGINE_LOCK = new Object();
 
+    // Digit captured via barge-in during a prompt; consumed by the next <field>.
+    private char bargeDigit = 0;
+
     @Override
     public void service(AgiRequest request, AgiChannel channel) throws AgiException {
         String callerId = "unknown";
@@ -96,6 +99,7 @@ public class VxmlAgiHandler extends BaseAgiScript {
         String sessionId = null;
 
         try {
+            bargeDigit = 0;
             // Extract caller information
             callerId = request.getCallerId() != null ? request.getCallerId() : request.getCallerIdName();
             System.out.println("\n[VxmlAgiHandler] *** New Call from: " + callerId + " ***");
@@ -387,7 +391,11 @@ public class VxmlAgiHandler extends BaseAgiScript {
                     return true;
                 }
             } else if ("prompt".equals(tagName)) {
-                processPromptElement(child, channel, session);
+                char digit = processPromptElementAndGetDigit(child, channel, session);
+                if (digit != 0 && digit != '\0') {
+                    bargeDigit = digit;
+                    System.out.println("[VxmlAgiHandler] Barge-in digit captured during prompt: " + digit);
+                }
             } else if ("goto".equals(tagName)) {
                 String next = child.getAttribute("next");
                 if (next != null && next.startsWith("#")) {
@@ -493,25 +501,42 @@ public class VxmlAgiHandler extends BaseAgiScript {
 
                 StringBuilder inputStr = new StringBuilder();
                 char firstDigit = 0;
-                for (int fp = 0; fp < fieldPrompts.getLength(); fp++) {
-                    firstDigit = processPromptElementAndGetDigit((org.w3c.dom.Element) fieldPrompts.item(fp), channel, session);
-                    if (firstDigit != 0 && firstDigit != '\0') {
-                        if (firstDigit != '#')
-                            inputStr.append(firstDigit);
-                        break;
+
+                int maxLen = -1;
+                String maxLenAttr = child.getAttribute("maxlen");
+                if (maxLenAttr != null && !maxLenAttr.trim().isEmpty()) {
+                    try {
+                        maxLen = Integer.parseInt(maxLenAttr.trim());
+                    } catch (NumberFormatException e) {
+                        maxLen = -1;
+                    }
+                }
+
+                if (bargeDigit != 0 && bargeDigit != '\0') {
+                    firstDigit = bargeDigit;
+                    bargeDigit = 0;
+                    System.out.println("[VxmlAgiHandler] Field " + fieldName + " consumed barge-in digit: " + firstDigit);
+                }
+
+                if (firstDigit == 0 || firstDigit == '\0') {
+                    for (int fp = 0; fp < fieldPrompts.getLength(); fp++) {
+                        firstDigit = processPromptElementAndGetDigit((org.w3c.dom.Element) fieldPrompts.item(fp), channel, session);
+                        if (firstDigit != 0 && firstDigit != '\0') {
+                            break;
+                        }
                     }
                 }
 
                 if (firstDigit == 0 || firstDigit == '\0') {
                     firstDigit = channel.waitForDigit(10000);
-                    if (firstDigit != 0 && firstDigit != '\0' && firstDigit != '#') {
-                        inputStr.append(firstDigit);
-                    }
                 }
 
-                if (inputStr.length() > 0 || firstDigit == '#') {
-                    while (true) {
-                        char nextDigit = channel.waitForDigit(5000); // 5 seconds timeout between digits
+                if (firstDigit != 0 && firstDigit != '\0') {
+                    if (firstDigit != '#') {
+                        inputStr.append(firstDigit);
+                    }
+                    while (maxLen < 0 || inputStr.length() < maxLen) {
+                        char nextDigit = channel.waitForDigit(5000); // 5s timeout between digits
                         if (nextDigit == 0 || nextDigit == '\0' || nextDigit == '#') {
                             break;
                         }
@@ -862,6 +887,51 @@ public class VxmlAgiHandler extends BaseAgiScript {
         return VxmlConfig.loadFromClasspath().getTtsLanguage();
     }
 
+    private boolean isLanguageFilterActive(VxmlSession session) {
+        if (session == null) {
+            return false;
+        }
+        Object lang = session.getVariable("language");
+        return lang != null && !lang.toString().trim().isEmpty();
+    }
+
+    private boolean langMatches(String xmlLang, String sessionLang) {
+        if (xmlLang == null || xmlLang.trim().isEmpty()) {
+            return true;
+        }
+        if (sessionLang == null || sessionLang.trim().isEmpty()) {
+            return true;
+        }
+        String a = xmlLang.trim().toLowerCase();
+        String b = sessionLang.trim().toLowerCase();
+        if (a.startsWith("ar") && b.startsWith("ar")) {
+            return true;
+        }
+        if (a.startsWith("ar") || b.startsWith("ar")) {
+            return false;
+        }
+        return a.startsWith("en") && b.startsWith("en") || a.equals(b);
+    }
+
+    private boolean promptShouldSpeak(org.w3c.dom.Element promptElement, String promptLang, VxmlSession session) {
+        String xmlLang = promptElement.getAttribute("xml:lang");
+        if (xmlLang != null && !xmlLang.trim().isEmpty() && isLanguageFilterActive(session)) {
+            if (!langMatches(xmlLang, resolveSessionLanguage(session))) {
+                System.out.println("[VxmlAgiHandler] Skipping prompt (xml:lang=" + xmlLang
+                        + ", session language=" + resolveSessionLanguage(session) + ")");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean audioShouldSpeak(String audioLang, VxmlSession session) {
+        if (audioLang == null || audioLang.trim().isEmpty() || !isLanguageFilterActive(session)) {
+            return true;
+        }
+        return langMatches(audioLang, resolveSessionLanguage(session));
+    }
+
     private char speakPromptAndGetDigit(AgiChannel channel, String text, VxmlSession session) {
         return speakPromptAndGetDigit(channel, text, session, resolveSessionLanguage(session));
     }
@@ -929,6 +999,10 @@ public class VxmlAgiHandler extends BaseAgiScript {
             promptLang = resolveSessionLanguage(session);
         }
 
+        if (!promptShouldSpeak(promptElement, promptLang, session)) {
+            return;
+        }
+
         org.w3c.dom.NodeList children = promptElement.getChildNodes();
         StringBuilder textBuffer = new StringBuilder();
 
@@ -950,6 +1024,11 @@ public class VxmlAgiHandler extends BaseAgiScript {
                 String audioLang = audioEl.getAttribute("xml:lang");
                 if (audioLang == null || audioLang.trim().isEmpty()) {
                     audioLang = promptLang;
+                }
+
+                if (!audioShouldSpeak(audioLang, session)) {
+                    System.out.println("[VxmlAgiHandler] Skipping audio element (xml:lang=" + audioLang + ")");
+                    continue;
                 }
 
                 String src = audioEl.getAttribute("src");
@@ -1000,6 +1079,10 @@ public class VxmlAgiHandler extends BaseAgiScript {
             promptLang = resolveSessionLanguage(session);
         }
 
+        if (!promptShouldSpeak(promptElement, promptLang, session)) {
+            return 0;
+        }
+
         org.w3c.dom.NodeList children = promptElement.getChildNodes();
         StringBuilder textBuffer = new StringBuilder();
 
@@ -1022,6 +1105,11 @@ public class VxmlAgiHandler extends BaseAgiScript {
                 String audioLang = audioEl.getAttribute("xml:lang");
                 if (audioLang == null || audioLang.trim().isEmpty()) {
                     audioLang = promptLang;
+                }
+
+                if (!audioShouldSpeak(audioLang, session)) {
+                    System.out.println("[VxmlAgiHandler] Skipping audio element (xml:lang=" + audioLang + ")");
+                    continue;
                 }
 
                 String src = audioEl.getAttribute("src");
