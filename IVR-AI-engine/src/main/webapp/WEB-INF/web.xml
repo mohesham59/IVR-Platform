@@ -171,6 +171,20 @@
         <url-pattern>/api/v1/ai/analytics</url-pattern>
     </servlet-mapping>
 
+    <!-- CDR Analytics Servlet -->
+    <servlet>
+        <servlet-name>CdrServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.CdrServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CdrServlet</servlet-name>
+        <url-pattern>/api/v1/ai/cdr/calls</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CdrServlet</servlet-name>
+        <url-pattern>/api/v1/ai/cdr/summary</url-pattern>
+    </servlet-mapping>
+
     <!-- AI Prompts Servlet -->
     <servlet>
         <servlet-name>AiPromptsServlet</servlet-name>

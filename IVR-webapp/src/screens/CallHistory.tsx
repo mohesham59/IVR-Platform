@@ -12,8 +12,9 @@ interface CallRecord {
   id: string; caller: string; queue: string; agent: string
   agentAvatar: string; agentColor: string
   date: string; time: string; duration: string
-  status: 'Answered' | 'Abandoned' | 'Busy' | 'No Answer' | 'Transferred'
+  status: 'Answered' | 'Abandoned' | 'Busy' | 'No Answer' | 'Transferred' | 'Failed'
   disposition: string; recording: boolean; waited: string
+  real?: boolean
 }
 
 const CALLS: CallRecord[] = [
@@ -33,6 +34,43 @@ const statusStyle: Record<string, { cls: string; icon: ReactElement }> = {
   'No Answer': { cls: 'bg-[#FEF9C3] text-[#A16207]', icon: <PhoneOff className="w-3 h-3" /> },
   Transferred: { cls: 'bg-[#EFF6FF] text-[#2563EB]', icon: <ArrowRight className="w-3 h-3" /> },
   Busy: { cls: 'bg-[#F5F3FF] text-[#7C3AED]', icon: <XCircle className="w-3 h-3" /> },
+  Failed: { cls: 'bg-[#FEF2F2] text-[#DC2626]', icon: <XCircle className="w-3 h-3" /> },
+}
+
+function formatCallDate(iso: string): { date: string; time: string } {
+  const d = new Date(iso.replace(' ', 'T') + 'Z')
+  return {
+    date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    time: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+  }
+}
+
+function formatCallDuration(sec: number): string {
+  const s = Math.round(sec || 0)
+  if (s <= 0) return '0s'
+  const m = Math.floor(s / 60)
+  const r = s % 60
+  return m > 0 ? `${m}m ${r.toString().padStart(2, '0')}s` : `${r}s`
+}
+
+function cdrToCall(c: { uniqueId: string; caller: string; callee: string; start: string; durationSec: number; disposition: string; status: string }): CallRecord {
+  const { date, time } = formatCallDate(c.start || new Date().toISOString())
+  return {
+    id: `CH-${(c.uniqueId || '')}`,
+    caller: c.caller || 'Unknown',
+    queue: `Ext ${c.callee || '—'}`,
+    agent: 'IVR',
+    agentAvatar: 'IVR',
+    agentColor: 'from-[#2563EB] to-[#7C3AED]',
+    date,
+    time,
+    duration: formatCallDuration(c.durationSec),
+    status: (['Answered', 'No Answer', 'Busy', 'Failed'].includes(c.status) ? c.status : 'No Answer') as CallRecord['status'],
+    disposition: c.disposition || c.status,
+    recording: false,
+    waited: '—',
+    real: true,
+  }
 }
 
 const IVR_PATH = ['Greeting', 'Main Menu', 'Support Branch', 'Queue: Support L1', 'Agent Transfer', 'Survey', 'Hangup']
@@ -61,6 +99,22 @@ export default function CallHistory({ onLogout }: { onLogout: () => void }) {
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(34)
   const [aiSummary, setAiSummary] = useState<string>('')
+  const [calls, setCalls] = useState<CallRecord[]>(CALLS)
+  const [totalCalls, setTotalCalls] = useState<number>(8342)
+
+  useEffect(() => {
+    let cancelled = false
+    aiApi.fetchCdrCalls()
+      .then((cdr) => {
+        if (cancelled) return
+        if (Array.isArray(cdr) && cdr.length > 0) {
+          setCalls(cdr.map(cdrToCall))
+          setTotalCalls(cdr.length)
+        }
+      })
+      .catch(() => { /* keep mock data when CDR is unavailable */ })
+    return () => { cancelled = true }
+  }, [])
 
   useEffect(() => {
     if (selectedCall) {
@@ -80,7 +134,7 @@ export default function CallHistory({ onLogout }: { onLogout: () => void }) {
 
   return (
     <TenantLayout activeNav="history" onLogout={onLogout}
-      pageTitle="Call History" pageSubtitle="8,342 calls in the last 30 days"
+      pageTitle="Call History" pageSubtitle={`${totalCalls.toLocaleString()} calls recorded`}
       headerActions={headerActions}>
       <div className="space-y-4">
         {/* Filter bar */}
@@ -120,7 +174,7 @@ export default function CallHistory({ onLogout }: { onLogout: () => void }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F3F4F6]">
-                {CALLS.map(call => {
+                {calls.map(call => {
                   const ss = statusStyle[call.status]
                   const isSelected = selectedCall?.id === call.id
                   return (
@@ -170,7 +224,7 @@ export default function CallHistory({ onLogout }: { onLogout: () => void }) {
               </tbody>
             </table>
             <div className="px-4 py-3 border-t border-[#F3F4F6] flex items-center justify-between">
-              <span className="text-[#9CA3AF] text-xs">Showing 8 of 8,342 calls</span>
+              <span className="text-[#9CA3AF] text-xs">Showing {calls.length} of {totalCalls.toLocaleString()} calls</span>
               <div className="flex gap-1">
                 {['Previous', '1', '2', '3', '...', '834', 'Next'].map((p, i) => (
                   <button key={i} className={`px-2.5 py-1 rounded-md text-xs ${p === '1' ? 'bg-[#2563EB] text-white' : 'text-[#374151] hover:bg-[#F3F4F6]'} transition-colors`}>{p}</button>
@@ -224,47 +278,51 @@ export default function CallHistory({ onLogout }: { onLogout: () => void }) {
                   </DrawerSection>
                 )}
 
-                <DrawerSection title="Timeline">
-                  <div className="relative">
-                    <div className="absolute left-[11px] top-0 bottom-0 w-px bg-[#E5E7EB]" />
-                    <div className="space-y-3">
-                      {TIMELINE.map((e, i) => (
-                        <div key={i} className="flex gap-3">
-                          <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 relative z-10" style={{ backgroundColor: `${e.color}20`, color: e.color }}>{e.icon}</div>
-                          <div>
-                            <p className="text-[#1F2937] text-xs">{e.event}</p>
-                            <p className="text-[#9CA3AF] text-[10px] font-mono">{e.time}</p>
+                {!selectedCall.real && (
+                  <>
+                    <DrawerSection title="Timeline">
+                      <div className="relative">
+                        <div className="absolute left-[11px] top-0 bottom-0 w-px bg-[#E5E7EB]" />
+                        <div className="space-y-3">
+                          {TIMELINE.map((e, i) => (
+                            <div key={i} className="flex gap-3">
+                              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 relative z-10" style={{ backgroundColor: `${e.color}20`, color: e.color }}>{e.icon}</div>
+                              <div>
+                                <p className="text-[#1F2937] text-xs">{e.event}</p>
+                                <p className="text-[#9CA3AF] text-[10px] font-mono">{e.time}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </DrawerSection>
+
+                    <DrawerSection title="IVR Path">
+                      <div className="flex items-center flex-wrap gap-1">
+                        {IVR_PATH.map((node, i) => (
+                          <div key={i} className="flex items-center gap-1">
+                            <span className="inline-flex px-2 py-0.5 rounded-md bg-[#EFF6FF] text-[#2563EB] text-[10px] font-medium">{node}</span>
+                            {i < IVR_PATH.length - 1 && <ArrowRight className="w-3 h-3 text-[#D1D5DB]" />}
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </DrawerSection>
-
-                <DrawerSection title="IVR Path">
-                  <div className="flex items-center flex-wrap gap-1">
-                    {IVR_PATH.map((node, i) => (
-                      <div key={i} className="flex items-center gap-1">
-                        <span className="inline-flex px-2 py-0.5 rounded-md bg-[#EFF6FF] text-[#2563EB] text-[10px] font-medium">{node}</span>
-                        {i < IVR_PATH.length - 1 && <ArrowRight className="w-3 h-3 text-[#D1D5DB]" />}
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </DrawerSection>
+                    </DrawerSection>
 
-                <DrawerSection title="DTMF Inputs">
-                  <div className="space-y-1.5">
-                    {DTMF_INPUTS.map((d, i) => (
-                      <div key={i} className="flex items-center gap-2 p-2 bg-[#F9FAFB] rounded-lg">
-                        <span className="w-6 h-6 rounded-full bg-[#2563EB] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">{d.key}</span>
-                        <div>
-                          <p className="text-[#374151] text-xs">{d.node}</p>
-                          <p className="text-[#9CA3AF] text-[10px] font-mono">at {d.time}</p>
-                        </div>
+                    <DrawerSection title="DTMF Inputs">
+                      <div className="space-y-1.5">
+                        {DTMF_INPUTS.map((d, i) => (
+                          <div key={i} className="flex items-center gap-2 p-2 bg-[#F9FAFB] rounded-lg">
+                            <span className="w-6 h-6 rounded-full bg-[#2563EB] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">{d.key}</span>
+                            <div>
+                              <p className="text-[#374151] text-xs">{d.node}</p>
+                              <p className="text-[#9CA3AF] text-[10px] font-mono">at {d.time}</p>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </DrawerSection>
+                    </DrawerSection>
+                  </>
+                )}
 
                 <DrawerSection title="Queue Wait Time">
                   <div className="flex items-center gap-3 p-2 bg-[#FEF9C3] rounded-lg">

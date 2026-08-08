@@ -86,6 +86,42 @@ export interface SentimentApiResponse {
   escalationRisk: string;
 }
 
+export interface CdrCall {
+  uniqueId: string;
+  caller: string;
+  callee: string;
+  start: string;
+  answer: string;
+  durationSec: number;
+  billsec: number;
+  disposition: string;
+  status: string;
+}
+
+export interface CdrDayBucket {
+  day: string;
+  calls: number;
+  answered: number;
+  abandoned: number;
+}
+
+export interface CdrHourBucket {
+  hour: number;
+  calls: number;
+}
+
+export interface CdrSummary {
+  totalCalls: number;
+  answered: number;
+  abandoned: number;
+  answeredRate: number;
+  abandonedRate: number;
+  avgDurationSec: number;
+  avgBillsec: number;
+  daily: CdrDayBucket[];
+  hourly: CdrHourBucket[];
+}
+
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
   const activeProvider = localStorage.getItem('ai_provider') || 'gemini';
@@ -205,6 +241,24 @@ export const aiApi = {
    */
   async fetchAnalytics(): Promise<AnalyticsApiResponse> {
     return request<AnalyticsApiResponse>('/analytics', {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Fetch recent call records from the Asterisk CDR log (newest first)
+   */
+  async fetchCdrCalls(): Promise<CdrCall[]> {
+    return request<CdrCall[]>('/cdr/calls', {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Fetch aggregate CDR analytics (KPIs + daily/hourly series)
+   */
+  async fetchCdrSummary(): Promise<CdrSummary> {
+    return request<CdrSummary>('/cdr/summary', {
       method: 'GET',
     });
   },

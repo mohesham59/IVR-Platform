@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import TenantLayout from '../components/TenantLayout'
-import { aiApi, AnalyticsApiResponse } from '../api/aiApi'
+import { aiApi, AnalyticsApiResponse, CdrSummary } from '../api/aiApi'
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -73,9 +73,17 @@ const KPIS = [
 
 const tooltipStyle = { backgroundColor: '#1F2937', border: 'none', borderRadius: 8, fontSize: 12 }
 
+function formatSec(sec: number): string {
+  const s = Math.round(sec || 0)
+  const m = Math.floor(s / 60)
+  const r = s % 60
+  return m > 0 ? `${m}m ${r.toString().padStart(2, '0')}s` : `${r}s`
+}
+
 export default function Reports({ onLogout }: { onLogout: () => void }) {
   const [dateRange] = useState('Last 7 Days')
   const [analytics, setAnalytics] = useState<AnalyticsApiResponse | null>(null)
+  const [cdr, setCdr] = useState<CdrSummary | null>(null)
 
   useEffect(() => {
     aiApi.fetchAnalytics().then(res => {
@@ -86,10 +94,30 @@ export default function Reports({ onLogout }: { onLogout: () => void }) {
   }, [])
 
   useEffect(() => {
+    aiApi.fetchCdrSummary().then(res => {
+      if (res && res.totalCalls > 0) setCdr(res)
+    }).catch(() => { /* keep mock charts when CDR is unavailable */ })
+  }, [])
+
+  useEffect(() => {
     if (analytics) {
       console.debug('Analytics updated:', analytics.totalSessions)
     }
   }, [analytics])
+
+  const daily = cdr?.daily?.length ? cdr.daily : DAILY
+  const hourly = cdr?.hourly?.length
+    ? cdr.hourly.filter(h => h.calls > 0).map(h => ({ hour: h.hour.toString().padStart(2, '0'), calls: h.calls }))
+    : HOURLY
+  const missed = cdr?.daily?.length ? cdr.daily.map(d => ({ day: d.day, missed: d.abandoned })) : MISSED
+  const kpis = cdr ? [
+    { label: 'Answered Rate', value: `${cdr.answeredRate}%`, change: 'of total', up: true, color: '#22C55E', bg: '#F0FDF4' },
+    { label: 'Abandoned Rate', value: `${cdr.abandonedRate}%`, change: 'of total', up: false, color: '#EF4444', bg: '#FEF2F2', inverse: true },
+    { label: 'Avg Handle Time', value: formatSec(cdr.avgBillsec), change: 'per call', up: true, color: '#6366F1', bg: '#EEF2FF' },
+    { label: 'Total Calls', value: cdr.totalCalls.toLocaleString(), change: 'recorded', up: true, color: '#2563EB', bg: '#EFF6FF' },
+    { label: 'Answered', value: cdr.answered.toLocaleString(), change: 'answered', up: true, color: '#22C55E', bg: '#F0FDF4' },
+    { label: 'AI Automation', value: '38.4%', change: '+5.8%', up: true, color: '#8B5CF6', bg: '#F5F3FF' },
+  ] : KPIS
 
   const headerActions = (
     <div className="flex gap-2">
@@ -106,12 +134,12 @@ export default function Reports({ onLogout }: { onLogout: () => void }) {
 
   return (
     <TenantLayout activeNav="reports" onLogout={onLogout}
-      pageTitle="Reports & Analytics" pageSubtitle="Jul 12 – Jul 18, 2026 · 1,886 total calls"
+      pageTitle="Reports & Analytics" pageSubtitle={cdr ? `${cdr.totalCalls.toLocaleString()} total calls recorded` : 'Jul 12 – Jul 18, 2026 · 1,886 total calls'}
       headerActions={headerActions}>
       <div className="space-y-4">
         {/* KPI cards */}
         <div className="grid grid-cols-6 gap-3">
-          {KPIS.map(k => {
+          {kpis.map(k => {
             const isPositive = k.up !== (k as any).inverse
             return (
               <div key={k.label} className="bg-white rounded-xl border border-[#E5E7EB] p-4 shadow-sm hover:shadow-md transition-shadow">
@@ -131,7 +159,7 @@ export default function Reports({ onLogout }: { onLogout: () => void }) {
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm">
             <h3 className="text-[#1F2937] font-semibold text-sm mb-4">Calls Per Day</h3>
             <ResponsiveContainer width="100%" height={180}>
-              <AreaChart data={DAILY}>
+              <AreaChart data={daily}>
                 <defs>
                   <linearGradient id="gAnswered" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#2563EB" stopOpacity={0.2} />
@@ -155,7 +183,7 @@ export default function Reports({ onLogout }: { onLogout: () => void }) {
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm">
             <h3 className="text-[#1F2937] font-semibold text-sm mb-4">Calls Per Hour (Today)</h3>
             <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={HOURLY}>
+              <BarChart data={hourly}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
                 <XAxis dataKey="hour" tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
@@ -200,7 +228,7 @@ export default function Reports({ onLogout }: { onLogout: () => void }) {
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm">
             <h3 className="text-[#1F2937] font-semibold text-sm mb-4">Missed / Abandoned</h3>
             <ResponsiveContainer width="100%" height={160}>
-              <LineChart data={MISSED}>
+              <LineChart data={missed}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
                 <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />

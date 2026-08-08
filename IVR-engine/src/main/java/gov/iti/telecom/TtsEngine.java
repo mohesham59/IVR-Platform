@@ -77,8 +77,21 @@ public class TtsEngine {
             baseName = src.substring(0, dotIndex);
         }
 
-        // Check if audio file exists in any common Asterisk format
+        // Absolute path (e.g. a recorded voicemail under /dev/shm) - stream it directly.
         String[] extensions = {".wav", ".gsm", ".ulaw", ".sln", ".sln16", ".mp3", ".alaw"};
+        if (baseName.startsWith("/")) {
+            for (String ext : extensions) {
+                Path audioFile = Paths.get(baseName + ext);
+                if (Files.exists(audioFile)) {
+                    System.out.println("[TtsEngine] Found absolute audio: " + audioFile);
+                    return baseName;
+                }
+            }
+            System.out.println("[TtsEngine] Absolute audio not found for: " + src);
+            return null;
+        }
+
+        // Check if audio file exists in any common Asterisk format
         for (String ext : extensions) {
             Path audioFile = CUSTOM_AUDIO_DIRECTORY.resolve(baseName + ext);
             if (Files.exists(audioFile)) {

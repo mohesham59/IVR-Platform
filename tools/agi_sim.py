@@ -127,6 +127,10 @@ def main():
                             transcript.append("   [MAX AI LOOPS REACHED]")
                             send("200 result=0")
                             break
+                    elif ai_wav and os.path.exists(ai_wav) and path.startswith("/dev/shm/voicemail"):
+                        target = path + ".wav"
+                        shutil.copy(ai_wav, target)
+                        transcript.append("   [voicemail wav created: %s]" % target)
                 send("200 result=0")
             elif upper.startswith("EXEC "):
                 send("200 result=0")

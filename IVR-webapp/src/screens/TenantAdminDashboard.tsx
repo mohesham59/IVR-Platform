@@ -3,6 +3,7 @@ import type { ReactElement } from 'react'
 import { NavLink } from 'react-router-dom'
 import { aiApi } from '../api/aiApi'
 import { backendUrl } from '../api/backendUrl'
+import type { CdrSummary, CdrCall } from '../api/aiApi'
 import {
   LayoutDashboard, Building2, Phone, GitBranch, Volume2, Server,
   Bot, Radio, History, BarChart3, Settings, Bell, Search,
@@ -166,6 +167,53 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
     })
   }, [])
 
+  const [cdr, setCdr] = useState<CdrSummary | null>(null)
+  const [cdrCalls, setCdrCalls] = useState<CdrCall[]>([])
+
+  useEffect(() => {
+    aiApi.fetchCdrSummary().then(res => {
+      if (res && res.totalCalls > 0) setCdr(res)
+    }).catch(() => { /* keep mock KPIs when CDR is unavailable */ })
+  }, [])
+
+  useEffect(() => {
+    aiApi.fetchCdrCalls().then(res => {
+      if (Array.isArray(res) && res.length > 0) setCdrCalls(res)
+    }).catch(() => { /* keep mock recent calls when CDR is unavailable */ })
+  }, [])
+
+  const formatDur = (sec: number): string => {
+    const s = Math.round(sec || 0)
+    const m = Math.floor(s / 60)
+    const r = s % 60
+    return m > 0 ? `${m}m ${r.toString().padStart(2, '0')}s` : `${r}s`
+  }
+
+  const callVolumeData = cdr?.hourly?.length
+    ? cdr.hourly.map(h => ({ time: `${h.hour.toString().padStart(2, '0')}:00`, inbound: h.calls, outbound: 0 }))
+    : callVolume
+
+  const recentCallsData = cdrCalls.length
+    ? cdrCalls.slice(0, 7).map(c => ({
+        caller: c.caller || 'Unknown',
+        status: c.status === 'Answered' ? 'Answered' : 'Missed',
+        duration: c.durationSec ? formatDur(c.durationSec) : '—',
+        agent: 'IVR',
+        queue: `Ext ${c.callee || '—'}`,
+      }))
+    : recentCalls
+
+  const kpiCards = [
+    { label: "Total Calls", value: cdr ? cdr.totalCalls.toLocaleString() : '1,284', delta: cdr ? 'recorded' : '+12%', up: true, icon: <PhoneCall className="w-4 h-4" />, color: '#2563EB', bg: '#EFF6FF' },
+    { label: 'Answered', value: cdr ? cdr.answered.toLocaleString() : '1,091', delta: cdr ? `${cdr.answeredRate}%` : '85%', up: true, icon: <CheckCircle className="w-4 h-4" />, color: '#22C55E', bg: '#F0FDF4' },
+    { label: 'Missed Calls', value: cdr ? cdr.abandoned.toLocaleString() : '193', delta: cdr ? `${cdr.abandonedRate}%` : '-8%', up: false, icon: <PhoneMissed className="w-4 h-4" />, color: '#EF4444', bg: '#FEF2F2' },
+    { label: 'Avg Duration', value: cdr ? formatDur(cdr.avgDurationSec) : '4m 38s', delta: cdr ? `talk ${formatDur(cdr.avgBillsec)}` : '+0:24', up: true, icon: <Clock className="w-4 h-4" />, color: '#F59E0B', bg: '#FFFBEB' },
+    { label: 'Published IVRs', value: '14', delta: '+2', up: true, icon: <GitBranch className="w-4 h-4" />, color: '#8B5CF6', bg: '#F5F3FF' },
+    { label: 'Active Agents', value: '18', delta: 'Online', up: true, icon: <Headphones className="w-4 h-4" />, color: '#06B6D4', bg: '#ECFEFF' },
+    { label: 'Queues', value: '6', delta: '2 Busy', up: false, icon: <List className="w-4 h-4" />, color: '#EC4899', bg: '#FDF2F8' },
+    { label: 'Voice Prompts', value: '42', delta: '+3', up: true, icon: <Volume2 className="w-4 h-4" />, color: '#10B981', bg: '#F0FDF4' },
+  ]
+
   useEffect(() => {
     if (activeSessions > 0) {
       console.debug('Active sessions:', activeSessions)
@@ -314,16 +362,7 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
 
           {/* KPI cards — 8 cards */}
           <div className="grid grid-cols-4 xl:grid-cols-8 gap-3">
-            {[
-              { label: "Today's Calls", value: '1,284', delta: '+12%', up: true, icon: <PhoneCall className="w-4 h-4" />, color: '#2563EB', bg: '#EFF6FF' },
-              { label: 'Answered', value: '1,091', delta: '85%', up: true, icon: <CheckCircle className="w-4 h-4" />, color: '#22C55E', bg: '#F0FDF4' },
-              { label: 'Missed Calls', value: '193', delta: '-8%', up: false, icon: <PhoneMissed className="w-4 h-4" />, color: '#EF4444', bg: '#FEF2F2' },
-              { label: 'Avg Duration', value: '4m 38s', delta: '+0:24', up: true, icon: <Clock className="w-4 h-4" />, color: '#F59E0B', bg: '#FFFBEB' },
-              { label: 'Published IVRs', value: '14', delta: '+2', up: true, icon: <GitBranch className="w-4 h-4" />, color: '#8B5CF6', bg: '#F5F3FF' },
-              { label: 'Active Agents', value: '18', delta: 'Online', up: true, icon: <Headphones className="w-4 h-4" />, color: '#06B6D4', bg: '#ECFEFF' },
-              { label: 'Queues', value: '6', delta: '2 Busy', up: false, icon: <List className="w-4 h-4" />, color: '#EC4899', bg: '#FDF2F8' },
-              { label: 'Voice Prompts', value: '42', delta: '+3', up: true, icon: <Volume2 className="w-4 h-4" />, color: '#10B981', bg: '#F0FDF4' },
-            ].map((kpi) => (
+            {kpiCards.map((kpi) => (
               <div key={kpi.label} className="bg-white rounded-xl border border-[#E5E7EB] p-3.5 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-3">
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: kpi.bg, color: kpi.color }}>
@@ -355,7 +394,7 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
                 </div>
               </div>
               <ResponsiveContainer width="100%" height={180}>
-                <AreaChart data={callVolume} margin={{ top: 0, right: 0, left: -24, bottom: 0 }}>
+                <AreaChart data={callVolumeData} margin={{ top: 0, right: 0, left: -24, bottom: 0 }}>
                   <defs>
                     <linearGradient id="inbGrad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#2563EB" stopOpacity={0.15} />
@@ -469,7 +508,7 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F3F4F6]">
-                {recentCalls.map((call, i) => (
+                {recentCallsData.map((call, i) => (
                   <tr key={i} className="hover:bg-[#F9FAFB] transition-colors">
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-2">
@@ -513,7 +552,7 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
 
             {/* Pagination */}
             <div className="flex items-center justify-between px-5 py-3 border-t border-[#F3F4F6] bg-[#F9FAFB]">
-              <p className="text-[#9CA3AF] text-xs">Showing 1–7 of 1,284 calls</p>
+              <p className="text-[#9CA3AF] text-xs">Showing 1–7 of {cdr ? cdr.totalCalls.toLocaleString() : '1,284'} calls</p>
               <div className="flex items-center gap-1">
                 <button className="w-7 h-7 rounded-lg border border-[#E5E7EB] bg-white flex items-center justify-center text-[#9CA3AF] hover:border-[#2563EB] hover:text-[#2563EB] transition-colors">
                   <ChevronLeft className="w-3.5 h-3.5" />

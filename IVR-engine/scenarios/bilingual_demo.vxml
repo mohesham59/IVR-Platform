@@ -27,8 +27,8 @@
   <!-- The renderer always starts at the FIRST [menu], so the customer first
        chooses their preferred language; the rest of the call proceeds in it. -->
   <menu id="lang_select" dtmf="true">
-    <prompt xml:lang="ar">مرحباً بك في خدمة الرد الآلي التجريبية. اضغط 1 للإنجليزية أو اضغط 2 للعربية.</prompt>
-    <prompt xml:lang="en">Welcome to the integrated IVR demo. Press 1 for English or press 2 for Arabic.</prompt>
+    <prompt xml:lang="ar">مرحباً بك في خدمة الرد الآلي التجريبية. للعربية، اضغط 2.</prompt>
+    <prompt xml:lang="en">For English, press 1.</prompt>
     <choice dtmf="1" next="#lang_en"/>
     <choice dtmf="2" next="#lang_ar"/>
   </menu>
@@ -248,12 +248,32 @@
        ==================================================================== -->
   <form id="record_msg">
     <block>
-      <prompt xml:lang="en">Please record your message after the beep.</prompt>
-      <prompt xml:lang="ar">يرجى تسجيل رسالتك بعد التنبيه.</prompt>
-      <record name="voice_msg" maxtime="10s" beep="true" dtmfterm="true"/>
-      <prompt xml:lang="en">Your message was recorded at ${voice_msg}.</prompt>
+      <prompt xml:lang="en">Please record your message after the beep. Press hash when you are finished.</prompt>
+      <prompt xml:lang="ar">يرجى تسجيل رسالتك بعد التنبيه. اضغط شباك عندما تنتهي.</prompt>
+      <record name="voice_msg" maxtime="30s" beep="true" dtmfterm="true"/>
       <prompt xml:lang="ar">تم تسجيل رسالتك بنجاح.</prompt>
+      <prompt xml:lang="en">Your message has been recorded.</prompt>
     </block>
+    <field name="record_choice" type="digits" maxlen="1">
+      <grammar>1 0</grammar>
+      <prompt xml:lang="en">Press 1 to listen to your message, or press 0 to return to the main menu.</prompt>
+      <prompt xml:lang="ar">اضغط 1 للاستماع إلى رسالتك، أو اضغط 0 للعودة إلى القائمة الرئيسية.</prompt>
+      <filled>
+        <if cond="'${record_choice}' == '1'">
+          <then>
+            <prompt xml:lang="en">Here is your message.</prompt>
+            <prompt xml:lang="ar">هذه رسالتك.</prompt>
+            <audio src="${voice_msg}">Your message could not be played back.</audio>
+            <goto next="#main_menu"/>
+          </then>
+        </if>
+        <if cond="'${record_choice}' == '0'">
+          <then>
+            <goto next="#main_menu"/>
+          </then>
+        </if>
+      </filled>
+    </field>
   </form>
 
   <!-- ====================================================================

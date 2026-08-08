@@ -10,6 +10,7 @@ import com.nexusivr.ai.dao.KnowledgeDocumentDao;
 import com.nexusivr.ai.dao.MessageDao;
 import com.nexusivr.ai.service.AiService;
 import com.nexusivr.ai.service.AnalyticsService;
+import com.nexusivr.ai.service.CdrService;
 import com.nexusivr.ai.service.ChatService;
 import com.nexusivr.ai.service.FlowService;
 import com.nexusivr.ai.service.KnowledgeService;
@@ -33,6 +34,7 @@ public class ServiceRegistry {
     private static volatile ChatService chatService;
     private static volatile FlowService flowService;
     private static volatile AnalyticsService analyticsService;
+    private static volatile CdrService cdrService;
     private static volatile KnowledgeService knowledgeService;
     private static volatile com.nexusivr.ai.service.FlowContextService flowContextService;
 
@@ -118,6 +120,11 @@ public class ServiceRegistry {
     public static synchronized AnalyticsService getAnalyticsService() {
         if (analyticsService == null) analyticsService = new AnalyticsService(getSessionDao(), getMessageDao());
         return analyticsService;
+    }
+
+    public static synchronized CdrService getCdrService() {
+        if (cdrService == null) cdrService = new CdrService();
+        return cdrService;
     }
 
     public static synchronized KnowledgeService getKnowledgeService() {

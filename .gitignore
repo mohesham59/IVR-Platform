@@ -36,3 +36,6 @@ IVR-engine/scenarios/[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9
 
 # Docker shared TTS/sound volume (regenerated at runtime)
 asterisk-sounds/
+
+# Asterisk CDR CSV output (runtime call records)
+asterisk-cdr/

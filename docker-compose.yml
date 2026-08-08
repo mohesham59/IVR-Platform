@@ -17,6 +17,9 @@ services:
       # Share the host /dev/shm so AGI <record>/<ai> recordings written by
       # Asterisk are visible to the IVR engine (which runs in its own container)
       - /dev/shm:/dev/shm
+      # Persist CDR CSV output on the host (asterisk writes Master.csv here;
+      # also gives the dashboard a data source for call analytics)
+      - ./asterisk-cdr:/var/log/asterisk/cdr-csv
     restart: unless-stopped
 
   # 2. IVR Engine (FastAGI Server)
@@ -35,6 +38,9 @@ services:
       # Share the host /dev/shm so the engine can read AGI <record>/<ai>
       # recordings written there by the Asterisk container
       - /dev/shm:/dev/shm
+    environment:
+      # Use granite4.1:8b as requested
+      - OLLAMA_MODEL=granite4.1:8b
     restart: unless-stopped
 
   # 3. IVR AI Engine (REST API)
@@ -56,6 +62,8 @@ services:
       - /var/run/asterisk:/var/run/asterisk
       # Mount shared sounds directory so uploads/TTS save directly into Asterisk
       - ./asterisk-sounds:/var/lib/asterisk/sounds
+      # Mount CDR output so the analytics API can read call records
+      - ./asterisk-cdr:/var/log/asterisk/cdr-csv
     env_file:
       # Pass the LLM provider + API keys from the repo-local .env
       - ./IVR-AI-engine/.env
