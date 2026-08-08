@@ -41,6 +41,15 @@ export interface FlowNode {
   transferDestination?: string
   dest?: string
   prompt?: string
+  promptEn?: string
+  promptAr?: string
+  audioEn?: string
+  audioAr?: string
+  aiRole?: string
+  maxDigits?: string
+  menuOptionsCount?: number
+  variableName?: string
+  variableValue?: string
 }
 
 

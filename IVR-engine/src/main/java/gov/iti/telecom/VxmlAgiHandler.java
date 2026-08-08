@@ -372,6 +372,24 @@ public class VxmlAgiHandler extends BaseAgiScript {
 
             if (targetFormId != null) {
                 renderDialogById(menu.getOwnerDocument(), targetFormId, channel, session);
+            } else {
+                org.w3c.dom.Element nomatch = findChildElement(menu, "nomatch");
+                if (nomatch != null) {
+                    renderFormElement(nomatch, channel, session);
+                    if (findChildElement(nomatch, "reprompt") != null) {
+                        renderMenuElement(menu, channel, session);
+                        return;
+                    }
+                }
+            }
+        } else {
+            org.w3c.dom.Element noinput = findChildElement(menu, "noinput");
+            if (noinput != null) {
+                renderFormElement(noinput, channel, session);
+                if (findChildElement(noinput, "reprompt") != null) {
+                    renderMenuElement(menu, channel, session);
+                    return;
+                }
             }
         }
     }

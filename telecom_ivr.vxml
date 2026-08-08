@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+  <meta name="flow-name" content="Telecom IVR"/>
+  <!-- Start (n1) -->
+  <form id="n1">
+    <block>
+      <prompt bargein="false">Entry Point</prompt>
+      <goto next="#2482084f-3996-4cfc-90eb-8cf0c322db70"/>
+    </block>
+  </form>
+  <!-- End Call (n15) -->
+  <form id="n15">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Thank you for calling Grandview Hotel. We look forward to welcoming you soon. Goodbye!
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        شكرًا لاتصالك بفندق جراندفيو. نتطلع إلى استقبالك قريبًا. وداعًا!
+      </prompt>
+      <disconnect/>
+    </block>
+  </form>
+  <!-- DTMF Menu (2482084f-3996-4cfc-90eb-8cf0c322db70) -->
+  <form id="2482084f-3996-4cfc-90eb-8cf0c322db70">
+    <menu>
+      <prompt bargein="true" xml:lang="en">
+        for english press 1
+      </prompt>
+      <prompt bargein="true" xml:lang="ar">
+        للعربية اضغط 2
+      </prompt>
+      <choice dtmf="1" next="#0791288a-663e-4725-8219-c46ed71fd7a3">Key 1</choice>
+      <choice dtmf="2" next="#3b3e65d3-3269-4821-ac19-e15ba7e219f8">Key 2</choice>
+      <choice dtmf="3" next="#3b3e65d3-3269-4821-ac19-e15ba7e219f8"/>
+    </menu>
+  </form>
+  <!-- language variable (3b3e65d3-3269-4821-ac19-e15ba7e219f8) -->
+  <form id="3b3e65d3-3269-4821-ac19-e15ba7e219f8">
+    <block>
+      <var name="set language" expr="''"/>
+      <goto next="#8d0c576b-66e6-40f2-8a5b-5274ee71410e"/>
+    </block>
+  </form>
+  <!-- Set Variable (0791288a-663e-4725-8219-c46ed71fd7a3) -->
+  <form id="0791288a-663e-4725-8219-c46ed71fd7a3">
+    <block>
+      <var name="english variable" expr="''"/>
+      <goto next="#8d0c576b-66e6-40f2-8a5b-5274ee71410e"/>
+    </block>
+  </form>
+  <!-- menu (8d0c576b-66e6-40f2-8a5b-5274ee71410e) -->
+  <form id="8d0c576b-66e6-40f2-8a5b-5274ee71410e">
+    <menu>
+      <prompt bargein="true" xml:lang="en">
+        press 1 for balance, 2 for charging, 3 for billing
+      </prompt>
+      <prompt bargein="true" xml:lang="ar">
+        اضغط 1 للرصيد، 2 للشحن، 3 للفواتير.
+      </prompt>
+      <choice dtmf="1" next="#2b499b03-b202-43ca-b6c8-17c08635b021">Key 1</choice>
+      <choice dtmf="2" next="#2b499b03-b202-43ca-b6c8-17c08635b021">Key 2</choice>
+      <choice dtmf="3" next="#2b499b03-b202-43ca-b6c8-17c08635b021">Key 3</choice>
+    </menu>
+  </form>
+  <!-- hangup (2b499b03-b202-43ca-b6c8-17c08635b021) -->
+  <form id="2b499b03-b202-43ca-b6c8-17c08635b021">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        thank you for calling
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        شكرا لاتصالكم
+      </prompt>
+      <goto next="#n15"/>
+    </block>
+  </form>
+</vxml>

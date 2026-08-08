@@ -88,6 +88,24 @@ public class ModelToFlowRenderer {
         if (node.getPrompt() != null && node.getPrompt().getText() != null && !node.getPrompt().getText().isBlank()) {
             json.addProperty("prompt", node.getPrompt().getText());
         }
+        if (node.getPromptEn() != null) {
+            json.addProperty("promptEn", node.getPromptEn());
+        }
+        if (node.getPromptAr() != null) {
+            json.addProperty("promptAr", node.getPromptAr());
+        }
+        if (node.getAudioEn() != null) {
+            json.addProperty("audioEn", node.getAudioEn());
+        }
+        if (node.getAudioAr() != null) {
+            json.addProperty("audioAr", node.getAudioAr());
+        }
+        if (node.getVariableName() != null) {
+            json.addProperty("variableName", node.getVariableName());
+        }
+        if (node.getVariableValue() != null) {
+            json.addProperty("variableValue", node.getVariableValue());
+        }
 
         JsonArray ports = new JsonArray();
 

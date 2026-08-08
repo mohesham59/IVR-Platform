@@ -211,6 +211,18 @@ public class FlowContextService {
                     if (nodeObj.has("subtitle")) {
                         node.setSubtitle(nodeObj.get("subtitle").getAsString());
                     }
+                    if (nodeObj.has("promptEn") && !nodeObj.get("promptEn").isJsonNull()) node.setPromptEn(nodeObj.get("promptEn").getAsString());
+                    if (nodeObj.has("promptAr") && !nodeObj.get("promptAr").isJsonNull()) node.setPromptAr(nodeObj.get("promptAr").getAsString());
+                    if (nodeObj.has("audioEn") && !nodeObj.get("audioEn").isJsonNull()) node.setAudioEn(nodeObj.get("audioEn").getAsString());
+                    if (nodeObj.has("audioAr") && !nodeObj.get("audioAr").isJsonNull()) node.setAudioAr(nodeObj.get("audioAr").getAsString());
+                    if (nodeObj.has("aiRole") && !nodeObj.get("aiRole").isJsonNull()) node.setAiRole(nodeObj.get("aiRole").getAsString());
+                    
+                    if (nodeObj.has("maxDigits") && !nodeObj.get("maxDigits").isJsonNull()) {
+                        try { node.setMaxDigits(Integer.parseInt(nodeObj.get("maxDigits").getAsString())); } catch (Exception ignored) {}
+                    }
+                    if (nodeObj.has("menuOptionsCount") && !nodeObj.get("menuOptionsCount").isJsonNull()) {
+                        try { node.setMenuOptionsCount(nodeObj.get("menuOptionsCount").getAsInt()); } catch (Exception ignored) {}
+                    }
                     if (nodeObj.has("prompt")) {
                         com.nexusivr.ai.model.flow.FlowPrompt prompt = new com.nexusivr.ai.model.flow.FlowPrompt();
                         prompt.setText(nodeObj.get("prompt").getAsString());

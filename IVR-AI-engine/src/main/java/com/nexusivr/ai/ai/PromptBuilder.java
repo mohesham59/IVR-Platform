@@ -33,11 +33,16 @@ public class PromptBuilder {
         - Link forms with <goto next="#formId"/> or <transfer dest="..."/> — never by wrapping one <form> inside another.
         - Navigation menus MUST use the VoiceXML <menu> element with <choice> children. NEVER place <choice> tags inside a <block>.
         - The "vxml" field in your JSON response MUST be a single JSON string literal containing the complete VoiceXML text. NEVER make "vxml" a nested JSON object.
+        - BILINGUAL REQUIREMENT: ALWAYS generate TWO <prompt> elements for EVERY message: one in English `<prompt xml:lang="en">` and one translated into Arabic `<prompt xml:lang="ar">`. Alternatively, use `<en>` and `<ar>` child tags inside a single `<prompt>`. This applies to blocks, menus, fields, and anywhere text is spoken.
+        - START NODE: The very first form MUST have `id="start"`. This start node MUST contain a `<block>` with a single `<goto>` pointing to a Language Selection Menu.
+        - LANGUAGE SELECTION MENU: The language selection menu must ask the caller to press 1 for English and 2 for Arabic (e.g. "For English press 1, للعربية اضغط 2"). The choices must `<goto>` two separate assignment forms. The English form must contain an `<assign name="language" expr="'en'"/>` inside a `<block>`. The Arabic form must contain an `<assign name="language" expr="'ar'"/>` inside a `<block>`. After setting the variable, both forms MUST converge by using `<goto>` to the exact same main menu form. NEVER use `<var>` tags to set this variable; use EXACTLY `<assign name="language" expr="'en'"/>` (and `'ar'` for Arabic).
+        - FALLBACK PROMPTS: NEVER include error messages (e.g., "We did not receive any input", "Invalid input", "Try again") in the main `<prompt>` text of a menu or field. This is STRICTLY FORBIDDEN. Instead, generate separate `<noinput>` and `<nomatch>` elements inside the `<menu>`.
 
         WRONG (choice tags inside block — INVALID VoiceXML):
         <form id="menu">
           <block>
-            <prompt>Press 1 for Sales, Press 2 for Support.</prompt>
+            <prompt xml:lang="en">Press 1 for Sales, Press 2 for Support.</prompt>
+            <prompt xml:lang="ar">اضغط 1 للمبيعات، اضغط 2 للدعم.</prompt>
             <choice accept="digits 1" next="#sales"/> <!-- ERROR: choice tags inside block -->
             <choice accept="digits 2" next="#support"/>
           </block>
@@ -75,26 +80,30 @@ public class PromptBuilder {
         <vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
           <form id="start">
             <block>
-              <prompt>Welcome to our service. Press 1 for sales, Press 2 for support.</prompt>
+              <prompt xml:lang="en">Welcome to our service. Press 1 for sales, Press 2 for support.</prompt>
+              <prompt xml:lang="ar">مرحبا بك في خدمتنا. اضغط 1 للمبيعات، 2 للدعم.</prompt>
               <goto next="#menu"/>
             </block>
           </form>
           <form id="menu">
             <menu>
-              <prompt>Please select an option.</prompt>
+              <prompt xml:lang="en">Please select an option.</prompt>
+              <prompt xml:lang="ar">الرجاء تحديد خيار.</prompt>
               <choice accept="digits 1" next="#sales"/>
               <choice accept="digits 2" next="#support"/>
             </menu>
           </form>
           <form id="sales">
             <block>
-              <prompt>Connecting you to sales.</prompt>
+              <prompt xml:lang="en">Connecting you to sales.</prompt>
+              <prompt xml:lang="ar">جاري تحويلك للمبيعات.</prompt>
               <transfer dest="+1001"/>
             </block>
           </form>
           <form id="support">
             <block>
-              <prompt>Connecting you to support.</prompt>
+              <prompt xml:lang="en">Connecting you to support.</prompt>
+              <prompt xml:lang="ar">جاري تحويلك للدعم.</prompt>
               <disconnect/>
             </block>
           </form>
@@ -103,7 +112,8 @@ public class PromptBuilder {
         DTMF FIELD EXAMPLE:
         <form id="authenticate">
           <field name="account">
-            <prompt>Enter your 4 digit PIN followed by pound.</prompt>
+            <prompt xml:lang="en">Enter your 4 digit PIN followed by pound.</prompt>
+            <prompt xml:lang="ar">أدخل الرمز السري المكون من 4 أرقام متبوعا بمربع.</prompt>
             <grammar mode="dtmf" version="1.0">
               <rule id="digits">
                 <one-of>
@@ -116,7 +126,8 @@ public class PromptBuilder {
               <goto next="#menu"/>
             </filled>
             <noinput>
-              <prompt>We did not receive any input. Please try again.</prompt>
+              <prompt xml:lang="en">We did not receive any input. Please try again.</prompt>
+              <prompt xml:lang="ar">لم نتلق أي إدخال. يرجى المحاولة مرة أخرى.</prompt>
               <goto next="#authenticate"/>
             </noinput>
             <nomatch>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+  <meta name="flow-name" content="Frontend Flow"/>
+  <!-- Start (n1) -->
+  <form id="n1">
+    <block>
+      <prompt bargein="false">Entry Point</prompt>
+      <goto next="#n2"/>
+    </block>
+  </form>
+  <!-- Language menu (n2) -->
+  <menu id="n2">
+      <prompt bargein="true" xml:lang="en">
+        For English press 1, For Arabic press 2.
+      </prompt>
+      <prompt bargein="true" xml:lang="ar">
+        للغة الإنجليزية اضغط 1، للغة العربية اضغط 2.
+      </prompt>
+      <choice dtmf="1" next="#n3"/>
+      <choice dtmf="2" next="#n4"/>
+      <choice dtmf="3" next="#n11">Closing</choice>
+      <choice dtmf="4" next="#n11"/>
+      <noinput>
+        <prompt xml:lang="en">We did not receive any input. Please try again.</prompt>
+        <prompt xml:lang="ar">لم نتلق أي إدخال. يرجى المحاولة مرة أخرى.</prompt>
+        <goto next="#n11"/>
+      </noinput>
+      <nomatch>
+        <prompt xml:lang="en">Invalid option. Please try again.</prompt>
+        <prompt xml:lang="ar">خيار غير صالح. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </nomatch>
+  </menu>
+  <!-- Language en (n3) -->
+  <form id="n3">
+    <block>
+      <assign name="language" expr="'en'"/>
+      <goto next="#n5"/>
+    </block>
+  </form>
+  <!-- Language ar (n4) -->
+  <form id="n4">
+    <block>
+      <assign name="language" expr="'ar'"/>
+      <goto next="#n5"/>
+    </block>
+  </form>
+  <!-- Main menu (n5) -->
+  <menu id="n5">
+      <prompt bargein="true" xml:lang="en">
+        Our business hours are Monday through Friday, 8:00 AM to 5:00 PM. Please select an option: Press 1 for Admissions, Press 2 for Financial Aid, Press 3 for Student Services, Press 4 for Emergency, Press 0 for Main Desk.
+      </prompt>
+      <prompt bargein="true" xml:lang="ar">
+        ساعات العمل لدينا هي من الاثنين إلى الجمعة، من 8:00 صباحًا حتى 5:00 مساءً. يرجى اختيار خيار: اضغط 1 للقبول، اضغط 2 للمساعدات المالية، اضغط 3 لخدمات الطلاب، اضغط 4 للطوارئ، اضغط 0 للمكتب الرئيسي.
+      </prompt>
+      <choice dtmf="1" next="#n6"/>
+      <choice dtmf="2" next="#n7"/>
+      <choice dtmf="3" next="#n8"/>
+      <choice dtmf="4" next="#n9"/>
+      <choice dtmf="0" next="#n10"/>
+      <choice dtmf="5" next="#n11"/>
+      <noinput>
+        <prompt xml:lang="en">We did not receive any input. Please try again.</prompt>
+        <prompt xml:lang="ar">لم نتلق أي إدخال. يرجى المحاولة مرة أخرى.</prompt>
+        <goto next="#n11"/>
+      </noinput>
+      <nomatch>
+        <prompt xml:lang="en">Invalid option. Please try again.</prompt>
+        <prompt xml:lang="ar">خيار غير صالح. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </nomatch>
+  </menu>
+  <!-- Admissions (n6) -->
+  <form id="n6">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Connecting you to Admissions.
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        جاري تحويلك إلى القبول.
+      </prompt>
+      <transfer dest="Transfer the call to an agent or number"/>
+      <goto next="#n11"/>
+    </block>
+  </form>
+  <!-- Financial aid (n7) -->
+  <form id="n7">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Connecting you to Financial Aid.
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        جاري تحويلك إلى المساعدات المالية.
+      </prompt>
+      <transfer dest="Transfer the call to an agent or number"/>
+      <goto next="#n11"/>
+    </block>
+  </form>
+  <!-- Student services (n8) -->
+  <form id="n8">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Connecting you to Student Services.
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        جاري تحويلك إلى خدمات الطلاب.
+      </prompt>
+      <transfer dest="Transfer the call to an agent or number"/>
+      <goto next="#n11"/>
+    </block>
+  </form>
+  <!-- Emergency (n9) -->
+  <form id="n9">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Connecting you to Security.
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        جاري تحويلك إلى الأمن.
+      </prompt>
+      <transfer dest="Transfer the call to an agent or number"/>
+      <goto next="#n11"/>
+    </block>
+  </form>
+  <!-- Main desk (n10) -->
+  <form id="n10">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Connecting you to the Main Desk.
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        جاري تحويلك إلى المكتب الرئيسي.
+      </prompt>
+      <transfer dest="Transfer the call to an agent or number"/>
+      <goto next="#n11"/>
+    </block>
+  </form>
+  <!-- Closing (n11) -->
+  <form id="n11">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Thank you for calling XYZ University. Have a great day!
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        شكرًا لاتصالك بجامعة XYZ. أتمنى لك يومًا سعيدًا!
+      </prompt>
+      <disconnect/>
+    </block>
+  </form>
+</vxml>

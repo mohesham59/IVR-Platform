@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+  <meta name="flow-name" content="Frontend Flow"/>
+  <!-- Start (n1) -->
+  <form id="n1">
+    <block>
+      <prompt bargein="false">\nWelcome to our Pool Booking Service. To hear this menu in English, press 1. To hear this menu in Arabic, press 2.\n\n</prompt>
+      <goto next="#n2"/>
+    </block>
+  </form>
+  <!-- Confirm pool (n5) -->
+  <form id="n5">
+    <block>
+      <prompt bargein="false">\nYour pool hour booking has been processed.\n\n</prompt>
+      <goto next="#n8"/>
+    </block>
+  </form>
+  <!-- Confirm lesson (n7) -->
+  <form id="n7">
+    <block>
+      <prompt bargein="false">\nYour lesson has been booked.\n\n</prompt>
+      <goto next="#n8"/>
+    </block>
+  </form>
+  <!-- Language choice (n2) -->
+  <form id="n2">
+    <menu>
+      <prompt bargein="true">Please choose your language.</prompt>
+      <choice dtmf="1" next="#n3">Key 1</choice>
+      <choice dtmf="2" next="#n5">Key 2</choice>
+      <choice dtmf="3" next="#n3">Key 3</choice>
+      <choice dtmf="0" next="#n3">Key 0</choice>
+    </menu>
+  </form>
+  <!-- Menu eng (n3) -->
+  <form id="n3">
+    <menu>
+      <prompt bargein="true">Press 1 to book a pool hour. Press 2 to book a swimming lesson.</prompt>
+      <choice dtmf="1" next="#be0ee69e-f213-476e-bcde-31e4aace6ae1">Key 1</choice>
+      <choice dtmf="2" next="#n6">Key 2</choice>
+      <choice dtmf="3" next="#n6">Key 3</choice>
+      <choice dtmf="0" next="#n6">Key 0</choice>
+      <choice dtmf="4" next="#n6"/>
+    </menu>
+  </form>
+  <!-- Lesson time (n6) -->
+  <form id="n6">
+    <menu>
+      <prompt bargein="true">Press 1 for 10 AM. Press 2 for 12 PM. Press 3 for 2 PM.</prompt>
+      <choice dtmf="1" next="#n7">Key 1</choice>
+      <choice dtmf="2" next="#n7">Key 2</choice>
+      <choice dtmf="3" next="#n7">Key 3</choice>
+      <choice dtmf="0" next="#n7">Key 0</choice>
+    </menu>
+  </form>
+  <!-- pool hour (be0ee69e-f213-476e-bcde-31e4aace6ae1) -->
+  <form id="be0ee69e-f213-476e-bcde-31e4aace6ae1">
+    <field name="be0ee69e-f213-476e-bcde-31e4aace6ae1">
+      <prompt bargein="true">pool appointment</prompt>
+      <grammar mode="dtmf" version="1.0">
+        <rule id="digits"><one-of>
+          <item>0</item>
+          <item>1</item>
+          <item>2</item>
+          <item>3</item>
+          <item>4</item>
+          <item>5</item>
+          <item>6</item>
+          <item>7</item>
+          <item>8</item>
+          <item>9</item>
+        </one-of></rule>
+      </grammar>
+      <filled>
+        <goto next="#n5"/>
+      </filled>
+    </field>
+  </form>
+  <!-- Closing (n8) -->
+  <form id="n8">
+    <block>
+      <prompt bargein="false">\nThank you for using our Pool Booking Service. Have a great day!\n\n</prompt>
+      <disconnect/>
+    </block>
+  </form>
+</vxml>

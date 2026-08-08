@@ -80,6 +80,43 @@ function gotoId(targetId: string | undefined, nodes: FlowNode[]): string {
 
 // ─── per-node VXML form renderers ───────────────────────────────────────────
 
+/** Generate parallel <prompt xml:lang="en|ar"> blocks if configured, falling back to legacy prompt. */
+function renderBilingualPrompts(node: FlowNode, bargein: boolean = false, fallbackEn: string = ''): string {
+  let prompts = ''
+  const b = bargein ? ' bargein="true"' : ' bargein="false"'
+
+  const hasEn = !!node.promptEn || !!node.audioEn
+  const hasAr = !!node.promptAr || !!node.audioAr
+
+  // If no bilingual fields are set, use legacy title/subtitle fallback
+  if (!hasEn && !hasAr) {
+    const text = node.subtitle || fallbackEn || toLabel(node)
+    // If it looks like an audio file, render <audio>
+    if (text.endsWith('.wav') || text.endsWith('.mp3')) {
+      return `      <prompt${b}>\n        <audio src="${esc(text)}">${esc(toLabel(node))}</audio>\n      </prompt>`
+    }
+    return `      <prompt${b}>${esc(text)}</prompt>`
+  }
+
+  if (hasEn) {
+    if (node.audioEn) {
+      prompts += `      <prompt${b} xml:lang="en">\n        <audio src="${esc(node.audioEn)}">${esc(node.promptEn || '')}</audio>\n      </prompt>\n`
+    } else {
+      prompts += `      <prompt${b} xml:lang="en">${esc(node.promptEn || '')}</prompt>\n`
+    }
+  }
+  
+  if (hasAr) {
+    if (node.audioAr) {
+      prompts += `      <prompt${b} xml:lang="ar">\n        <audio src="${esc(node.audioAr)}">${esc(node.promptAr || '')}</audio>\n      </prompt>\n`
+    } else {
+      prompts += `      <prompt${b} xml:lang="ar">${esc(node.promptAr || '')}</prompt>\n`
+    }
+  }
+
+  return prompts.trimEnd()
+}
+
 function renderStart(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): string {
   const next = firstTarget(node.id, edges)
   const nextId = gotoId(next, nodes)
@@ -96,14 +133,11 @@ function renderStart(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): stri
 function renderGreeting(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): string {
   const next = firstTarget(node.id, edges)
   const nextId = gotoId(next, nodes)
-  const promptFile = slugify(node.title) + '.wav'
   return `
   <!-- ═════════════════════════════ GREETING ════════════════════════════════ -->
   <form id="${toFormId(node)}">
     <block>
-      <prompt bargein="false">
-        <audio src="${esc(promptFile)}">${esc(toLabel(node))}</audio>
-      </prompt>
+${renderBilingualPrompts(node, false, slugify(node.title) + '.wav')}
       <goto next="#${nextId}"/>
     </block>
   </form>`
@@ -112,14 +146,11 @@ function renderGreeting(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): s
 function renderPlayback(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): string {
   const next = firstTarget(node.id, edges)
   const nextId = gotoId(next, nodes)
-  const audioFile = slugify(node.title) + '.wav'
   return `
   <!-- ════════════════════════════ PLAYBACK ═════════════════════════════════ -->
   <form id="${toFormId(node)}">
     <block>
-      <prompt>
-        <audio src="${esc(audioFile)}">${esc(toLabel(node))}</audio>
-      </prompt>
+${renderBilingualPrompts(node, true, slugify(node.title) + '.wav')}
       <goto next="#${nextId}"/>
     </block>
   </form>`
@@ -132,7 +163,7 @@ function renderTts(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): string
   <!-- ══════════════════════════ TEXT-TO-SPEECH ═════════════════════════════ -->
   <form id="${toFormId(node)}">
     <block>
-      <prompt>${esc(node.subtitle || toLabel(node))}</prompt>
+${renderBilingualPrompts(node, true)}
       <goto next="#${nextId}"/>
     </block>
   </form>`
@@ -140,7 +171,7 @@ function renderTts(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): string
 
 function renderDtmfMenu(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): string {
   // Build choices from outgoing edges (one choice per port)
-  const outEdges = edges.filter(e => e.sourceId === node.id && e.sourcePort !== 'timeout')
+  const outEdges = edges.filter(e => e.sourceId === node.id && !['timeout', 'error', 'invalid', 'nomatch'].includes(e.sourcePort))
   const timeoutEdge = edges.find(e => e.sourceId === node.id && e.sourcePort === 'timeout')
 
   // Map port names to DTMF digits: key1→1, key2→2, … key0→0
@@ -160,20 +191,19 @@ function renderDtmfMenu(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): s
     ? `<goto next="#${gotoId(timeoutEdge.targetId, nodes)}"/>`
     : `<reprompt/>`
 
-  const audioFile = slugify(node.title) + '.wav'
-
   return `
   <!-- ═══════════════════════════ DTMF MENU ═════════════════════════════════ -->
   <menu id="${toFormId(node)}">
-    <prompt bargein="true">
-      <audio src="${esc(audioFile)}">${esc(toLabel(node))}</audio>
-    </prompt>
+${renderBilingualPrompts(node, true, slugify(node.title) + '.wav')}
 ${choices}
     <noinput>
+      <prompt xml:lang="en">We did not receive any input. Please try again.</prompt>
+      <prompt xml:lang="ar">لم نتلق أي إدخال. يرجى المحاولة مرة أخرى.</prompt>
       ${timeoutGoto}
     </noinput>
     <nomatch>
-      <prompt>I did not understand your selection. Please try again.</prompt>
+      <prompt xml:lang="en">Invalid option. Please try again.</prompt>
+      <prompt xml:lang="ar">خيار غير صالح. يرجى المحاولة مرة أخرى.</prompt>
       <reprompt/>
     </nomatch>
   </menu>`
@@ -189,16 +219,19 @@ function renderDtmfInput(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): 
   return `
   <!-- ══════════════════════════ DTMF INPUT ═════════════════════════════════ -->
   <form id="${toFormId(node)}">
-    <field name="${varName}" type="digits">
-      <prompt>${esc(node.subtitle || 'Please enter your selection followed by the pound sign.')}</prompt>
+    <field name="${varName}" type="digits"${node.maxDigits ? ` maxlen="${esc(node.maxDigits)}"` : ''}>
+${renderBilingualPrompts(node, true, 'Please enter your selection followed by the pound sign.')}
       <filled>
         <goto next="#${successId}"/>
       </filled>
       <noinput>
+        <prompt xml:lang="en">We did not receive any input. Please try again.</prompt>
+        <prompt xml:lang="ar">لم نتلق أي إدخال. يرجى المحاولة مرة أخرى.</prompt>
         <goto next="#${timeoutId}"/>
       </noinput>
       <nomatch>
-        <prompt>Invalid input. Please try again.</prompt>
+        <prompt xml:lang="en">Invalid option. Please try again.</prompt>
+        <prompt xml:lang="ar">خيار غير صالح. يرجى المحاولة مرة أخرى.</prompt>
         <reprompt/>
       </nomatch>
     </field>
@@ -215,10 +248,8 @@ function renderQueue(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): stri
   <!-- ═════════════════════════════ QUEUE ══════════════════════════════════ -->
   <form id="${toFormId(node)}">
     <block>
-      <prompt>${esc(toLabel(node))}</prompt>
-      <transfer name="queue_result" dest="${esc(queueNum)}" type="blind">
-        <prompt>Please hold. Your call is being connected.</prompt>
-      </transfer>
+${renderBilingualPrompts(node, true, 'Please hold. Your call is being connected.')}
+      <transfer name="queue_result" dest="${esc(queueNum)}" type="blind"/>
     </block>
     <block>
       <if cond="queue_result == 'answered'">
@@ -241,10 +272,8 @@ function renderTransfer(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): s
   <!-- ══════════════════════════ AGENT TRANSFER ════════════════════════════ -->
   <form id="${toFormId(node)}">
     <block>
-      <prompt>Please hold while I transfer your call.</prompt>
-      <transfer name="xfer_result" dest="${esc(dest)}" type="bridge">
-        <prompt>Transferring now.</prompt>
-      </transfer>
+${renderBilingualPrompts(node, true, 'Please hold while I transfer your call.')}
+      <transfer name="xfer_result" dest="${esc(dest)}" type="bridge"/>
     </block>
     <block>
       <if cond="xfer_result == 'transferred'">
@@ -286,7 +315,7 @@ function renderVoicemail(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): 
    <!-- ════════════════════════════ VOICEMAIL ════════════════════════════════ -->
    <form id="${toFormId(node)}">
      <block>
-       <prompt>Please leave your message after the beep. Press any key when done.</prompt>
+${renderBilingualPrompts(node, true, 'Please leave your message after the beep. Press any key when done.')}
        <goto next="#${nextId}"/>
      </block>
    </form>`
@@ -300,7 +329,7 @@ function renderRecord(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): str
    <!-- ══════════════════════════ RECORD CALL ════════════════════════════════ -->
    <form id="${toFormId(node)}">
      <block>
-       <prompt>Call recording started. ${esc(toLabel(node))}</prompt>
+${renderBilingualPrompts(node, true, 'Call recording started. ' + toLabel(node))}
        <goto next="#${nextId}"/>
      </block>
    </form>`
@@ -371,14 +400,18 @@ function renderCondition(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): 
 function renderVariable(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): string {
   const next = firstTarget(node.id, edges)
   const nextId = gotoId(next, nodes)
-  const varName = `var_${slugify(node.title)}`
+  const varName = node.variableName || `var_${slugify(node.title)}`
+  let safeVarValue = varValue;
+  if (!/^['"].*['"]$/.test(safeVarValue)) {
+    safeVarValue = `'${safeVarValue}'`;
+  }
 
   return `
   <!-- ════════════════════════════ SET VARIABLE ════════════════════════════ -->
   <form id="${toFormId(node)}">
     <block>
       <!-- ${esc(node.subtitle || toLabel(node))} -->
-      <assign name="${esc(varName)}" expr="'' /* TODO: set expression */"/>
+      <assign name="${esc(varName)}" expr="${esc(safeVarValue)}"/>
       <goto next="#${nextId}"/>
     </block>
   </form>`
@@ -449,15 +482,24 @@ function renderWebhook(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): st
    </form>`
  }
 
-function renderAi(node: FlowNode, _nodes: FlowNode[], _edges: FlowEdge[]): string {
-   const options = 'transfer:transfer_form, mobile balance:balance_form, complaint:complaint_form'
+function renderAi(node: FlowNode, nodes: FlowNode[], edges: FlowEdge[]): string {
+   // Dynamically build AI routing options based on outbound edges
+   const outEdges = edges.filter(e => e.sourceId === node.id)
+   const dynamicOptions = outEdges.map(e => {
+       const intentName = e.label || nodes.find(n => n.id === e.targetId)?.title || e.targetId
+       const targetForm = gotoId(e.targetId, nodes)
+       return `${esc(intentName.replace(/:/g, ''))}:${targetForm}`
+   }).join(', ')
+   
+   // Fallback if no outbound connections are made yet
+   const options = dynamicOptions || 'default:form_end_call'
 
    return `
    <!-- ══════════════════════════ AI ASSISTANT ══════════════════════════════ -->
    <form id="${toFormId(node)}">
      <block>
-       <ai role="You are a polite assistant." options="${esc(options)}">
-         <prompt>${esc(node.subtitle || 'How can I help you today?')}</prompt>
+       <ai role="${esc(node.aiRole || 'You are a polite assistant.')}" options="${options}">
+${renderBilingualPrompts(node, true, 'How can I help you today?')}
        </ai>
      </block>
    </form>`

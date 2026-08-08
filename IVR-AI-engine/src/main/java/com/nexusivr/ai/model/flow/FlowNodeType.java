@@ -25,6 +25,7 @@ public enum FlowNodeType {
     VOICEMAIL("voicemail", "Voicemail collection"),
     WEBHOOK("webhook", "Webhook trigger"),
     AI("ai", "AI bot agent"),
+    VARIABLE("variable", "Set flow variable"),
     END("end", "Terminate call"),
     DISCONNECT("disconnect", "Hang up");
 
@@ -62,6 +63,7 @@ public enum FlowNodeType {
             case "voicemail" -> VOICEMAIL;
             case "webhook" -> WEBHOOK;
             case "ai" -> AI;
+            case "variable" -> VARIABLE;
             case "end", "hangup", "disconnect" -> END;
             default -> null;
         };

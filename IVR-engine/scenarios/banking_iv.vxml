@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+  <meta name="flow-name" content="Frontend Flow"/>
+  <!-- Start (n1) -->
+  <form id="n1">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Welcome to [Bank Name] secure banking. For security, please enter your 10‑digit account number followed by the pound key. Due to inactivity, we are transferring you to a live agent.
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        مرحبًا بكم في [Bank Name] المصرفي الآمن. لأغراض الأمان، يرجى إدخال رقم حسابك المكون من 10 أرقام متبوعًا بمفتاح الهاش. بسبب عدم النشاط، نقوم بنقلك إلى وكيل مباشر.
+      </prompt>
+      <goto next="#n14"/>
+    </block>
+  </form>
+  <!-- Balance inquiry (n5) -->
+  <form id="n5">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Your account balance is $X. The last four digits of your account are ${acct_last4}.
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        رصيد حسابك هو $X. آخر أربعة أرقام من حسابك هي ${acct_last4}.
+      </prompt>
+      <goto next="#n4"/>
+    </block>
+  </form>
+  <!-- Card report lost (n7) -->
+  <form id="n7">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Your lost or stolen card has been reported. A new card will be mailed to you within 7 days. An agent will call you to confirm.
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        تم الإبلاغ عن بطاقتك المفقودة أو المسروقة. سيتم إرسال بطاقة جديدة خلال 7 أيام. سيتصل بك وكيل لتأكيد.
+      </prompt>
+      <goto next="#n4"/>
+    </block>
+  </form>
+  <!-- Card new card (n8) -->
+  <form id="n8">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        A new card has been requested. It will be delivered within 7 days.
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        تم طلب بطاقة جديدة. سيتم تسليمها خلال 7 أيام.
+      </prompt>
+      <goto next="#n4"/>
+    </block>
+  </form>
+  <!-- Card limits (n9) -->
+  <form id="n9">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Your current card limits are: daily limit $X, monthly limit $Y. To change limits, please contact customer service.
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        حدود بطاقتك الحالية هي: الحد اليومي $X، الحد الشهري $Y. لتغيير الحدود، يرجى الاتصال بخدمة العملاء.
+      </prompt>
+      <goto next="#n4"/>
+    </block>
+  </form>
+  <!-- Loan status (n10) -->
+  <form id="n10">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Your current loan balance is $X. Your next payment is due on DATE.
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        رصيد القرض الحالي هو $X. آخر دفعة مستحقة في تاريخ DATE.
+      </prompt>
+      <goto next="#n4"/>
+    </block>
+  </form>
+  <!-- End call (n13) -->
+  <form id="n13">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Thank you for calling. Goodbye.
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        شكرًا لاتصالك. وداعًا.
+      </prompt>
+      <goto next="#n15"/>
+    </block>
+  </form>
+  <!-- Authenticate account (n2) -->
+  <form id="n2">
+    <field name="n2" type="digits">
+      <prompt bargein="true" xml:lang="en">
+        Enter your 10‑digit account number followed by pound. Invalid account number. Please try again. We did not receive input. Please try again.
+      </prompt>
+      <prompt bargein="true" xml:lang="ar">
+        أدخل رقم حسابك المكون من 10 أرقام ثم مربع. رقم حساب غير صالح. حاول مرة أخرى. لم نتلق إدخال. حاول مرة أخرى.
+      </prompt>
+      <filled>
+        <goto next="#n11"/>
+      </filled>
+    </field>
+  </form>
+  <!-- Authenticate pin (n3) -->
+  <form id="n3">
+    <field name="n3" type="digits">
+      <prompt bargein="true" xml:lang="en">
+        Enter your 4‑digit PIN followed by pound. Invalid PIN. Please try again. We did not receive input. Please try again.
+      </prompt>
+      <prompt bargein="true" xml:lang="ar">
+        أدخل كلمة المرور ذات 4 أرقام ثم مربع. كلمة مرور غير صالحة. حاول مرة أخرى. لم نتلق إدخال. حاول مرة أخرى.
+      </prompt>
+      <filled>
+        <goto next="#n11"/>
+      </filled>
+    </field>
+  </form>
+  <!-- Main menu (n4) -->
+  <form id="n4">
+    <menu>
+      <prompt bargein="true" xml:lang="en">
+        Please select an option. Press 1 for Balance, 2 for Card Services, 3 for Loan Status, 4 for Live Agent, 5 for Fraud Hotline, 0 to End Call. Invalid selection. Please try again. We did not receive input. Please try again.
+      </prompt>
+      <prompt bargein="true" xml:lang="ar">
+        الرجاء اختيار خيار. اضغط 1 للموازنة، 2 لخدمات البطاقة، 3 لحالة القرض، 4 للوكيل المباشر، 5 للخط الساخن الاحتيال، 0 لإنهاء المكالمة. اختيار غير صالح. حاول مرة أخرى. لم نتلق إدخال. حاول مرة أخرى.
+      </prompt>
+      <choice dtmf="1" next="#n11"/>
+      <choice dtmf="2" next="#n6"/>
+      <choice dtmf="3" next="#n10"/>
+      <choice dtmf="4" next="#n11"/>
+      <choice dtmf="5" next="#n12"/>
+      <choice dtmf="0" next="#n13"/>
+    </menu>
+  </form>
+  <!-- Card services menu (n6) -->
+  <form id="n6">
+    <menu>
+      <prompt bargein="true" xml:lang="en">
+        Card Services. Press 1 to report a lost or stolen card, 2 to request a new card, 3 to set card limits, 0 to return to main menu. Invalid selection. Please try again. We did not receive input. Please try again.
+      </prompt>
+      <prompt bargein="true" xml:lang="ar">
+        خدمات البطاقة. اضغط 1 للإبلاغ عن بطاقة مفقودة أو سرقة، 2 لطلب بطاقة جديدة، 3 لتعيين حدود البطاقة، 0 للعودة إلى القائمة الرئيسية. اختيار غير صالح. حاول مرة أخرى. لم نتلق إدخال. حاول مرة أخرى.
+      </prompt>
+      <choice dtmf="1" next="#n11"/>
+      <choice dtmf="2" next="#n8"/>
+      <choice dtmf="3" next="#n9"/>
+      <choice dtmf="0" next="#n4"/>
+    </menu>
+  </form>
+  <!-- Transfer agent (n11) -->
+  <form id="n11">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Transferring you to a live agent. Please hold.
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        نقلك إلى وكيل مباشر. يرجى الانتظار.
+      </prompt>
+      <transfer dest="Transferring you to a live agent. Please hold.نقلك إلى وك..."/>
+      <goto next="#n15"/>
+    </block>
+  </form>
+  <!-- Transfer fraud (n12) -->
+  <form id="n12">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Transferring you to the fraud hotline. Please hold.
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        نقلك إلى الخط الساخن الاحتيال. يرجى الانتظار.
+      </prompt>
+      <transfer dest="Transferring you to the fraud hotline. Please hold.نقلك إ..."/>
+      <goto next="#n15"/>
+    </block>
+  </form>
+  <!-- Timeout (n14) -->
+  <form id="n14">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Due to inactivity, we are transferring you to a live agent.
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        بسبب عدم النشاط، نقوم بنقلك إلى وكيل مباشر.
+      </prompt>
+      <transfer dest="Due to inactivity, we are transferring you to a live agen..."/>
+      <goto next="#n15"/>
+    </block>
+  </form>
+  <!-- Closing (n15) -->
+  <form id="n15">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Thank you for calling [Bank Name]. Your session has ended securely. Goodbye.
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        شكرًا لاتصالك بـ [Bank Name]. انتهت جلسةك بأمان. وداعًا.
+      </prompt>
+      <disconnect/>
+    </block>
+  </form>
+</vxml>

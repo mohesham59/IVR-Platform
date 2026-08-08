@@ -104,11 +104,7 @@ public class VxmlToModelConverter {
                 if (i == 0 && node.getType() == FlowNodeType.PROMPT) {
                     node.setType(FlowNodeType.START);
                     node.setTitle("Start");
-                    if (node.getPrompt() != null && node.getPrompt().getText() != null && !node.getPrompt().getText().isBlank()) {
-                        node.setSubtitle(node.getPrompt().getDisplayText());
-                    } else {
-                        node.setSubtitle("Entry Point");
-                    }
+                    node.setSubtitle("Entry Point");
                 }
                 model.addNode(node);
                 nodeMap.put(node.getId(), node);
@@ -219,6 +215,21 @@ public class VxmlToModelConverter {
                 node.setTransfer(parseTransfer((Element) transfers.item(0)));
             }
         }
+        
+        if (node.getType() == FlowNodeType.VARIABLE) {
+            NodeList assigns = formEl.getElementsByTagName("assign");
+            NodeList vars = formEl.getElementsByTagName("var");
+            if (assigns.getLength() > 0) {
+                Element assignEl = (Element) assigns.item(0);
+                node.setVariableName(assignEl.getAttribute("name"));
+                node.setVariableValue(assignEl.getAttribute("expr").replaceAll("^['\"]|['\"]$", "")); // strip outer quotes
+            } else if (vars.getLength() > 0) {
+                Element varEl = (Element) vars.item(0);
+                node.setVariableName(varEl.getAttribute("name"));
+                node.setVariableValue(varEl.getAttribute("expr").replaceAll("^['\"]|['\"]$", ""));
+            }
+            node.setSubtitle("Set " + node.getVariableName() + " = " + node.getVariableValue());
+        }
         if (node.getInput() == null) {
             NodeList fields = formEl.getElementsByTagName("field");
             if (fields.getLength() > 0) {
@@ -268,11 +279,7 @@ public class VxmlToModelConverter {
 
         if (node.getType() == FlowNodeType.START) {
             node.setTitle("Start");
-            if (node.getPrompt() != null && node.getPrompt().getText() != null && !node.getPrompt().getText().isBlank()) {
-                node.setSubtitle(node.getPrompt().getDisplayText());
-            } else {
-                node.setSubtitle("Entry Point");
-            }
+            node.setSubtitle("Entry Point");
         } else if (node.getType() == FlowNodeType.END) {
             String formId = node.getId();
             if (formId == null || formId.isBlank() || "end".equalsIgnoreCase(formId) || "disconnect".equalsIgnoreCase(formId)) {
@@ -294,11 +301,80 @@ public class VxmlToModelConverter {
                 node.setTitle(sb.toString());
                 node.setSubtitle("Hang up");
             }
-        } else if (node.getPrompt() != null && node.getPrompt().getText() != null && !node.getPrompt().getText().isBlank()) {
-            node.setSubtitle(node.getPrompt().getDisplayText());
         }
 
+        extractBilingualPrompts(formEl, node);
         return node;
+    }
+
+    private void extractBilingualPrompts(Element container, FlowNode node) {
+        NodeList prompts = container.getElementsByTagName("prompt");
+        StringBuilder en = new StringBuilder();
+        StringBuilder ar = new StringBuilder();
+        for (int i = 0; i < prompts.getLength(); i++) {
+            Element el = (Element) prompts.item(i);
+            
+            // Skip prompts that are inside error handlers or logic blocks
+            if (isInsideElement(el, "noinput") || isInsideElement(el, "nomatch") ||
+                isInsideElement(el, "filled") || isInsideElement(el, "catch") ||
+                isInsideElement(el, "if")) {
+                continue;
+            }
+            
+            String lang = el.getAttribute("xml:lang");
+            
+            // 1. If AI used xml:lang
+            if ("en".equalsIgnoreCase(lang)) {
+                en.append(parsePromptText(el)).append(" ");
+                continue;
+            } else if ("ar".equalsIgnoreCase(lang)) {
+                ar.append(parsePromptText(el)).append(" ");
+                continue;
+            }
+            
+            // 2. If AI used <en> and <ar> child elements
+            NodeList enNodes = el.getElementsByTagName("en");
+            NodeList arNodes = el.getElementsByTagName("ar");
+            if (enNodes.getLength() > 0 || arNodes.getLength() > 0) {
+                if (enNodes.getLength() > 0) en.append(enNodes.item(0).getTextContent().trim()).append(" ");
+                if (arNodes.getLength() > 0) ar.append(arNodes.item(0).getTextContent().trim()).append(" ");
+                continue;
+            }
+            
+            // 3. Fallback: AI concatenated them in a single string (split by first Arabic character)
+            String text = parsePromptText(el);
+            int firstArabicIndex = -1;
+            for (int j = 0; j < text.length(); j++) {
+                char c = text.charAt(j);
+                if (c >= '\u0600' && c <= '\u06FF') {
+                    firstArabicIndex = j;
+                    break;
+                }
+            }
+            
+            if (firstArabicIndex != -1) {
+                String enPart = text.substring(0, firstArabicIndex).trim();
+                String arPart = text.substring(firstArabicIndex).trim();
+                if (!enPart.isBlank()) en.append(enPart).append(" ");
+                if (!arPart.isBlank()) ar.append(arPart).append(" ");
+            } else {
+                // If it's pure English (no Arabic found)
+                en.append(text).append(" ");
+            }
+        }
+        if (en.length() > 0) node.setPromptEn(en.toString().trim());
+        if (ar.length() > 0) node.setPromptAr(ar.toString().trim());
+    }
+
+    private boolean isInsideElement(Node node, String tagName) {
+        Node parent = node.getParentNode();
+        while (parent != null && parent.getNodeType() == Node.ELEMENT_NODE) {
+            if (tagName.equalsIgnoreCase(parent.getNodeName())) {
+                return true;
+            }
+            parent = parent.getParentNode();
+        }
+        return false;
     }
 
     private FlowPrompt parseBlock(Element blockEl) {
@@ -766,6 +842,9 @@ public class VxmlToModelConverter {
     }
 
     private FlowNodeType determineNodeType(Element formEl) {
+        if (formEl.getElementsByTagName("assign").getLength() > 0 || formEl.getElementsByTagName("var").getLength() > 0) {
+            return FlowNodeType.VARIABLE;
+        }
         if ("menu".equalsIgnoreCase(formEl.getTagName()) || formEl.getElementsByTagName("menu").getLength() > 0) {
             return FlowNodeType.MENU;
         }

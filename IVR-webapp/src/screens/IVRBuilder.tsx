@@ -1374,6 +1374,11 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
     addLog(`Updated Node parameters [${updatedNode.title}]`, 'info')
   }, [addLog])
 
+  const handleEdgeChange = useCallback((updatedEdge: FlowEdge) => {
+    setEdges(es => es.map(e => e.id === updatedEdge.id ? updatedEdge : e))
+    addLog(`Updated Connection label [${updatedEdge.label || updatedEdge.id}]`, 'info')
+  }, [addLog])
+
   const handleAutoLayout = useCallback(() => {
     const result = optimizeFlow(nodes, edges)
     setNodes(result.nodes)
@@ -2171,6 +2176,7 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
 
         <PropertiesPanel
           selectedNode={selectedNode}
+          selectedEdge={edges.find(e => e.id === selectedEdgeId) || null}
           flowName={flowName}
           nodesCount={nodes.length}
           edgesCount={edges.length}
@@ -2179,6 +2185,7 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
           activeTab={rightTab}
           onTabChange={setRightTab}
           onNodeChange={handleNodeChange}
+          onEdgeChange={handleEdgeChange}
           onRestoreVersion={handleRestoreVersion}
           onSelectNode={handleSelectNodeAndCenter}
           onSaveVersion={handleSave}
