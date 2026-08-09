@@ -19,11 +19,13 @@ public final class SoundDirs {
             return new String[] {
                 custom,
                 "/var/lib/asterisk/sounds",
+                "/var/lib/asterisk/sounds/records",
                 "/tmp/nexusivr/sounds",
             };
         }
         return new String[] {
             "/var/lib/asterisk/sounds",
+            "/var/lib/asterisk/sounds/records",
             "/tmp/nexusivr/sounds",
             System.getProperty("user.dir") + "/assets/custom voice prompts",
         };

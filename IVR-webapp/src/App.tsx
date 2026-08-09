@@ -12,9 +12,7 @@ import QueueManagement from './screens/QueueManagement'
 import IVRBuilder from './screens/IVRBuilder'
 import AIAssistant from './screens/AIAssistant'
 import VoicePrompts from './screens/VoicePrompts'
-import CallMonitoring from './screens/CallMonitoring'
-import CallHistory from './screens/CallHistory'
-import Reports from './screens/Reports'
+import CallAnalytics from './screens/CallAnalytics'
 import Settings from './screens/Settings'
 import SuperAdminLayout from './components/SuperAdminLayout'
 
@@ -103,15 +101,12 @@ export default function App() {
       ))}
       <Route path="/tenant/dashboard" element={<TenantAdminDashboard onLogout={logout} />} />
       <Route path="/tenant/companies" element={<TenantCompanies onLogout={logout} />} />
-      <Route path="/tenant/phone-numbers" element={<PhoneNumbers onLogout={logout} />} />
       <Route path="/tenant/sip-extensions" element={<SIPExtensions onLogout={logout} />} />
       <Route path="/tenant/queues" element={<QueueManagement onLogout={logout} />} />
       <Route path="/tenant/voice-prompts" element={<VoicePrompts onLogout={logout} />} />
       <Route path="/tenant/ivr-builder" element={<ErrorBoundary><IVRBuilder onLogout={logout} /></ErrorBoundary>} />
       <Route path="/tenant/ai-assistant" element={<AIAssistant onLogout={logout} />} />
-      <Route path="/tenant/call-monitoring" element={<CallMonitoring onLogout={logout} />} />
-      <Route path="/tenant/call-history" element={<CallHistory onLogout={logout} />} />
-      <Route path="/tenant/reports" element={<Reports onLogout={logout} />} />
+      <Route path="/tenant/call-analytics" element={<CallAnalytics onLogout={logout} />} />
       <Route path="/tenant/settings" element={<Settings onLogout={logout} />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

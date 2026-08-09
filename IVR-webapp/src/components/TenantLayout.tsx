@@ -10,15 +10,12 @@ import {
 const navItems = [
   { icon: <LayoutDashboard className="w-4 h-4" />, label: 'Dashboard', path: '/tenant/dashboard' },
   { icon: <Building2 className="w-4 h-4" />, label: 'Companies', path: '/tenant/companies' },
-  { icon: <Phone className="w-4 h-4" />, label: 'Phone Numbers', path: '/tenant/phone-numbers' },
   { icon: <Server className="w-4 h-4" />, label: 'SIP Extensions', path: '/tenant/sip-extensions' },
   { icon: <List className="w-4 h-4" />, label: 'Queues', path: '/tenant/queues' },
   { icon: <Volume2 className="w-4 h-4" />, label: 'Voice Prompts', path: '/tenant/voice-prompts' },
   { icon: <GitBranch className="w-4 h-4" />, label: 'IVR Builder', path: '/tenant/ivr-builder' },
   { icon: <Bot className="w-4 h-4" />, label: 'AI Assistant', path: '/tenant/ai-assistant' },
-  { icon: <Radio className="w-4 h-4" />, label: 'Call Monitoring', path: '/tenant/call-monitoring' },
-  { icon: <History className="w-4 h-4" />, label: 'Call History', path: '/tenant/call-history' },
-  { icon: <BarChart3 className="w-4 h-4" />, label: 'Reports', path: '/tenant/reports' },
+  { icon: <History className="w-4 h-4" />, label: 'Call Analytics', path: '/tenant/call-analytics' },
   { icon: <Settings className="w-4 h-4" />, label: 'Settings', path: '/tenant/settings' },
 ]
 

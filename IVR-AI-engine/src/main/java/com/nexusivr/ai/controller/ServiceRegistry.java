@@ -26,6 +26,7 @@ public class ServiceRegistry {
     private static volatile MessageDao messageDao;
     private static volatile FlowDao flowDao;
     private static volatile KnowledgeDocumentDao knowledgeDao;
+    private static volatile com.nexusivr.ai.dao.CallAnalyticsDao callAnalyticsDao;
 
     private static volatile PromptBuilder promptBuilder;
     private static volatile FunctionExecutor functionExecutor;
@@ -64,6 +65,11 @@ public class ServiceRegistry {
     public static synchronized KnowledgeDocumentDao getKnowledgeDao() {
         if (knowledgeDao == null) knowledgeDao = new KnowledgeDocumentDao();
         return knowledgeDao;
+    }
+
+    public static synchronized com.nexusivr.ai.dao.CallAnalyticsDao getCallAnalyticsDao() {
+        if (callAnalyticsDao == null) callAnalyticsDao = new com.nexusivr.ai.dao.CallAnalyticsDao();
+        return callAnalyticsDao;
     }
 
     public static synchronized PromptBuilder getPromptBuilder() {

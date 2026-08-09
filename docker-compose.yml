@@ -41,6 +41,10 @@ services:
     environment:
       # Use granite4.1:8b as requested
       - OLLAMA_MODEL=granite4.1:8b
+      # Database connection for storing call analytics
+      - DATABASE_URL=jdbc:postgresql://ep-empty-cell-ay0ibimz-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require
+      - DATABASE_USER=neondb_owner
+      - DATABASE_PASSWORD=npg_6OuHh2PKRUWk
     restart: unless-stopped
 
   # 3. IVR AI Engine (REST API)

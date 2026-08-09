@@ -1,676 +1,677 @@
-# Graph Report - .  (2026-08-08)
+# Graph Report - /home/mohamed/IdeaProjects/IVR_project/IVR_platform  (2026-08-09)
 
 ## Corpus Check
-- 412 files · ~268,935 words
+- 420 files · ~268,146 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4489 nodes · 11445 edges · 193 communities (107 shown, 86 thin omitted)
-- Extraction: 81% EXTRACTED · 19% INFERRED · 0% AMBIGUOUS · INFERRED: 2207 edges (avg confidence: 0.8)
+- 4509 nodes · 11498 edges · 189 communities (109 shown, 80 thin omitted)
+- Extraction: 81% EXTRACTED · 19% INFERRED · 0% AMBIGUOUS · INFERRED: 2206 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
-- Flow Service Model
-- Webapp Screens Superadmindashboard
-- Service Flowmodelautorepair Modelautorepair
-- Knowledgedocument Model Knowledgedocumentdao
-- Controller Baseaiservlet Aiflowservlet
-- Aisession Model Aisessiondao
-- Controller Serviceregistry Aiservice
-- Service Domainflowgenerator Providerexception
-- Service Unifiedaiengine Test
-- Service Flowpublishservice Flowpublishservicetest
-- Validationissuedto Common Flowvalidationresponse
-- Chatrequest Request Functioncallrequest
-- Webapp Propertiespanel Graphengine
-- User Model Userdao
-- Patch Addnodepatch Addedgepatch
-- Llmconfig Config Groqclient
-- Analyticsqueryrequest Request Pagerequest
-- Message Model Conversationresponse
-- Providermanager Providermanagertest Test
-- Modeltovxmlexporter Flowconnection Service
-- Conversationmemory Optimization Conversationmemorytest
-- Service Test Flowvalidationresponse
-- Retrypolicytest Test Retrypolicy
-- Model Flow Flowchoice
-- Webapp Package React
-- Agents Basespecializedagent Businessplanneragent
-- Flowmodelvalidatortest Service Test
-- Tenantdao Tenant Tenantcompaniesservlet
-- Service Test Unifiedaienginetwopasstest
-- Chatrequest Model Channel
-- Errorresponse Common Providerattributiontest
-- Ivrplan Model Getapirequirements
-- Webapp Screens Aiapi
-- Sentimentscoredto Sentimentanalysisresponse Common
-- Flownodetype Model Flow
-- Controller Aiconversationhistoryservlet Chatservice
-- Chatresponse Unifiedaiengine Equals
-- Analyticsresponse Analyticsservice Controller
-- Aiproviderfactory Providermanager Test
-- Test Service Functionexecutortest
-- Messagedto Common Model
-- Prompttemplate Model Promptmodule
-- Webapp Vxmlexporter Downloadvxml
-- Promptbuilder Test Promptbuildertest
-- Flowimprovementresponse Response Unifiedaiengine
-- Llmresponsenormalizer Service Llmresponsenormalizertest
-- Service Vxmlmenu Vxmlchoice
-- Service Exception Generationcancellationregistry
-- Vxmlsession Telecom Sessionstate
-- Airesponse Service Test
-- Flownodedto Common Flownodetype
-- Summarizationresponse Tokenusagedto Response
-- Domaindetectortest Service Test
-- Asterisktelephony Telecom Platform
-- Asteriskspokeninput Telecom Platform
-- Functioncalldto Functioncallresponse Response
-- Service Flowpatchappliertest Test
-- Circuitbreaker Circuitbreakerbackofftest Test
-- Optimization Quotaawarerouter Quotaawareroutertest
-- Globalaiconfig Config Requestoverrides
-- Asterisksynthesizedoutput Telecom Platform
-- Conversationhistoryentrydto Common Conversationhistoryresponse
-- Aimessage Model Equals
-- Vxmltomodelconverter Service Model
-- Webapp Tsconfig Compileroptions
-- Retrypolicy Service Domaindetector
-- Providerattemptdto Common Chatresponse
-- Optimization Tokenusagetracker Tokenusagetrackertest
-- Controller Voicepromptsuploadservlet Voicepromptdao
-- Chatresponse Response Equals
-- Service Test Flowvalidationorchestratortest
-- Vxmlfield Service Vxmlgrammar
-- Simpledatamodel Telecom Platform
-- Settings Webapp Screens
-- Flowprompt Model Flow
-- Flowvalidationrequest Flowdto Request
-- Flownode Model Flow
-- Webapp Components Useaiassistant
-- Providerhealth Status Providermanager
-- Flowcondition Model Flow
-- Ivrtemplate Model Service
-- Vxmlform Service Vxmldocument
-- Vxmlif Service Vxmlform
-- Optimization Promptminimizer Promptminimizertest
-- Quotawarning Response Chatresponse
-- Flowgenerationresponse Response Equals
-- Vxmlagihandler Telecom Ttsengine
-- Telecom Platform Asteriskimplementationplatformfactory
-- Semanticcache Optimization Semanticcachetest
-- Cdrrecord Getanswer Getbillsec
-- Sentimentanalysisrequest Request Analysisscope
-- Pageresponse Common Override
-- Summarizationrequest Request Summarytype
-- Aisuggestiondto Response Equals
-- Knowledgechunk Model Override
-- Aioperationroutertest Service Aioperationrouter
-- Vxmlagicompatibilitytest Test Telecom
-- Flowinput Model Flow
-- Vxmlvalidator Telecom Validationresult
-- Schoolapiserver Telecom Openaicompatibleclienttest
-- Flowedgedto Common Flowdto
-- Flowgenerationrequest Request Equals
-- Routerrequest Request Override
-- Conversationhistory Model Equals
-- Embedding Model Equals
-- Service Sessionmemory Sessionmemorystore
-- Vxmlparser Service Vxmlblock
-- Vxmlagihandler Telecom Vxmlsession
-- Webapp Nodelibrary Flowcanvas
-- Cdrservice Service Cdrservlet
-- Modeltoflowrenderer Service Ollamaagent
-- Databasemanager Appservletcontextlistener Config
-- Agents Specializedagentregistry Specializedagent
-- Test Service Ollamaclienttest
-- Flowai Model Flow
-- Chatservicetest Service Test
-- Telecom Platform Asteriskspokeninputfactory
-- Cdrsummary Getabandoned Getabandonedrate
-- Flowapi Model Flow
-- Flowbusinesshours Model Flow
-- Vxmlloader Telecom Securexmlfactory
-- Vxmlconfig Telecom Override
-- Openaicompatibleclient Aisummarizeservlet Gson
-- Groqclient Groqaiprovider Ollamaaiprovider
-- Refinedspeccache Service Refinedspeccachetest
-- Vxmlscenarioengine Telecom Vxmlagihandler
-- Minimalprofile Telecom Platform
-- Aiagent Model Aiagentregistry
-- Flowresponse Getdescription Getflowid
-- Flowimprovementrequest Request Equals
-- Routerresponse Response Override
-- Flowqueue Model Flow
-- Flowrecording Model Flow
-- Analyticsmetricdto Common Analyticsresponse
-- Changemenuoptionpatch Patch Flowpatchapplier
-- Service Test Vxmltomodelconvertertest
-- Optimization Providercostcatalogtest Providercostcatalog
-- Xmllogformatter Llmresponsenormalizationexception Util
-- Flowdatabase Model Flow
-- Flowtransfer Model Flow
-- Flowvoicemail Model Flow
-- Flowwebhook Model Flow
-- Aioperation Service Flow
-- Service Vxmlprompt Getprompts
-- Asteriskconnectioninformation Telecom Platform
-- Flowsummarybuildertest Optimization Test
-- Corsfilter Config Jakarta
-- Cdrsummary Cdrdaybucket Getabandoned
-- Deleteedgepatch Patch Flowpatchapplier
-- Flowpatchoperation Patch Unifiedaiengine
-- Analyticsresponse Response Equals
-- Flowcontextservicetest Service Test
-- Callhistory Webapp Screens
-- Testing Docker Compose
-- Mockllmclient Override Generateresponse
-- Flowpatchresponse Patch Getpatches
-- Sessionmemorystore Service Getdomain
-- Geminiclient Executegemini Generateresponse
-- Ollamaclient Ollamaclienttest Override
-- Templategenerator Override Countoccurrences
-- Cdrsummary Cdrhourbucket Getcalls
-- Movesubtreepatch Patch Override
-- Webapp Flowparser Buildflowfromresponse
-- Templategeneratordomaintest Test Templategenerator
-- Flowcache Service Sessionmemorystore
-- Promptcompletenesscheckertest Service Test
-- Vxmlvalidator Service Collectchoicetargets
-- Asterisktelephonyfactory Telecom Platform
-- Ttsengine Telecom Consume
-- Voiceprompts Webapp Screens
-- Platform Architecture Service
-- Deletenodepatch Patch Getnodeidtodelete
-- Renamenodepatch Patch Override
-- Model Nodelibrarytest Nodelibrary
-- Routingexpertagent Agents Override
-- Sounddirs Util Resolvebasesounddirs
-- Domainregressiontest Test Service
-- Bilingual Demo Fastagi
-- Aiexception
-- Vxmlparseexception Service
-- Fastagiservermain Telecom
-- Extension Entry
-- Logs Flow Publish
-- Logs Model Flow
-- Webapp Readme Builder
-- Webapp Readme Frontend
-- Nexusivr Pkg Com
-- Telecom Platform
-- Readme Jvoicexml
-- Readme Builder
+- Ensureendnode Findleafnodes Module
+- Java Validate Module
+- Gson Globalaiconfig Module
+- Navitems Formatdate Module
+- Java Flowcache Module
+- Testbuildcompactsummary Response Module
+- Setup Flowdraftservice Module
+- Java Ollamaclienttest Module
+- Flow Specializedagentregistry Module
+- Override Doget Module
+- Conversationresponse Aiprovider Module
+- Java Knowledgedocument Module
+- Java Dataaccessexception Module
+- Functiondefinitiondto Java Module
+- Java Validationissuedto Module
+- Getinstance Getactualproviderused Module
+- Java User Module
+- Getcooldownremainingms Providermanager Module
+- Flowconnection Getcondition Module
+- Java Llmresponsenormalizer Module
+- Getquotawarnings Handleimproveflow Module
+- Addedgepatch Java Module
+- Pagerequest Java Module
+- Tenantisolationtest Dopost Module
+- Props Graphengine Module
+- Java Flowprompt Module
+- Jvoicexml Interpreter Module
+- Java Errorresponse Module
+- React Types Module
+- Providercostcatalog Java Module
+- Java Getaiservice Module
+- Java Sentimentscoredto Module
+- Ivrplan Java Module
+- Java Vxmlgoto Module
+- Setup Promptrefinerservice Module
+- Google Gson Module
+- Vxmlagihandler Asteriskjava Module
+- Generationstepper Aiassistantpanel Module
+- Gettransfer Java Module
+- Builduserprompt Fallbackadvice Module
+- Getrole Setrole Module
+- Java Databasemanager Module
+- Java Aiproviderfactory Module
+- Chatresponse Equals Module
+- Flownode Getairole Module
+- Prompttemplate Promptmodule Module
+- Vxmlexporter Downloadvxml Module
+- Tokenusagedto Summarizationresponse Module
+- Flowchoice Java Module
+- Java Setelsegoto Module
+- Java Service Module
+- Vxmlsession Handlepostexecution Module
+- Analyticsresponse Java Module
+- Override Tenantcompaniesservlet Module
+- Asteriskspokeninput Jvoicexml Module
+- Functioncalldto Java Module
+- Jvoicexml Implementation Module
+- Asterisktelephony Audioformat Module
+- Callanalyticsrecord Callanalyticsservlet Module
+- Java Retrypolicy Module
+- Teardown Java Module
+- Flow Create Module
+- Aiapi Tenantadmindashboard Module
+- Getproviderattempts Setproviderattempts Module
+- Conversationhistoryentrydto Conversationhistoryresponse Module
+- Aimessage Java Module
+- Containswholephrase Detect Module
+- Securexmlfactory Java Module
+- Tsconfig Json Module
+- Jvoicexml Java Module
+- Optimizationadvisoragent Validatorassistantagent Module
+- Open Circuitbreakerbackofftest Module
+- Testrecordusage Tokenusagetracker Module
+- Vxmlfield Vxmlgrammar Module
+- Settings Providers Module
+- Flowpatchoperation Flowpatchresponse Module
+- Vxmlchoice Vxmlmenu Module
+- Providerhealth Java Module
+- Java Exception Module
+- Chatresponse Equals Module
+- Flowcondition Flowconditionbranch Module
+- Ivrtemplate Java Module
+- Testminimizeuserprompt Returnsoriginal Module
+- Domainflowgenerator Cleanbusinessname Module
+- Vxmlscenarioengine Initializeengine Module
+- Java Groqaiprovider Module
+- Conversationmemory Java Module
+- Semanticcache Semanticcachetest Module
+- Aiflowservlettest Mapresultsettoflow Module
+- Cdrrecord Java Module
+- Chatrequest Java Module
+- Pageresponse Java Module
+- Summarizationrequest Summarytype Module
+- Aisuggestiondto Java Module
+- Flowgenerationresponse Java Module
+- Knowledgechunk Java Module
+- Flowcanvas Node Module
+- Java Airesponse Module
+- Flowsnapshot Java Module
+- Setquotawarnings Quotawarning Module
+- Sentimentanalysisrequest Analysisscope Module
+- Flowinput Java Module
+- Flowvalidationorchestrator Flowvalidationorchestratorresult Module
+- Vxmlvalidator Validationerror Module
+- Getaiservice Getflowservice Module
+- Flowedgedto Getedges Module
+- Flowgenerationrequest Java Module
+- Routerrequest Java Module
+- Conversationhistory Java Module
+- Embedding Java Module
+- Cdrservlet Getcdrservice Module
+- Addnodepatch Java Module
+- Flowai Java Module
+- Java Providerexception Module
+- Jvoicexml Implementation Module
+- Java Mockllmclient Module
+- Java Voicepromptsgenerateservlet Module
+- Cdrsummary Java Module
+- Flownodedto Flowdto Module
+- Flowapi Java Module
+- Flowbusinesshours Java Module
+- Vxmlconfig Java Module
+- Refinedspeccache Java Module
+- Java Aiagent Module
+- Flowresponse Java Module
+- Flowimprovementrequest Java Module
+- Routerresponse Java Module
+- Flowqueue Getqueue Module
+- Flowrecording Getrecording Module
+- Analyticstracker Addevent Module
+- Analyticsmetricdto Java Module
+- Changemenuoptionpatch Java Module
+- Asteriskconnectioninformation Java Module
+- Flowvalidationrequest Java Module
+- Flowdatabase Java Module
+- Flowtransfer Gettransfer Module
+- Flowvoicemail Getvoicemail Module
+- Flowwebhook Getwebhook Module
+- Java Jwtutil Module
+- Jakarta Servlet Module
+- Flowdao Flowservice Module
+- Cdrdaybucket Getabandoned Module
+- Flowdto Equals Module
+- Flownodetype Flownodedto Module
+- Deleteedgepatch Java Module
+- Analyticsresponse Response Module
+- Java Functionexecutor Module
+- Aiconversationhistoryservlet Dodelete Module
+- Flowpublishresult Handlepublishflow Module
+- Departmentextractor Java Module
+- Getprompts Vxmlprompt Module
+- Geminiclient Executegemini Module
+- Movesubtreepatch Java Module
+- Llmresponsenormalizationexception Java Module
+- Container Engine Module
+- Groqclient Executegroqchat Module
+- Override Ollamaclient Module
+- Templategenerator Override Module
+- Cdrhourbucket Getcalls Module
+- Vxmlvalidator Collectchoicetargets Module
+- Asterisksynthesizedoutputfactory Java Module
+- Ttsengine Java Module
+- Voiceprompts Actionmenu Module
+- Service Asterisk Module
+- Engine Asterisk Module
+- Aichatservlet Getchatservice Module
+- Deletenodepatch Java Module
+- Renamenodepatch Java Module
+- Nodelibrary Java Module
+- Domaindetector Java Module
+- Sounddirs Java Module
+- Fastagi Vxml Module
+- Aiexception Java Module
+- Vxmlparseexception Java Module
+- Domainreprotest Java Module
+- Fastagiservermain Java Module
+- Extension Script Module
+- Flowpublishservice Module
+- Modelflowvalidator Module
+- Builder Module
+- Nexusivr Frontend Module
+- Nexusivr Engine Module
+- Telecom Platform Module
+- Jvoicexml Module
+- Nexusivr Builder Module
 
 ## God Nodes (most connected - your core abstractions)
 1. `FlowModel` - 135 edges
 2. `ProviderManager` - 126 edges
-3. `UnifiedAiEngine` - 88 edges
-4. `FlowNode` - 87 edges
+3. `FlowNode` - 95 edges
+4. `UnifiedAiEngine` - 88 edges
 5. `Message` - 83 edges
 6. `Flow` - 75 edges
-7. `FlowValidationResponse` - 62 edges
-8. `FlowConnection` - 61 edges
+7. `FlowConnection` - 63 edges
+8. `FlowValidationResponse` - 62 edges
 9. `AiService` - 61 edges
 10. `AiResponse` - 58 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `IVR AI Engine` --semantically_similar_to--> `ivr-ai-engine`  [INFERRED] [semantically similar]
-  E2E_TESTING.md → docker-compose.yml
-- `IVR Engine` --semantically_similar_to--> `ivr-engine`  [INFERRED] [semantically similar]
-  E2E_TESTING.md → docker-compose.yml
-- `IVR WebApp` --semantically_similar_to--> `ivr-webapp`  [INFERRED] [semantically similar]
-  E2E_TESTING.md → docker-compose.yml
-- `Asterisk` --semantically_similar_to--> `asterisk`  [INFERRED] [semantically similar]
-  E2E_TESTING.md → docker-compose.yml
-- `useAIAssistant()` --indirect_call--> `repairDoubleEncodedUtf8()`  [INFERRED]
-  IVR-webapp/src/hooks/useAIAssistant.ts → IVR-webapp/src/ivr/flowParser.ts
+- `IVR WebApp Container (React)` --semantically_similar_to--> `NexusIVR Application`  [INFERRED] [semantically similar]
+  docker-compose.yml → IVR-webapp/AGENTS.md
+- `NexusIVR Application` --semantically_similar_to--> `NexusIVR - AI Contact Center Platform`  [INFERRED] [semantically similar]
+  IVR-webapp/AGENTS.md → IVR-webapp/index.html
+- `LlmClient` --inherits--> `AiProvider`  [EXTRACTED]
+  IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/LlmClient.java → IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/AiProvider.java
+- `AiService` --references--> `AiProvider`  [EXTRACTED]
+  IVR-AI-engine/src/main/java/com/nexusivr/ai/service/AiService.java → IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/AiProvider.java
+- `AiProviderFactory` --references--> `ProviderManager`  [EXTRACTED]
+  IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/AiProviderFactory.java → IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/ProviderManager.java
 
 ## Import Cycles
 - None detected.
 
 ## Hyperedges (group relationships)
 - **Full Stack** — e2e_testing_ivr_engine, e2e_testing_ivr_ai_engine, e2e_testing_ivr_webapp, e2e_testing_asterisk [EXTRACTED 1.00]
-- **Docker Services** — docker_compose_asterisk, docker_compose_ivr_engine, docker_compose_ivr_ai_engine, docker_compose_ivr_webapp [EXTRACTED 1.00]
+- **Telephony Stack** — ai_ivr_platform_architecture_asterisk_pbx, ai_ivr_platform_architecture_postgresql, ai_ivr_platform_architecture_java_backend [INFERRED 0.85]
+- **AI Integration Workflow** — ai_ivr_platform_architecture_react_frontend, ai_ivr_platform_architecture_java_backend, ai_ivr_platform_architecture_ai_service, ai_ivr_platform_architecture_openai_api [INFERRED 0.85]
+- **NexusIVR Docker Compose Services** — docker_compose_yml_asterisk, docker_compose_yml_ivr_engine, docker_compose_yml_ivr_ai_engine, docker_compose_yml_ivr_webapp [EXTRACTED 1.00]
 - **Telephony Stack** — ai_ivr_platform_architecture_asterisk_pbx, ai_ivr_platform_architecture_postgresql, ai_ivr_platform_architecture_java_backend [INFERRED 0.85]
 - **AI Integration Workflow** — ai_ivr_platform_architecture_react_frontend, ai_ivr_platform_architecture_java_backend, ai_ivr_platform_architecture_ai_service, ai_ivr_platform_architecture_openai_api [INFERRED 0.85]
 
-## Communities (193 total, 86 thin omitted)
+## Communities (189 total, 80 thin omitted)
 
-### Community 0 - "Flow Service Model"
-Cohesion: 0.06
-Nodes (10): FlowDao, ResultSet, ServiceException, Flow, Override, FlowDraftService, FlowService, FlowDaoTest (+2 more)
-
-### Community 1 - "Webapp Screens Superadmindashboard"
-Cohesion: 0.04
-Nodes (61): backendUrl(), App(), ErrorBoundary, ErrorBoundaryProps, ErrorBoundaryState, superAdminPages, navItems, SuperAdminLayout() (+53 more)
-
-### Community 2 - "Service Flowmodelautorepair Modelautorepair"
+### Community 0 - "Ensureendnode Findleafnodes Module"
 Cohesion: 0.08
-Nodes (11): FlowModel, Override, FlowModelAutoRepair, FlowNode, FlowNodeType, FlowNode, FlowNodeType, ModelAutoRepair (+3 more)
+Nodes (12): FlowModel, Override, FlowModelAutoRepair, FlowNode, FlowNodeType, FlowNode, FlowNodeType, ModelAutoRepair (+4 more)
 
-### Community 3 - "Knowledgedocument Model Knowledgedocumentdao"
+### Community 1 - "Java Validate Module"
+Cohesion: 0.09
+Nodes (11): FlowModelValidator, FlowNodeType, ModelFlowValidator, FlowModelValidatorTest, FlowValidationResponseSemanticsTest, ModelAutoRepairWarningResolutionTest, ModelFlowValidatorTest, TransferDestinationTest (+3 more)
+
+### Community 2 - "Gson Globalaiconfig Module"
+Cohesion: 0.05
+Nodes (7): Gson, Gson, GlobalAiConfig, RequestOverrides, Deprecated, LlmConfig, org.junit.jupiter.api.BeforeAll
+
+### Community 3 - "Navitems Formatdate Module"
+Cohesion: 0.05
+Nodes (52): backendUrl(), App(), ErrorBoundary, ErrorBoundaryProps, ErrorBoundaryState, superAdminPages, navItems, SuperAdminLayout() (+44 more)
+
+### Community 4 - "Java Flowcache Module"
 Cohesion: 0.06
-Nodes (18): ResultSet, KnowledgeDocumentDao, DataAccessException, DocumentStatus, FAILED, INGESTED, INGESTING, PENDING (+10 more)
+Nodes (6): FlowCache, FlowContextService, FlowNode, SessionMemory, SessionMemoryStore, FlowContextServiceTest
 
-### Community 4 - "Controller Baseaiservlet Aiflowservlet"
-Cohesion: 0.11
-Nodes (19): Override, Override, AiFlowServlet, Override, Override, Override, Override, AiProviderServlet (+11 more)
-
-### Community 5 - "Aisession Model Aisessiondao"
+### Community 5 - "Testbuildcompactsummary Response Module"
 Cohesion: 0.08
-Nodes (5): AiSessionDao, ResultSet, AiSession, Override, ChatResponse
+Nodes (5): FlowSummaryBuilder, FunctionExecutorTest, FlowSummaryBuilderTest, RetryPolicyTest, org.junit.jupiter.api.Test
 
-### Community 6 - "Controller Serviceregistry Aiservice"
+### Community 6 - "Setup Flowdraftservice Module"
+Cohesion: 0.08
+Nodes (9): FlowDraftService, FlowPublishService, ScriptExecutionResult, FlowBusinessNameResolutionTest, FlowDraftServiceReliabilityTest, FlowPublishServiceTest, ManualFlowBuilderSaveTest, Gson (+1 more)
+
+### Community 7 - "Java Ollamaclienttest Module"
+Cohesion: 0.07
+Nodes (14): OllamaClientTest, PromptBuilderTest, PortabilityTest, FlowDaoTest, MessageDaoTest, AiSuggestionsLlmIntegrationTest, ChatServiceTest, CycleRepairTest (+6 more)
+
+### Community 8 - "Flow Specializedagentregistry Module"
 Cohesion: 0.06
-Nodes (10): FunctionExecutor, AiFunctionCallServlet, AiPromptsServlet, AiProviderListServlet, AiSentimentServlet, AiSummarizeServlet, ServiceRegistry, ResourceNotFoundException (+2 more)
+Nodes (17): SpecializedAgent, SpecializedAgentRegistry, SpecializedAgentService, AiOperation, CHAT, EXPORT_FLOW, EXPORT_JSON, EXPORT_XML (+9 more)
 
-### Community 7 - "Service Domainflowgenerator Providerexception"
+### Community 9 - "Override Doget Module"
+Cohesion: 0.12
+Nodes (16): Override, AiFlowServlet, Override, AiProviderListServlet, Override, Override, BaseAiServlet, Override (+8 more)
+
+### Community 10 - "Conversationresponse Aiprovider Module"
+Cohesion: 0.05
+Nodes (5): AiProvider, PromptBuilder, ConversationResponse, Override, Message
+
+### Community 11 - "Java Knowledgedocument Module"
+Cohesion: 0.08
+Nodes (14): ResultSet, DocumentStatus, FAILED, INGESTED, INGESTING, PENDING, Override, KnowledgeDocument (+6 more)
+
+### Community 12 - "Java Dataaccessexception Module"
 Cohesion: 0.07
-Nodes (13): DepartmentExtractor, DomainFlowGenerator, FailureReason, AUTH_FAILURE, PROVIDER_ERROR, PROVIDER_UNAVAILABLE, QUOTA_EXCEEDED, RATE_LIMITED (+5 more)
+Nodes (11): AiSessionDao, Message, ResultSet, MessageDao, DataAccessException, SessionStatus, ABANDONED, ACTIVE (+3 more)
 
-### Community 8 - "Service Unifiedaiengine Test"
-Cohesion: 0.07
-Nodes (12): FlowContextService, PromptRefinerService, UnifiedAiEngine, VxmlValidationResult, AiSuggestionsLlmIntegrationTest, CleanFallbackGreetingTest, PromptRefinerHardGateTest, PromptRefinerServiceTest (+4 more)
-
-### Community 9 - "Service Flowpublishservice Flowpublishservicetest"
-Cohesion: 0.09
-Nodes (8): FlowPublishResult, FlowPublishService, ScriptExecutionResult, FlowBusinessNameResolutionTest, FlowPublishServiceTest, ManualFlowBuilderSaveTest, Gson, SaveVsPublishIsolationTest
-
-### Community 10 - "Validationissuedto Common Flowvalidationresponse"
-Cohesion: 0.09
-Nodes (8): Override, ValidationIssueDto, ValidationSeverity, ERROR, INFO, WARNING, FlowValidationResponse, Override
-
-### Community 11 - "Chatrequest Request Functioncallrequest"
+### Community 13 - "Functiondefinitiondto Java Module"
 Cohesion: 0.05
 Nodes (6): FunctionDefinitionDto, Override, ChatRequest, Override, FunctionCallRequest, Override
 
-### Community 12 - "Webapp Propertiespanel Graphengine"
-Cohesion: 0.09
-Nodes (35): UseAIAssistantOptions, UseAIAssistantReturn, Props, generateUniqueId(), repairDoubleEncodedUtf8(), sanitizeFlow(), validateGraph(), analyzeGraph() (+27 more)
+### Community 14 - "Java Validationissuedto Module"
+Cohesion: 0.07
+Nodes (10): Override, ValidationIssueDto, ValidationSeverity, ERROR, INFO, WARNING, FlowValidationResponse, Override (+2 more)
 
-### Community 13 - "User Model Userdao"
+### Community 15 - "Getinstance Getactualproviderused Module"
+Cohesion: 0.13
+Nodes (3): Message, TemplateGeneratorDomainTest, UnifiedAiEngineTwoPassTest
+
+### Community 16 - "Java User Module"
 Cohesion: 0.11
 Nodes (8): AuthServlet, Override, Override, SuperAdminUsersServlet, UserDao, User, java.sql.ResultSet, java.sql.Timestamp
 
-### Community 14 - "Patch Addnodepatch Addedgepatch"
-Cohesion: 0.06
-Nodes (7): AddEdgePatch, Override, AddNodePatch, Override, Override, UpdatePromptPatch, FlowNode
+### Community 17 - "Getcooldownremainingms Providermanager Module"
+Cohesion: 0.11
+Nodes (4): ProviderManager, SpecializedAgentTest, ProviderManagerTest, FlowSnapshotServiceTest
 
-### Community 15 - "Llmconfig Config Groqclient"
-Cohesion: 0.10
-Nodes (4): Gson, Gson, Deprecated, LlmConfig
+### Community 18 - "Flowconnection Getcondition Module"
+Cohesion: 0.12
+Nodes (4): FlowConnection, Override, FlowNode, ModelToVxmlExporter
 
-### Community 16 - "Analyticsqueryrequest Request Pagerequest"
+### Community 19 - "Java Llmresponsenormalizer Module"
+Cohesion: 0.07
+Nodes (7): EdgeInfo, LlmResponseNormalizer, PromptCompletenessChecker, DomainRegressionTest, LlmResponseNormalizerTest, PromptCompletenessCheckerTest, java.util.regex.Pattern
+
+### Community 20 - "Getquotawarnings Handleimproveflow Module"
+Cohesion: 0.08
+Nodes (3): FlowImprovementResponse, Override, ChatResponse
+
+### Community 21 - "Addedgepatch Java Module"
+Cohesion: 0.08
+Nodes (8): AddEdgePatch, Override, Override, UpdatePromptPatch, FlowPatchApplier, FlowNode, FlowOptimizationSummaryTest, FlowPatchApplierTest
+
+### Community 22 - "Pagerequest Java Module"
 Cohesion: 0.06
 Nodes (6): Override, PageRequest, AnalyticsQueryRequest, Override, ConversationHistoryRequest, Override
 
-### Community 17 - "Message Model Conversationresponse"
-Cohesion: 0.05
-Nodes (6): AiProvider, Message, ResultSet, ConversationResponse, Override, Message
+### Community 23 - "Tenantisolationtest Dopost Module"
+Cohesion: 0.12
+Nodes (5): ResultSet, AiSession, Override, AiSessionDaoTest, TenantIsolationTest
 
-### Community 18 - "Providermanager Providermanagertest Test"
-Cohesion: 0.11
-Nodes (3): ProviderManager, SpecializedAgentTest, ProviderManagerTest
-
-### Community 19 - "Modeltovxmlexporter Flowconnection Service"
-Cohesion: 0.13
-Nodes (4): FlowConnection, Override, FlowNode, ModelToVxmlExporter
-
-### Community 20 - "Conversationmemory Optimization Conversationmemorytest"
+### Community 24 - "Props Graphengine Module"
 Cohesion: 0.09
-Nodes (5): ConversationMemory, MemoryEntry, FlowSnapshot, FlowSnapshotService, ConversationMemoryTest
+Nodes (31): UseAIAssistantOptions, UseAIAssistantReturn, Props, generateUniqueId(), analyzeGraph(), GraphDiagnostics, optimizeFlow(), reconnectAfterDelete() (+23 more)
 
-### Community 21 - "Service Test Flowvalidationresponse"
-Cohesion: 0.14
-Nodes (8): ModelFlowValidator, DisconnectedFallbackMenuRepairTest, FlowValidationResponseSemanticsTest, ModelAutoRepairWarningResolutionTest, ModelFlowValidatorTest, TransferDestinationTest, TransferNodePortAndRepairTest, VxmlFullRoundTripTest
+### Community 25 - "Java Flowprompt Module"
+Cohesion: 0.10
+Nodes (4): FlowPrompt, Override, DuplicateMenuFixTest, org.junit.jupiter.api.BeforeEach
 
-### Community 23 - "Model Flow Flowchoice"
-Cohesion: 0.07
-Nodes (5): FlowChoice, Override, FlowMenu, Override, FlowNode
+### Community 26 - "Jvoicexml Interpreter Module"
+Cohesion: 0.11
+Nodes (13): Override, MinimalProfile, Override, SimpleDataModel, org.jvoicexml.interpreter.datamodel.DataModel, org.jvoicexml.interpreter.datamodel.DataModelObjectSerializer, org.jvoicexml.interpreter.scope.Scope, org.jvoicexml.profile.Profile (+5 more)
 
-### Community 24 - "Webapp Package React"
+### Community 27 - "Java Errorresponse Module"
+Cohesion: 0.09
+Nodes (4): ErrorResponse, Override, ProviderAttributionTest, jakarta.servlet.http.HttpServlet
+
+### Community 28 - "React Types Module"
 Cohesion: 0.05
 Nodes (39): dependencies, lucide-react, react, react-dom, react-router-dom, recharts, devDependencies, oxfmt (+31 more)
 
-### Community 25 - "Agents Basespecializedagent Businessplanneragent"
-Cohesion: 0.06
-Nodes (12): BaseSpecializedAgent, Override, BusinessPlannerAgent, Override, ConversationDesignerAgent, Override, Override, OptimizationAdvisorAgent (+4 more)
-
-### Community 26 - "Flowmodelvalidatortest Service Test"
-Cohesion: 0.18
-Nodes (5): FlowModelValidator, FlowNodeType, FlowModelValidatorTest, ValidateSyncRegressionTest, VxmlRoundTripFidelityTest
-
-### Community 27 - "Tenantdao Tenant Tenantcompaniesservlet"
-Cohesion: 0.10
-Nodes (8): io.jsonwebtoken.Claims, Override, TenantCompaniesServlet, Tenant, TenantDao, JwtUtil, PasswordUtil, javax.crypto.SecretKey
-
-### Community 29 - "Chatrequest Model Channel"
-Cohesion: 0.08
-Nodes (14): ChatRequest, Channel, CHAT, SMS, VOICE, WEB_WIDGET, WHATSAPP, SessionStatus (+6 more)
-
-### Community 30 - "Errorresponse Common Providerattributiontest"
+### Community 29 - "Providercostcatalog Java Module"
 Cohesion: 0.09
-Nodes (3): ErrorResponse, Override, ProviderAttributionTest
+Nodes (5): ProviderCostCatalog, DailyQuota, QuotaAwareRouter, ProviderCostCatalogTest, QuotaAwareRouterTest
 
-### Community 32 - "Webapp Screens Aiapi"
-Cohesion: 0.06
-Nodes (33): AnalyticsApiResponse, CdrCall, CdrDayBucket, CdrHourBucket, CdrSummary, ChatApiResponse, ChatMessage, FlowApiResponse (+25 more)
+### Community 30 - "Java Getaiservice Module"
+Cohesion: 0.09
+Nodes (11): AiFunctionCallServlet, Override, AiPromptsServlet, Override, AiSentimentServlet, AiSummarizeServlet, Message, Override (+3 more)
 
-### Community 33 - "Sentimentscoredto Sentimentanalysisresponse Common"
+### Community 31 - "Java Sentimentscoredto Module"
 Cohesion: 0.08
 Nodes (9): SentimentLabel, MIXED, NEGATIVE, NEUTRAL, POSITIVE, Override, SentimentScoreDto, Override (+1 more)
 
-### Community 34 - "Flownodetype Model Flow"
-Cohesion: 0.07
-Nodes (25): com.google.gson.stream.JsonReader, com.google.gson.stream.JsonWriter, com.google.gson.TypeAdapter, FlowNodeType, AI, API, BUSINESS_HOURS, CONDITION (+17 more)
+### Community 33 - "Java Vxmlgoto Module"
+Cohesion: 0.12
+Nodes (4): VxmlBlock, VxmlGoto, VxmlIf, VxmlParser
 
-### Community 35 - "Controller Aiconversationhistoryservlet Chatservice"
+### Community 34 - "Setup Promptrefinerservice Module"
 Cohesion: 0.09
-Nodes (9): AiChatServlet, AiConversationHistoryServlet, Override, ChatService, AiChatServletTest, StringWriter, AiFlowServletTest, StringWriter (+1 more)
+Nodes (9): PromptRefinerService, UnifiedAiEngine, VxmlValidationResult, CleanFallbackGreetingTest, PromptRefinerHardGateTest, PromptRefinerServiceTest, UnifiedAiEngineCompletenessTest, UnifiedAiEngineFeaturePreservationTest (+1 more)
 
-### Community 37 - "Analyticsresponse Analyticsservice Controller"
+### Community 35 - "Google Gson Module"
+Cohesion: 0.07
+Nodes (26): com.google.gson.stream.JsonReader, com.google.gson.stream.JsonWriter, com.google.gson.TypeAdapter, FlowNodeType, AI, API, BUSINESS_HOURS, CONDITION (+18 more)
+
+### Community 36 - "Vxmlagihandler Asteriskjava Module"
+Cohesion: 0.18
+Nodes (8): Document, Element, HttpClient, Logger, VxmlAgiHandler, paths, org.asteriskjava.fastagi.AgiChannel, org.asteriskjava.fastagi.BaseAgiScript
+
+### Community 37 - "Generationstepper Aiassistantpanel Module"
+Cohesion: 0.11
+Nodes (25): AiAssistantPanel(), GenerationStepper(), providerLabel(), QuotaWarning, QuotaWarningBanner(), detectDomain(), extractVoicePrompts(), GenerationStage (+17 more)
+
+### Community 38 - "Gettransfer Java Module"
+Cohesion: 0.09
+Nodes (3): VxmlDocument, VxmlForm, VxmlTransfer
+
+### Community 39 - "Builduserprompt Fallbackadvice Module"
 Cohesion: 0.08
-Nodes (8): AnalyticsResponse, AiAnalyticsServlet, MessageDao, AnalyticsResponse, ValidationException, AnalyticsService, AiAnalyticsServletTest, StringWriter
+Nodes (10): BaseSpecializedAgent, Override, BusinessPlannerAgent, Override, ConversationDesignerAgent, Override, Override, RoutingExpertAgent (+2 more)
 
-### Community 38 - "Aiproviderfactory Providermanager Test"
-Cohesion: 0.10
-Nodes (3): AiProviderFactory, LlmClient, FlowSnapshotServiceTest
-
-### Community 39 - "Test Service Functionexecutortest"
-Cohesion: 0.10
-Nodes (11): FunctionExecutorTest, PortabilityTest, MessageDaoTest, AiServiceTest, CycleRepairTest, FlowOptimizationSummaryTest, FlowPatchMenuReuseTest, MenuVxmlExporterTest (+3 more)
-
-### Community 40 - "Messagedto Common Model"
+### Community 40 - "Getrole Setrole Module"
 Cohesion: 0.07
 Nodes (6): Override, MessageDto, MessageRole, ASSISTANT, SYSTEM, USER
 
-### Community 41 - "Prompttemplate Model Promptmodule"
+### Community 41 - "Java Databasemanager Module"
+Cohesion: 0.11
+Nodes (15): com.sun.net.httpserver.HttpExchange, com.sun.net.httpserver.HttpHandler, com.zaxxer.hikari.HikariDataSource, HikariDataSource, AppServletContextListener, Override, DatabaseManager, EnrollHandler (+7 more)
+
+### Community 42 - "Java Aiproviderfactory Module"
+Cohesion: 0.12
+Nodes (4): AiProviderFactory, LlmClient, AiProviderServlet, Override
+
+### Community 45 - "Prompttemplate Promptmodule Module"
 Cohesion: 0.07
 Nodes (6): PromptModule, ASSISTANT, RAG, SUMMARY, Override, PromptTemplate
 
-### Community 42 - "Webapp Vxmlexporter Downloadvxml"
+### Community 46 - "Vxmlexporter Downloadvxml Module"
 Cohesion: 0.28
 Nodes (31): downloadVxml(), esc(), exportAsVxml(), firstTarget(), gotoId(), renderAi(), renderApi(), renderBilingualPrompts() (+23 more)
 
-### Community 43 - "Promptbuilder Test Promptbuildertest"
-Cohesion: 0.11
-Nodes (3): LlmProviderFactory, PromptBuilder, PromptBuilderTest
-
-### Community 45 - "Llmresponsenormalizer Service Llmresponsenormalizertest"
-Cohesion: 0.12
-Nodes (3): EdgeInfo, LlmResponseNormalizer, LlmResponseNormalizerTest
-
-### Community 46 - "Service Vxmlmenu Vxmlchoice"
+### Community 47 - "Tokenusagedto Summarizationresponse Module"
 Cohesion: 0.08
-Nodes (3): VxmlChoice, VxmlGoto, VxmlMenu
+Nodes (4): Override, TokenUsageDto, Override, SummarizationResponse
 
-### Community 47 - "Service Exception Generationcancellationregistry"
+### Community 48 - "Flowchoice Java Module"
+Cohesion: 0.09
+Nodes (5): FlowChoice, Override, FlowMenu, Override, MenuVxmlExporterTest
+
+### Community 49 - "Java Setelsegoto Module"
+Cohesion: 0.15
+Nodes (5): FlowNode, FlowNodeType, VxmlToModelConverter, org.w3c.dom.Element, org.w3c.dom.Node
+
+### Community 50 - "Java Service Module"
 Cohesion: 0.09
 Nodes (7): DataAccessException, GenerationCancelledException, ResourceNotFoundException, ServiceException, ValidationException, GenerationCancellationRegistry, ProviderManagerCancellationTest
 
-### Community 48 - "Vxmlsession Telecom Sessionstate"
+### Community 51 - "Vxmlsession Handlepostexecution Module"
 Cohesion: 0.09
 Nodes (8): Override, SessionState, COMPLETED, ERROR, IDLE, RUNNING, TIMEOUT, VxmlSession
 
-### Community 49 - "Airesponse Service Test"
-Cohesion: 0.14
-Nodes (4): AiResponse, Override, DuplicateMenuFixTest, org.junit.jupiter.api.BeforeEach
+### Community 52 - "Analyticsresponse Java Module"
+Cohesion: 0.10
+Nodes (8): AnalyticsResponse, AiAnalyticsServlet, Override, AnalyticsResponse, AnalyticsService, AiAnalyticsServletTest, StringWriter, java.io.StringWriter
 
-### Community 50 - "Flownodedto Common Flownodetype"
-Cohesion: 0.08
-Nodes (10): FlowNodeDto, Override, FlowNodeType, COLLECT_INPUT, CONDITION, FUNCTION_CALL, HANGUP, MENU (+2 more)
+### Community 53 - "Override Tenantcompaniesservlet Module"
+Cohesion: 0.12
+Nodes (4): Override, TenantCompaniesServlet, Tenant, TenantDao
 
-### Community 51 - "Summarizationresponse Tokenusagedto Response"
-Cohesion: 0.09
-Nodes (4): Override, TokenUsageDto, Override, SummarizationResponse
-
-### Community 53 - "Asterisktelephony Telecom Platform"
-Cohesion: 0.14
-Nodes (7): AudioFormat, AsteriskTelephony, Override, javax.sound.sampled.AudioFormat, org.jvoicexml.CallControlProperties, org.jvoicexml.implementation.SpokenInput, org.jvoicexml.implementation.TelephonyListener
-
-### Community 54 - "Asteriskspokeninput Telecom Platform"
+### Community 54 - "Asteriskspokeninput Jvoicexml Module"
 Cohesion: 0.13
 Nodes (9): DtmfRecognizerProperties, GrammarType, AsteriskSpokenInput, BargeInType, DataModel, Override, org.jvoicexml.implementation.GrammarImplementation, org.jvoicexml.implementation.SpokenInputListener (+1 more)
 
-### Community 55 - "Functioncalldto Functioncallresponse Response"
+### Community 55 - "Functioncalldto Java Module"
 Cohesion: 0.09
 Nodes (4): FunctionCallDto, Override, FunctionCallResponse, Override
 
-### Community 56 - "Service Flowpatchappliertest Test"
-Cohesion: 0.18
-Nodes (4): FlowPatchApplier, AlreadyConnectedMenuSuggestionTest, FlowDuplicateEdgePreventionTest, FlowPatchApplierTest
-
-### Community 57 - "Circuitbreaker Circuitbreakerbackofftest Test"
-Cohesion: 0.11
-Nodes (6): CircuitBreaker, State, CLOSED, HALF_OPEN, OPEN, CircuitBreakerBackoffTest
-
-### Community 58 - "Optimization Quotaawarerouter Quotaawareroutertest"
-Cohesion: 0.14
-Nodes (3): DailyQuota, QuotaAwareRouter, QuotaAwareRouterTest
-
-### Community 60 - "Asterisksynthesizedoutput Telecom Platform"
+### Community 56 - "Jvoicexml Implementation Module"
 Cohesion: 0.13
-Nodes (9): AsteriskSynthesizedOutput, BargeInType, ConnectionInformation, DocumentServer, Override, org.jvoicexml.implementation.OutputDevice, org.jvoicexml.implementation.SynthesizedOutputListener, org.jvoicexml.implementation.SynthesizedOutputProvider (+1 more)
+Nodes (10): AsteriskSynthesizedOutput, BargeInType, ConnectionInformation, DocumentServer, Override, org.jvoicexml.implementation.ExternalResource, org.jvoicexml.implementation.OutputDevice, org.jvoicexml.implementation.SynthesizedOutputListener (+2 more)
 
-### Community 61 - "Conversationhistoryentrydto Common Conversationhistoryresponse"
+### Community 57 - "Asterisktelephony Audioformat Module"
+Cohesion: 0.14
+Nodes (6): AudioFormat, AsteriskTelephony, Override, javax.sound.sampled.AudioFormat, org.jvoicexml.CallControlProperties, org.jvoicexml.implementation.TelephonyListener
+
+### Community 58 - "Callanalyticsrecord Callanalyticsservlet Module"
+Cohesion: 0.09
+Nodes (4): CallAnalyticsRecord, CallAnalyticsServlet, CallAnalyticsDao, CallAnalyticsRecord
+
+### Community 59 - "Java Retrypolicy Module"
+Cohesion: 0.12
+Nodes (5): com.google.gson.Gson, RetryPolicy, Gson, SubMenuPreservationTest, org.slf4j.Logger
+
+### Community 60 - "Teardown Java Module"
+Cohesion: 0.10
+Nodes (6): com.google.gson.JsonObject, com.sun.net.httpserver.HttpServer, OpenAiCompatibleClientTest, JsonObject, OllamaAgent, org.junit.jupiter.api.AfterEach
+
+### Community 62 - "Aiapi Tenantadmindashboard Module"
+Cohesion: 0.09
+Nodes (23): aiApi, AnalyticsApiResponse, CdrCall, CdrDayBucket, CdrHourBucket, CdrSummary, ChatApiResponse, ChatMessage (+15 more)
+
+### Community 64 - "Conversationhistoryentrydto Conversationhistoryresponse Module"
 Cohesion: 0.10
 Nodes (4): ConversationHistoryEntryDto, Override, ConversationHistoryResponse, Override
 
-### Community 63 - "Vxmltomodelconverter Service Model"
+### Community 67 - "Securexmlfactory Java Module"
 Cohesion: 0.14
-Nodes (4): FlowNode, FlowNodeType, VxmlToModelConverter, org.w3c.dom.Node
+Nodes (6): SecureXmlFactory, AppTest, VxmlAgiCompatibilityTest, javax.xml.parsers.DocumentBuilderFactory, junit.framework.Test, junit.framework.TestCase
 
-### Community 64 - "Webapp Tsconfig Compileroptions"
+### Community 68 - "Tsconfig Json Module"
 Cohesion: 0.08
 Nodes (25): compilerOptions, allowImportingTsExtensions, ignoreDeprecations, isolatedModules, jsx, lib, module, moduleResolution (+17 more)
 
-### Community 65 - "Retrypolicy Service Domaindetector"
-Cohesion: 0.12
-Nodes (5): com.google.gson.Gson, RetryPolicy, DomainDetector, org.junit.jupiter.api.BeforeAll, org.slf4j.Logger
+### Community 69 - "Jvoicexml Java Module"
+Cohesion: 0.14
+Nodes (13): ImplementationPlatformFactory, App, AsteriskImplementationPlatformFactory, Override, Override, MinimalConfiguration, JVoiceXmlMain, org.jvoicexml.Configuration (+5 more)
 
-### Community 67 - "Optimization Tokenusagetracker Tokenusagetrackertest"
+### Community 70 - "Optimizationadvisoragent Validatorassistantagent Module"
+Cohesion: 0.12
+Nodes (9): Override, OptimizationAdvisorAgent, Override, ValidatorAssistantAgent, FlowNode, JsonObject, ModelToFlowRenderer, VxmlValidator (+1 more)
+
+### Community 71 - "Open Circuitbreakerbackofftest Module"
+Cohesion: 0.12
+Nodes (6): CircuitBreaker, State, CLOSED, HALF_OPEN, OPEN, CircuitBreakerBackoffTest
+
+### Community 72 - "Testrecordusage Tokenusagetracker Module"
 Cohesion: 0.17
 Nodes (5): SessionUsage, TokenUsage, TokenUsageTracker, UsageRecord, TokenUsageTrackerTest
 
-### Community 68 - "Controller Voicepromptsuploadservlet Voicepromptdao"
-Cohesion: 0.14
-Nodes (9): Override, VoicePromptsGenerateServlet, Override, VoicePromptsStreamServlet, Override, VoicePromptsUploadServlet, VoicePromptDao, jakarta.servlet.annotation.MultipartConfig (+1 more)
-
-### Community 70 - "Service Test Flowvalidationorchestratortest"
-Cohesion: 0.19
-Nodes (5): FlowValidationOrchestrator, FlowValidationOrchestratorResult, VxmlValidator, FlowPatchImprovementRepairTest, FlowValidationOrchestratorTest
-
-### Community 71 - "Vxmlfield Service Vxmlgrammar"
-Cohesion: 0.11
-Nodes (3): VxmlBlock, VxmlField, VxmlGrammar
-
-### Community 72 - "Simpledatamodel Telecom Platform"
-Cohesion: 0.20
-Nodes (5): Override, SimpleDataModel, org.jvoicexml.interpreter.datamodel.DataModel, org.jvoicexml.interpreter.datamodel.DataModelObjectSerializer, org.jvoicexml.interpreter.scope.Scope
-
-### Community 73 - "Settings Webapp Screens"
+### Community 74 - "Settings Providers Module"
 Cohesion: 0.09
 Nodes (12): AI_PROVIDERS, AIConfig(), HOLIDAYS, HOURS_DATA, Settings(), statusBg, statusDot, statusLabel (+4 more)
 
-### Community 75 - "Flowvalidationrequest Flowdto Request"
+### Community 75 - "Flowpatchoperation Flowpatchresponse Module"
 Cohesion: 0.11
-Nodes (4): FlowDto, Override, FlowValidationRequest, Override
+Nodes (4): FlowPatchOperation, Override, FlowPatchResponse, Override
 
-### Community 77 - "Webapp Components Useaiassistant"
-Cohesion: 0.16
-Nodes (15): aiApi, AiAssistantPanel(), GenerationStepper(), providerLabel(), QuotaWarning, QuotaWarningBanner(), detectDomain(), extractVoicePrompts() (+7 more)
-
-### Community 78 - "Providerhealth Status Providermanager"
+### Community 77 - "Providerhealth Java Module"
 Cohesion: 0.11
 Nodes (4): ProviderHealth, Status, HEALTHY, UNHEALTHY
 
-### Community 79 - "Flowcondition Model Flow"
+### Community 78 - "Java Exception Module"
+Cohesion: 0.14
+Nodes (6): KnowledgeDocumentDao, ResourceNotFoundException, ServiceException, ValidationException, KnowledgeService, KnowledgeServiceTest
+
+### Community 80 - "Flowcondition Flowconditionbranch Module"
 Cohesion: 0.11
 Nodes (3): FlowCondition, Override, FlowConditionBranch
 
-### Community 80 - "Ivrtemplate Model Service"
+### Community 81 - "Ivrtemplate Java Module"
 Cohesion: 0.11
 Nodes (3): IvrTemplate, IvrTemplateRegistry, IvrTemplateRegistryTest
 
-### Community 84 - "Quotawarning Response Chatresponse"
-Cohesion: 0.10
-Nodes (3): QuotaWarning, Override, QuotaWarning
+### Community 84 - "Vxmlscenarioengine Initializeengine Module"
+Cohesion: 0.13
+Nodes (5): VxmlLoader, Logger, VxmlValidator, VxmlScenarioEngine, org.w3c.dom.Document
 
-### Community 86 - "Vxmlagihandler Telecom Ttsengine"
-Cohesion: 0.26
-Nodes (3): Element, paths, org.asteriskjava.fastagi.AgiChannel
+### Community 85 - "Java Groqaiprovider Module"
+Cohesion: 0.14
+Nodes (7): com.google.gson.JsonArray, GroqAiProvider, Gson, JsonArray, Override, OpenAiCompatibleClient, java.net.http.HttpClient
 
-### Community 87 - "Telecom Platform Asteriskimplementationplatformfactory"
+### Community 86 - "Conversationmemory Java Module"
 Cohesion: 0.18
-Nodes (11): ImplementationPlatformFactory, AsteriskImplementationPlatformFactory, Override, Override, MinimalConfiguration, org.jvoicexml.Configuration, org.jvoicexml.ConnectionInformation, org.jvoicexml.DocumentServer (+3 more)
+Nodes (3): ConversationMemory, MemoryEntry, ConversationMemoryTest
 
-### Community 88 - "Semanticcache Optimization Semanticcachetest"
+### Community 87 - "Semanticcache Semanticcachetest Module"
 Cohesion: 0.18
 Nodes (3): CacheEntry, SemanticCache, SemanticCacheTest
 
-### Community 90 - "Sentimentanalysisrequest Request Analysisscope"
-Cohesion: 0.12
-Nodes (5): AnalysisScope, MESSAGE, SESSION, Override, SentimentAnalysisRequest
+### Community 88 - "Aiflowservlettest Mapresultsettoflow Module"
+Cohesion: 0.15
+Nodes (3): ResultSet, AiFlowServletTest, StringWriter
 
-### Community 92 - "Summarizationrequest Request Summarytype"
+### Community 90 - "Chatrequest Java Module"
+Cohesion: 0.11
+Nodes (7): ChatRequest, Channel, CHAT, SMS, VOICE, WEB_WIDGET, WHATSAPP
+
+### Community 92 - "Summarizationrequest Summarytype Module"
 Cohesion: 0.12
 Nodes (5): SummaryType, ROLLING, SESSION, Override, SummarizationRequest
 
-### Community 96 - "Vxmlagicompatibilitytest Test Telecom"
-Cohesion: 0.19
-Nodes (4): AppTest, VxmlAgiCompatibilityTest, junit.framework.Test, junit.framework.TestCase
+### Community 96 - "Flowcanvas Node Module"
+Cohesion: 0.15
+Nodes (14): FlowCanvas(), getPortY(), straightLine(), Viewport, CATEGORIES, NODE_DEFS, NODE_ICONS, NodeDef (+6 more)
 
-### Community 98 - "Vxmlvalidator Telecom Validationresult"
+### Community 99 - "Setquotawarnings Quotawarning Module"
+Cohesion: 0.11
+Nodes (3): QuotaWarning, Override, QuotaWarning
+
+### Community 100 - "Sentimentanalysisrequest Analysisscope Module"
+Cohesion: 0.13
+Nodes (5): AnalysisScope, MESSAGE, SESSION, Override, SentimentAnalysisRequest
+
+### Community 102 - "Flowvalidationorchestrator Flowvalidationorchestratorresult Module"
+Cohesion: 0.26
+Nodes (4): FlowValidationOrchestrator, FlowValidationOrchestratorResult, FlowPatchImprovementRepairTest, FlowValidationOrchestratorTest
+
+### Community 103 - "Vxmlvalidator Validationerror Module"
 Cohesion: 0.15
 Nodes (4): Override, ValidationError, ValidationResult, VxmlValidator
 
-### Community 99 - "Schoolapiserver Telecom Openaicompatibleclienttest"
-Cohesion: 0.20
-Nodes (8): com.sun.net.httpserver.HttpExchange, com.sun.net.httpserver.HttpHandler, com.sun.net.httpserver.HttpServer, OpenAiCompatibleClientTest, EnrollHandler, GradesHandler, Override, SchoolApiServer
-
-### Community 107 - "Vxmlagihandler Telecom Vxmlsession"
-Cohesion: 0.19
-Nodes (7): Document, HttpClient, Logger, Override, VxmlAgiHandler, org.asteriskjava.fastagi.AgiRequest, org.asteriskjava.fastagi.BaseAgiScript
-
-### Community 108 - "Webapp Nodelibrary Flowcanvas"
-Cohesion: 0.16
-Nodes (13): FlowCanvas(), getPortY(), straightLine(), Viewport, CATEGORIES, NODE_DEFS, NODE_ICONS, NodeDef (+5 more)
-
-### Community 109 - "Cdrservice Service Cdrservlet"
+### Community 110 - "Cdrservlet Getcdrservice Module"
 Cohesion: 0.20
 Nodes (3): CdrSummary, CdrServlet, CdrService
 
-### Community 110 - "Modeltoflowrenderer Service Ollamaagent"
-Cohesion: 0.19
-Nodes (7): com.google.gson.JsonObject, JsonArray, FlowNode, JsonObject, ModelToFlowRenderer, JsonObject, OllamaAgent
-
-### Community 111 - "Databasemanager Appservletcontextlistener Config"
-Cohesion: 0.18
-Nodes (9): com.zaxxer.hikari.HikariDataSource, HikariDataSource, AppServletContextListener, Override, DatabaseManager, jakarta.servlet.annotation.WebListener, jakarta.servlet.ServletContextEvent, jakarta.servlet.ServletContextListener (+1 more)
-
-### Community 112 - "Agents Specializedagentregistry Specializedagent"
+### Community 113 - "Java Providerexception Module"
 Cohesion: 0.16
-Nodes (3): SpecializedAgent, SpecializedAgentRegistry, SpecializedAgentService
+Nodes (8): FailureReason, AUTH_FAILURE, PROVIDER_ERROR, PROVIDER_UNAVAILABLE, QUOTA_EXCEEDED, RATE_LIMITED, TIMEOUT, ProviderException
 
-### Community 116 - "Telecom Platform Asteriskspokeninputfactory"
-Cohesion: 0.20
-Nodes (7): AsteriskSpokenInputFactory, Override, AsteriskSynthesizedOutputFactory, Override, org.jvoicexml.implementation.ExternalResource, org.jvoicexml.implementation.ResourceFactory, org.jvoicexml.implementation.SynthesizedOutput
+### Community 114 - "Jvoicexml Implementation Module"
+Cohesion: 0.21
+Nodes (7): AsteriskSpokenInputFactory, Override, AsteriskTelephonyFactory, Override, org.jvoicexml.implementation.ResourceFactory, org.jvoicexml.implementation.SpokenInput, org.jvoicexml.implementation.Telephony
 
-### Community 120 - "Vxmlloader Telecom Securexmlfactory"
+### Community 115 - "Java Mockllmclient Module"
+Cohesion: 0.21
+Nodes (3): LlmProviderFactory, Override, MockLlmClient
+
+### Community 116 - "Java Voicepromptsgenerateservlet Module"
 Cohesion: 0.18
-Nodes (4): SecureXmlFactory, VxmlLoader, javax.xml.parsers.DocumentBuilderFactory, org.w3c.dom.Document
+Nodes (7): Override, VoicePromptsGenerateServlet, Override, VoicePromptsStreamServlet, VoicePromptDao, jakarta.servlet.annotation.MultipartConfig, jakarta.servlet.http.Part
 
-### Community 122 - "Openaicompatibleclient Aisummarizeservlet Gson"
-Cohesion: 0.17
-Nodes (5): com.google.gson.JsonArray, Gson, Override, OpenAiCompatibleClient, Message
-
-### Community 123 - "Groqclient Groqaiprovider Ollamaaiprovider"
-Cohesion: 0.20
-Nodes (5): GroqAiProvider, GroqClient, Override, OllamaAiProvider, java.net.http.HttpClient
-
-### Community 124 - "Refinedspeccache Service Refinedspeccachetest"
+### Community 122 - "Refinedspeccache Java Module"
 Cohesion: 0.23
 Nodes (3): CachedEntry, RefinedSpecCache, RefinedSpecCacheTest
 
-### Community 125 - "Vxmlscenarioengine Telecom Vxmlagihandler"
-Cohesion: 0.14
-Nodes (5): App, Logger, VxmlValidator, VxmlScenarioEngine, JVoiceXmlMain
-
-### Community 126 - "Minimalprofile Telecom Platform"
-Cohesion: 0.22
-Nodes (8): Override, MinimalProfile, org.jvoicexml.profile.Profile, org.jvoicexml.profile.SsmlParsingStrategyFactory, org.jvoicexml.profile.TagStrategyFactory, SsmlParsingStrategyFactory, TagStrategyFactory, VoiceXmlInterpreterContext
-
-### Community 127 - "Aiagent Model Aiagentregistry"
+### Community 123 - "Java Aiagent Module"
 Cohesion: 0.18
 Nodes (4): AiAgentServlet, Override, AiAgent, AiAgentRegistry
 
-### Community 135 - "Service Test Vxmltomodelconvertertest"
-Cohesion: 0.19
-Nodes (3): Deprecated, VxmlImportCompatibilityTest, VxmlToModelConverterTest
+### Community 129 - "Analyticstracker Addevent Module"
+Cohesion: 0.21
+Nodes (4): AnalyticsTracker, JsonArray, Override, org.asteriskjava.fastagi.AgiRequest
 
-### Community 142 - "Aioperation Service Flow"
-Cohesion: 0.15
-Nodes (12): AiOperation, CHAT, EXPORT_FLOW, EXPORT_JSON, EXPORT_XML, FLOW_SUMMARY, GENERATE_FLOW, IMPROVE_FLOW (+4 more)
-
-### Community 144 - "Asteriskconnectioninformation Telecom Platform"
-Cohesion: 0.29
+### Community 132 - "Asteriskconnectioninformation Java Module"
+Cohesion: 0.25
 Nodes (3): AsteriskConnectionInformation, Override, java.net.URI
 
-### Community 146 - "Corsfilter Config Jakarta"
+### Community 138 - "Java Jwtutil Module"
+Cohesion: 0.27
+Nodes (4): io.jsonwebtoken.Claims, JwtUtil, PasswordUtil, javax.crypto.SecretKey
+
+### Community 139 - "Jakarta Servlet Module"
 Cohesion: 0.29
 Nodes (8): CorsFilter, Override, jakarta.servlet.annotation.WebFilter, jakarta.servlet.Filter, jakarta.servlet.FilterChain, jakarta.servlet.FilterConfig, jakarta.servlet.ServletRequest, jakarta.servlet.ServletResponse
 
-### Community 152 - "Callhistory Webapp Screens"
-Cohesion: 0.21
-Nodes (10): CallHistory(), CallRecord, CALLS, cdrToCall(), DTMF_INPUTS, formatCallDate(), formatCallDuration(), IVR_PATH (+2 more)
+### Community 140 - "Flowdao Flowservice Module"
+Cohesion: 0.27
+Nodes (3): FlowDao, FlowService, FlowServiceTest
 
-### Community 153 - "Testing Docker Compose"
-Cohesion: 0.20
-Nodes (11): asterisk, ivr-ai-engine, ivr-engine, ivr-webapp, Asterisk, IVR AI Engine, IVR Engine, IVR WebApp (+3 more)
+### Community 143 - "Flownodetype Flownodedto Module"
+Cohesion: 0.17
+Nodes (8): FlowNodeType, COLLECT_INPUT, CONDITION, FUNCTION_CALL, HANGUP, MENU, PROMPT, TRANSFER
 
-### Community 157 - "Geminiclient Executegemini Generateresponse"
+### Community 151 - "Geminiclient Executegemini Module"
 Cohesion: 0.33
 Nodes (3): GeminiClient, Gson, Override
 
-### Community 162 - "Webapp Flowparser Buildflowfromresponse"
-Cohesion: 0.36
-Nodes (8): buildFlowFromResponse(), layoutTree(), makeNode(), ParsedFlowJson, safeNodeType(), tryParseFlowJson(), VALID_NODE_TYPES, warnedEdges
+### Community 155 - "Container Engine Module"
+Cohesion: 0.31
+Nodes (9): Asterisk PBX Container, IVR AI Engine Container (REST API), IVR Engine Container (FastAGI), IVR WebApp Container (React), NeonDB PostgreSQL, Ollama (granite4.1:8b), NexusIVR Application, Tailwind CSS v4 (+1 more)
 
-### Community 167 - "Asterisktelephonyfactory Telecom Platform"
+### Community 161 - "Asterisksynthesizedoutputfactory Java Module"
 Cohesion: 0.46
-Nodes (3): AsteriskTelephonyFactory, Override, org.jvoicexml.implementation.Telephony
+Nodes (3): AsteriskSynthesizedOutputFactory, Override, org.jvoicexml.implementation.SynthesizedOutput
 
-### Community 169 - "Voiceprompts Webapp Screens"
+### Community 163 - "Voiceprompts Actionmenu Module"
 Cohesion: 0.29
 Nodes (6): parseDurationSec(), Prompt, prompts, typeCls, VoicePrompts(), WAVEFORM
 
-### Community 170 - "Platform Architecture Service"
+### Community 164 - "Service Asterisk Module"
 Cohesion: 0.29
 Nodes (7): AI Service, Asterisk PBX, Core Java Backend, OpenAI API, PostgreSQL Database, PSTN / Public Telecom Network, React.js Frontend
 
-### Community 177 - "Bilingual Demo Fastagi"
+### Community 165 - "Engine Asterisk Module"
+Cohesion: 0.29
+Nodes (7): Asterisk, IVR AI Engine, IVR Engine, IVR WebApp, ModelToVxmlExporter, Ollama, SecureXmlFactory
+
+### Community 166 - "Aichatservlet Getchatservice Module"
+Cohesion: 0.33
+Nodes (3): AiChatServlet, AiChatServletTest, StringWriter
+
+### Community 172 - "Fastagi Vxml Module"
 Cohesion: 0.67
 Nodes (3): agi_sim.py, FastAGI VXML renderer, Ollama
 
 ## Knowledge Gaps
-- **251 isolated node(s):** `com.nexusivr.ai:nexusivr-ai-engine`, `CLOSED`, `OPEN`, `HALF_OPEN`, `HEALTHY` (+246 more)
+- **232 isolated node(s):** `com.nexusivr.ai:nexusivr-ai-engine`, `CLOSED`, `OPEN`, `HALF_OPEN`, `HEALTHY` (+227 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **86 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **80 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `FlowNode` connect `Flownode Model Flow` to `Service Flowmodelautorepair Modelautorepair`, `Flowqueue Model Flow`, `Flowrecording Model Flow`, `Service Unifiedaiengine Test`, `Xmllogformatter Llmresponsenormalizationexception Util`, `Flowdatabase Model Flow`, `Flowtransfer Model Flow`, `Flowvoicemail Model Flow`, `Flowwebhook Model Flow`, `Model Flow Flowchoice`, `Sessionmemorystore Service Getdomain`, `Flownodetype Model Flow`, `Promptbuilder Test Promptbuildertest`, `Airesponse Service Test`, `Service Flowpatchappliertest Test`, `Flowprompt Model Flow`, `Flowcondition Model Flow`, `Flowinput Model Flow`, `Service Sessionmemory Sessionmemorystore`, `Test Service Ollamaclienttest`, `Flowai Model Flow`, `Flowapi Model Flow`, `Flowbusinesshours Model Flow`?**
-  _High betweenness centrality (0.066) - this node is a cross-community bridge._
-- **Why does `ProviderManager` connect `Providermanager Providermanagertest Test` to `Controller Baseaiservlet Aiflowservlet`, `Controller Serviceregistry Aiservice`, `Service Domainflowgenerator Providerexception`, `Service Unifiedaiengine Test`, `Xmllogformatter Llmresponsenormalizationexception Util`, `Agents Basespecializedagent Businessplanneragent`, `Service Test Unifiedaienginetwopasstest`, `Aiproviderfactory Providermanager Test`, `Promptbuilder Test Promptbuildertest`, `Routingexpertagent Agents Override`, `Service Exception Generationcancellationregistry`, `Airesponse Service Test`, `Service Flowpatchappliertest Test`, `Circuitbreaker Circuitbreakerbackofftest Test`, `Optimization Quotaawarerouter Quotaawareroutertest`, `Retrypolicy Service Domaindetector`, `Providerattemptdto Common Chatresponse`, `Optimization Tokenusagetracker Tokenusagetrackertest`, `Service Test Flowvalidationorchestratortest`, `Providerhealth Status Providermanager`, `Quotawarning Response Chatresponse`, `Agents Specializedagentregistry Specializedagent`?**
-  _High betweenness centrality (0.057) - this node is a cross-community bridge._
-- **Why does `paths` connect `Vxmlagihandler Telecom Ttsengine` to `Flow Service Model`, `Webapp Tsconfig Compileroptions`, `Controller Voicepromptsuploadservlet Voicepromptdao`, `Test Service Functionexecutortest`, `Ttsengine Telecom Consume`, `Service Flowpublishservice Flowpublishservicetest`, `Cdrservice Service Cdrservlet`, `Llmconfig Config Groqclient`, `Vxmlloader Telecom Securexmlfactory`?**
-  _High betweenness centrality (0.049) - this node is a cross-community bridge._
+- **Why does `FlowNode` connect `Flownode Getairole Module` to `Ensureendnode Findleafnodes Module`, `Java Validate Module`, `Flowrecording Getrecording Module`, `Java Flowcache Module`, `Flowdatabase Java Module`, `Flowtransfer Gettransfer Module`, `Flowvoicemail Getvoicemail Module`, `Flowwebhook Getwebhook Module`, `Addedgepatch Java Module`, `Java Flowprompt Module`, `Llmresponsenormalizationexception Java Module`, `Google Gson Module`, `Flowchoice Java Module`, `Flowcondition Flowconditionbranch Module`, `Flowinput Java Module`, `Flowai Java Module`, `Java Mockllmclient Module`, `Flowapi Java Module`, `Flowbusinesshours Java Module`, `Flowqueue Getqueue Module`?**
+  _High betweenness centrality (0.103) - this node is a cross-community bridge._
+- **Why does `paths` connect `Vxmlagihandler Asteriskjava Module` to `Gson Globalaiconfig Module`, `Ttsengine Java Module`, `Tsconfig Json Module`, `Setup Flowdraftservice Module`, `Java Ollamaclienttest Module`, `Override Doget Module`, `Cdrservlet Getcdrservice Module`, `Java Voicepromptsgenerateservlet Module`?**
+  _High betweenness centrality (0.051) - this node is a cross-community bridge._
+- **Why does `MessageRole` connect `Getrole Setrole Module` to `Aimessage Java Module`, `Java Ollamaclienttest Module`, `Override Doget Module`, `Conversationresponse Aiprovider Module`, `Chatresponse Equals Module`, `Java Dataaccessexception Module`, `Java Functionexecutor Module`, `Java Flowprompt Module`, `Llmresponsenormalizationexception Java Module`, `Java Getaiservice Module`?**
+  _High betweenness centrality (0.044) - this node is a cross-community bridge._
 - **Are the 27 inferred relationships involving `ProviderManager` (e.g. with `.testAllAgentsReturnTextOnly()` and `.testBusinessPlannerAgentAdvice()`) actually correct?**
   _`ProviderManager` has 27 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `com.nexusivr.ai:nexusivr-ai-engine`, `CLOSED`, `OPEN` to the rest of the system?**
-  _251 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Flow Service Model` be split into smaller, more focused modules?**
-  _Cohesion score 0.05568039950062422 - nodes in this community are weakly interconnected._
-- **Should `Webapp Screens Superadmindashboard` be split into smaller, more focused modules?**
-  _Cohesion score 0.03669467787114846 - nodes in this community are weakly interconnected._
+  _232 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Ensureendnode Findleafnodes Module` be split into smaller, more focused modules?**
+  _Cohesion score 0.08124346917450366 - nodes in this community are weakly interconnected._
+- **Should `Java Validate Module` be split into smaller, more focused modules?**
+  _Cohesion score 0.08907563025210084 - nodes in this community are weakly interconnected._

@@ -97,6 +97,7 @@ public class VxmlAgiHandler extends BaseAgiScript {
         String callerId = "unknown";
         String vxmlName = "hello"; // Default VXML
         String sessionId = null;
+        AnalyticsTracker tracker = null;
 
         try {
             bargeDigit = 0;
@@ -112,6 +113,16 @@ public class VxmlAgiHandler extends BaseAgiScript {
             sessionId = createSessionId(callerId, request);
             System.out.println("[VxmlAgiHandler] Session ID: " + sessionId);
 
+            // Initialize tracker and start recording
+            tracker = new AnalyticsTracker(sessionId, callerId);
+            String recordingPath = "/var/lib/asterisk/sounds/records/" + sessionId + ".wav";
+            try {
+                channel.exec("MixMonitor", recordingPath);
+                tracker.setRecordingUrl("/records/" + sessionId + ".wav"); // Storing relative to sounds for frontend access
+            } catch (Exception e) {
+                System.out.println("[VxmlAgiHandler] Could not start MixMonitor: " + e.getMessage());
+            }
+
             // Step 3: Initialize VXML engine if needed
             initializeEngine();
 
@@ -120,7 +131,7 @@ public class VxmlAgiHandler extends BaseAgiScript {
 
             // Step 5: Execute VXML scenario
             System.out.println("[VxmlAgiHandler] Executing VXML: " + vxmlName);
-            VxmlSession vxmlSession = executeVxmlScenario(vxmlName, connInfo, sessionId, channel);
+            VxmlSession vxmlSession = executeVxmlScenario(vxmlName, connInfo, sessionId, channel, tracker);
 
             // Step 6: Set Asterisk variables with results
             setAsteriskVariables(channel, vxmlSession);
@@ -133,6 +144,10 @@ public class VxmlAgiHandler extends BaseAgiScript {
         } catch (Exception e) {
             logger.error("[VxmlAgiHandler] Exception: " + e.getMessage(), e);
             handleError(channel, sessionId, e);
+        } finally {
+            if (tracker != null) {
+                tracker.saveToDatabase();
+            }
         }
     }
 
@@ -280,13 +295,15 @@ public class VxmlAgiHandler extends BaseAgiScript {
     private VxmlSession executeVxmlScenario(String vxmlName,
             ConnectionInformation connInfo,
             String sessionId,
-            AgiChannel channel) throws Exception {
+            AgiChannel channel,
+            AnalyticsTracker tracker) throws Exception {
         try {
             System.out.println("[VxmlAgiHandler] Starting VXML execution: " + vxmlName);
             VxmlSession session = vxmlEngine.executeVxml(vxmlName, connInfo);
 
             if (session != null) {
                 session.setVariable("agi_session_id", sessionId);
+                session.setTracker(tracker);
             }
 
             // Render VXML Document prompts & DTMF input interactively
@@ -354,6 +371,9 @@ public class VxmlAgiHandler extends BaseAgiScript {
             String choiceStr = String.valueOf(choice);
             if (session != null) {
                 session.setVariable("user_choice", choiceStr);
+                if (session.getTracker() != null) {
+                    session.getTracker().addEvent("MENU_CHOICE", choiceStr);
+                }
             }
             System.out.println("[VxmlAgiHandler] DTMF choice received: " + choiceStr);
 
@@ -373,6 +393,9 @@ public class VxmlAgiHandler extends BaseAgiScript {
             if (targetFormId != null) {
                 renderDialogById(menu.getOwnerDocument(), targetFormId, channel, session);
             } else {
+                if (session != null && session.getTracker() != null) {
+                    session.getTracker().addEvent("INVALID_INPUT", choiceStr);
+                }
                 org.w3c.dom.Element nomatch = findChildElement(menu, "nomatch");
                 if (nomatch != null) {
                     renderFormElement(nomatch, channel, session);
@@ -383,6 +406,9 @@ public class VxmlAgiHandler extends BaseAgiScript {
                 }
             }
         } else {
+            if (session != null && session.getTracker() != null) {
+                session.getTracker().addEvent("TIMEOUT", null);
+            }
             org.w3c.dom.Element noinput = findChildElement(menu, "noinput");
             if (noinput != null) {
                 renderFormElement(noinput, channel, session);
@@ -568,6 +594,9 @@ public class VxmlAgiHandler extends BaseAgiScript {
                     String varKey = (fieldName != null && !fieldName.isEmpty()) ? fieldName : "user_input";
                     if (session != null) {
                         session.setVariable(varKey, inputStr.toString());
+                        if (session.getTracker() != null) {
+                            session.getTracker().addEvent("FIELD_INPUT", inputStr.toString());
+                        }
                     }
                     System.out.println("[VxmlAgiHandler] Field " + varKey + " input: " + inputStr.toString());
 
