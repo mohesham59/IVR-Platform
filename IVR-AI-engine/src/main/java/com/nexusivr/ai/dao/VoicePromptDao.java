@@ -20,22 +20,32 @@ public class VoicePromptDao {
 
     private static final String UPDATE_SQL = """
         UPDATE voice_prompts SET 
-            language = ?, duration = ?, type = ?, created_by = ?, file_path = ?, size_bytes = ?, updated_at = CURRENT_TIMESTAMP
+            language = ?, duration = ?, type = ?, created_by = ?, file_path = ?, size_bytes = ?, prompt_text = ?, updated_at = CURRENT_TIMESTAMP
         WHERE name = ?
         """;
 
     private static final String INSERT_SQL = """
-        INSERT INTO voice_prompts (name, language, duration, type, created_by, file_path, size_bytes)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO voice_prompts (name, language, duration, type, created_by, file_path, size_bytes, prompt_text)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """;
 
     private static final String DELETE_SQL = "DELETE FROM voice_prompts WHERE name = ?";
     
-    private static final String FIND_ALL_SQL = "SELECT name, language, duration, type, created_by, file_path, size_bytes, updated_at FROM voice_prompts ORDER BY updated_at DESC";
+    // We LEFT JOIN with users to get the actual username for the frontend!
+    private static final String FIND_ALL_SQL = "SELECT v.name, v.language, v.duration, v.type, COALESCE(u.username, 'Tenant Admin') as created_by, v.file_path, v.size_bytes, v.prompt_text, v.updated_at FROM voice_prompts v LEFT JOIN users u ON v.created_by = u.id ORDER BY v.updated_at DESC";
     
     private static final String FIND_BY_NAME_SQL = "SELECT file_path FROM voice_prompts WHERE name = ?";
+    
+    private static final String DEFAULT_USER_UUID = "6d1bbdd0-a7d1-4b02-815b-f19dbf50d9db";
 
-    public void upsert(String name, String language, String duration, String type, String createdBy, String filePath, long sizeBytes) throws SQLException {
+    public void upsert(String name, String language, String duration, String type, String createdBy, String filePath, long sizeBytes, String promptText) throws SQLException {
+        java.util.UUID userUuid;
+        try {
+            userUuid = java.util.UUID.fromString(createdBy);
+        } catch (IllegalArgumentException e) {
+            userUuid = java.util.UUID.fromString(DEFAULT_USER_UUID);
+        }
+
         try (Connection conn = DatabaseManager.getConnection()) {
             boolean exists = false;
             try (PreparedStatement ps = conn.prepareStatement(FIND_ID_BY_NAME_SQL)) {
@@ -50,10 +60,11 @@ public class VoicePromptDao {
                     ps.setString(1, language);
                     ps.setString(2, duration);
                     ps.setString(3, type);
-                    ps.setString(4, createdBy);
+                    ps.setObject(4, userUuid);
                     ps.setString(5, filePath);
                     ps.setLong(6, sizeBytes);
-                    ps.setString(7, name);
+                    ps.setString(7, promptText);
+                    ps.setString(8, name);
                     ps.executeUpdate();
                 }
             } else {
@@ -62,9 +73,10 @@ public class VoicePromptDao {
                     ps.setString(2, language);
                     ps.setString(3, duration);
                     ps.setString(4, type);
-                    ps.setString(5, createdBy);
+                    ps.setObject(5, userUuid);
                     ps.setString(6, filePath);
                     ps.setLong(7, sizeBytes);
+                    ps.setString(8, promptText);
                     ps.executeUpdate();
                 }
             }
@@ -94,6 +106,7 @@ public class VoicePromptDao {
                 p.put("createdBy", rs.getString("created_by"));
                 p.put("filePath", rs.getString("file_path"));
                 p.put("sizeBytes", rs.getLong("size_bytes"));
+                p.put("promptText", rs.getString("prompt_text"));
                 p.put("updatedAt", rs.getTimestamp("updated_at"));
                 prompts.add(p);
             }

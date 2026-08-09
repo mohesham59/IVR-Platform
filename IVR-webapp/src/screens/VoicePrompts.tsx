@@ -17,6 +17,7 @@ export interface Prompt {
   status: string;
   size: string;
   usedIn: string[];
+  promptText?: string;
 }
 
 const prompts: Prompt[] = []
@@ -251,6 +252,8 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
   const [volume, setVolume] = useState(80)
   const animFrameRef = useRef<number | null>(null)
 
+  const autoPlayRef = useRef(false)
+
   useEffect(() => {
     if (selected) {
       if (audioRef.current) {
@@ -280,11 +283,20 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
         setCurrentTime(0)
       }
 
-      setPlaying(false)
       setProgress(0)
       setCurrentTime(0)
 
       audio.load()
+
+      if (autoPlayRef.current) {
+        audio.play().then(() => setPlaying(true)).catch(err => {
+          console.error('Auto-play failed:', err)
+          setPlaying(false)
+        })
+        autoPlayRef.current = false
+      } else {
+        setPlaying(false)
+      }
 
       return () => {
         if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
@@ -570,7 +582,15 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2.5">
-                          <button onClick={e => { e.stopPropagation(); setSelected(p); togglePlay() }}
+                          <button onClick={e => { 
+                              e.stopPropagation(); 
+                              if (selected?.id === p.id) {
+                                togglePlay();
+                              } else {
+                                autoPlayRef.current = true;
+                                setSelected(p);
+                              }
+                            }}
                             className="w-7 h-7 rounded-lg bg-[#EFF6FF] flex items-center justify-center text-[#2563EB] hover:bg-[#DBEAFE] transition-colors flex-shrink-0">
                             <Play className="w-3 h-3" />
                           </button>
@@ -662,6 +682,20 @@ export default function VoicePrompts({ onLogout }: { onLogout: () => void }) {
                     <span className="text-[#9CA3AF] text-[10px] font-mono">{selected.duration}</span>
                   </div>
                 </div>
+
+                {/* File Details */}
+                <div className="flex flex-col gap-2">
+                  <div className="flex justify-between items-center py-2.5 border-b border-[#F3F4F6] last:border-0">
+                    <span className="text-[#6B7280] text-[13px]">Created</span>
+                    <span className="text-[#1F2937] text-[13px] font-medium">{new Date(selected.id).toLocaleDateString()}</span>
+                  </div>
+                </div>
+                {selected.promptText && (
+                  <div className="mt-4 p-3 bg-[#F9FAFB] rounded-lg border border-[#E5E7EB]">
+                    <span className="text-[#6B7280] text-[13px] font-medium mb-1.5 block">Original Text Prompt</span>
+                    <p className="text-[#1F2937] text-[13px] leading-relaxed break-words">{selected.promptText}</p>
+                  </div>
+                )}
 
                 {/* Controls */}
                 <div className="flex items-center justify-center gap-3">

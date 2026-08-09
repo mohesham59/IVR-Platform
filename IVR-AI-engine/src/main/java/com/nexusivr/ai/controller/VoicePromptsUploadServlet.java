@@ -117,7 +117,7 @@ public class VoicePromptsUploadServlet extends BaseAiServlet {
             responseData.put("type", "Uploaded");
             responseData.put("createdBy", username);
 
-            new VoicePromptDao().upsert(fileName, language, durationStr, "Uploaded", username, targetPath.toString(), fileSize);
+            new VoicePromptDao().upsert(fileName, language, durationStr, "Uploaded", username, targetPath.toString(), fileSize, null);
 
             sendJsonResponse(resp, HttpServletResponse.SC_OK, responseData);
 
@@ -163,6 +163,7 @@ public class VoicePromptsUploadServlet extends BaseAiServlet {
                 fileData.put("createdBy", dbp.get("createdBy"));
                 fileData.put("size", formatSize((Long) dbp.get("sizeBytes")));
                 fileData.put("language", dbp.get("language"));
+                fileData.put("promptText", dbp.get("promptText"));
                 fileData.put("usedIn", new java.util.ArrayList<>());
                 filesList.add(fileData);
             }

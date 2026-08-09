@@ -122,7 +122,7 @@ public class VoicePromptsGenerateServlet extends BaseAiServlet {
 
             String username = "Tenant Admin"; // Mock logic for demo
 
-            new VoicePromptDao().upsert(fileName, language, durationStr, "AI Generated", username, targetWavFile.toString(), fileSize);
+            new VoicePromptDao().upsert(fileName, language, durationStr, "AI Generated", username, targetWavFile.toString(), fileSize, text);
 
             Map<String, Object> responseData = new LinkedHashMap<>();
             responseData.put("success", true);
