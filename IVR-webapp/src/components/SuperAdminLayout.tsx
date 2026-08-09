@@ -1,8 +1,9 @@
 import { useState, useEffect, type ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { backendUrl } from '../api/backendUrl'
+import NotificationBell from './NotificationBell'
 import {
-  Activity, BarChart3, Bell, Building2, ChevronDown, ChevronLeft, ChevronRight,
+  Activity, BarChart3, Building2, ChevronDown, ChevronLeft, ChevronRight,
   CreditCard, LayoutDashboard, LogOut, Moon, Phone, ScrollText, Search, Settings, Users,
 } from 'lucide-react'
 
@@ -28,7 +29,14 @@ interface SuperAdminLayoutProps {
 export default function SuperAdminLayout({ children, pageTitle, pageSubtitle, headerActions, onLogout }: SuperAdminLayoutProps) {
   const [collapsed, setCollapsed] = useState(false)
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark')
-  const [currentUser, setCurrentUser] = useState<{username: string, email: string, isSuperadmin: boolean} | null>(null)
+  const [currentUser, setCurrentUser] = useState<{username: string, email: string, isSuperadmin: boolean} | null>(() => {
+    const saved = localStorage.getItem('nexus_user')
+    try {
+      return saved ? JSON.parse(saved) : null
+    } catch {
+      return null
+    }
+  })
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -83,7 +91,7 @@ export default function SuperAdminLayout({ children, pageTitle, pageSubtitle, he
           <div className="relative flex-1 max-w-sm"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" /><input placeholder="Search companies, users…" className="w-full h-9 pl-9 pr-4 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] text-[#1F2937] text-sm placeholder-[#9CA3AF] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition-all" /></div>
           <div className="flex items-center gap-2 ml-auto">
             <button onClick={() => setDarkMode(!darkMode)} className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${darkMode ? 'bg-[#1F2937] text-white' : 'text-[#6B7280] hover:bg-[#F3F4F6]'}`}><Moon className="w-4 h-4" /></button>
-            <button className="relative w-8 h-8 rounded-lg flex items-center justify-center text-[#6B7280] hover:bg-[#F3F4F6] transition-colors"><Bell className="w-4 h-4" /><span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#EF4444]" /></button>
+            <NotificationBell />
             <button className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-lg hover:bg-[#F3F4F6] transition-colors"><div className="w-7 h-7 rounded-full bg-[#2563EB] flex items-center justify-center text-white text-xs font-bold">{currentUser?.username ? currentUser.username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'SA'}</div><div className="text-left hidden sm:block"><div className="text-[#1F2937] text-xs font-semibold leading-tight">{currentUser?.username || 'Super Admin'}</div><div className="text-[#9CA3AF] text-[10px]">{currentUser ? (currentUser.isSuperadmin ? 'Super Admin' : 'Tenant Admin') : 'Super Admin'}</div></div><ChevronDown className="w-3 h-3 text-[#9CA3AF]" /></button>
             <button onClick={() => { onLogout(); navigate('/') }} className="w-8 h-8 rounded-lg flex items-center justify-center text-[#9CA3AF] hover:text-[#EF4444] hover:bg-[#FEF2F2] transition-colors"><LogOut className="w-4 h-4" /></button>
           </div>
