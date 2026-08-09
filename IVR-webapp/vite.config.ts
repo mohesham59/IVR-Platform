@@ -15,6 +15,20 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     proxy: {
+      '/api/payments': {
+        target: 'http://localhost:8082',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/payments/, '/nexusivr-payment-service/api/payments'),
+      },
+      '/nexusivr-ai-engine/api/payments': {
+        target: 'http://localhost:8082',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/nexusivr-ai-engine\/api\/payments/, '/nexusivr-payment-service/api/payments'),
+      },
+      '/nexusivr-ai-engine/api': {
+        target: 'http://localhost:8081',
+        changeOrigin: true,
+      },
       '/api': {
         target: 'http://localhost:8081',
         changeOrigin: true,
