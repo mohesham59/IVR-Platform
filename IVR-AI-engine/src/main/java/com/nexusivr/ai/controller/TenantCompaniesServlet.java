@@ -76,6 +76,12 @@ public class TenantCompaniesServlet extends BaseAiServlet {
                 map.put("isActive", t.getId() != null && t.getId().equalsIgnoreCase(activeTenantId));
                 map.put("createdAt", t.getCreatedAt() != null ? t.getCreatedAt().toString() : "");
                 map.put("updatedAt", t.getUpdatedAt() != null ? t.getUpdatedAt().toString() : "");
+                map.put("subscriptionPlanId", t.getSubscriptionPlanId());
+                map.put("subscriptionStatus", t.getSubscriptionStatus());
+                map.put("subscriptionExpiresAt", t.getSubscriptionExpiresAt() != null ? t.getSubscriptionExpiresAt().toString() : null);
+                map.put("subscriptionPlanName", t.getSubscriptionPlanName());
+                map.put("subscriptionPlanPrice", t.getSubscriptionPlanPrice());
+                map.put("subscriptionPlanInterval", t.getSubscriptionPlanInterval());
                 responseList.add(map);
             }
 

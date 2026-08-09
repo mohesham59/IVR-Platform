@@ -42,6 +42,12 @@ public class SuperAdminTenantsServlet extends BaseAiServlet {
                 map.put("status", t.getStatus());
                 map.put("createdAt", t.getCreatedAt() != null ? t.getCreatedAt().toString() : "");
                 map.put("updatedAt", t.getUpdatedAt() != null ? t.getUpdatedAt().toString() : "");
+                map.put("subscriptionPlanId", t.getSubscriptionPlanId());
+                map.put("subscriptionStatus", t.getSubscriptionStatus());
+                map.put("subscriptionExpiresAt", t.getSubscriptionExpiresAt() != null ? t.getSubscriptionExpiresAt().toString() : null);
+                map.put("subscriptionPlanName", t.getSubscriptionPlanName());
+                map.put("subscriptionPlanPrice", t.getSubscriptionPlanPrice());
+                map.put("subscriptionPlanInterval", t.getSubscriptionPlanInterval());
                 responseList.add(map);
             }
 
@@ -81,8 +87,9 @@ public class SuperAdminTenantsServlet extends BaseAiServlet {
             String displayName = json.get("displayName").getAsString().trim();
             String ownerUserId = json.has("ownerUserId") ? json.get("ownerUserId").getAsString() : null;
             String status = json.has("status") ? json.get("status").getAsString() : "ACTIVE";
+            String subscriptionPlanId = json.has("subscriptionPlanId") ? json.get("subscriptionPlanId").getAsString() : null;
 
-            TenantDao.Tenant created = tenantDao.createTenant(displayName, ownerUserId, status);
+            TenantDao.Tenant created = tenantDao.createTenant(displayName, ownerUserId, status, subscriptionPlanId);
             if (created != null) {
                 Map<String, Object> result = new LinkedHashMap<>();
                 result.put("success", true);
@@ -113,8 +120,45 @@ public class SuperAdminTenantsServlet extends BaseAiServlet {
             String displayName = json.has("displayName") ? json.get("displayName").getAsString().trim() : null;
             String ownerUserId = json.has("ownerUserId") ? json.get("ownerUserId").getAsString() : null;
             String status = json.has("status") ? json.get("status").getAsString() : "ACTIVE";
+            String subscriptionPlanId = json.has("subscriptionPlanId") ? json.get("subscriptionPlanId").getAsString() : null;
 
-            boolean updated = tenantDao.updateTenant(tenantId, displayName, ownerUserId, status);
+            TenantDao.Tenant existing = tenantDao.findById(tenantId);
+            String existingPlanId = existing != null ? existing.getSubscriptionPlanId() : null;
+            String existingPlanName = (existing != null && existing.getSubscriptionPlanName() != null)
+                    ? existing.getSubscriptionPlanName()
+                    : "No Plan (None)";
+
+            boolean updated = tenantDao.updateTenant(tenantId, displayName, ownerUserId, status, subscriptionPlanId);
+            
+            if (updated) {
+                boolean planChanged = false;
+                if (subscriptionPlanId != null && !subscriptionPlanId.isBlank()) {
+                    if (existingPlanId == null || !existingPlanId.equals(subscriptionPlanId)) {
+                        planChanged = true;
+                    }
+                } else if (existingPlanId != null && !existingPlanId.isBlank()) {
+                    planChanged = true;
+                }
+
+                logger.info("Tenant update: tenantId={}, existingPlanId={}, newPlanId={}, planChanged={}",
+                        tenantId, existingPlanId, subscriptionPlanId, planChanged);
+
+                if (planChanged) {
+                    String newPlanName = tenantDao.getPlanNameById(subscriptionPlanId);
+                    String message = "Your administrator changed your subscription plan from " + existingPlanName + " to " + newPlanName + ".";
+                    String linkUrl = "/tenant/companies";
+                    logger.info("Creating PLAN_OVERRIDE notification for tenantId={}, message='{}'", tenantId, message);
+                    boolean notifCreated = new com.nexusivr.ai.dao.NotificationDao().createNotification(
+                            java.util.UUID.fromString(tenantId),
+                            null,
+                            message,
+                            linkUrl,
+                            "PLAN_OVERRIDE"
+                    );
+                    logger.info("PLAN_OVERRIDE notification created={} for tenantId={}", notifCreated, tenantId);
+                }
+            }
+
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("success", updated);
             result.put("message", updated ? "Company updated successfully" : "Failed to update company");

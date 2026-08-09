@@ -7,9 +7,9 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-# Install asterisk so the container has the CLI tool for add_extension.sh,
-# plus python3/gTTS/ffmpeg so voice-prompt generation subprocesses work in-container.
-RUN apt-get update && apt-get install -y asterisk python3 python3-pip ffmpeg && \
+RUN apt-get update --fix-missing && \
+    (apt-get install -y --no-install-recommends asterisk python3 python3-pip ffmpeg curl || \
+     (sleep 5 && apt-get update && apt-get install -y --no-install-recommends asterisk python3 python3-pip ffmpeg curl)) && \
     pip3 install --break-system-packages --no-cache-dir gTTS && \
     rm -rf /var/lib/apt/lists/*
 

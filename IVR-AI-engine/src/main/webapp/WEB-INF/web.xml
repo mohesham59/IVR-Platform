@@ -21,6 +21,20 @@
         <url-pattern>/api/*</url-pattern>
     </filter-mapping>
 
+    <!-- Health Servlet -->
+    <servlet>
+        <servlet-name>HealthServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.HealthServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>HealthServlet</servlet-name>
+        <url-pattern>/health</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>HealthServlet</servlet-name>
+        <url-pattern>/api/v1/health</url-pattern>
+    </servlet-mapping>
+
     <!-- Auth Servlet -->
     <servlet>
         <servlet-name>AuthServlet</servlet-name>
@@ -258,6 +272,20 @@
     <servlet-mapping>
         <servlet-name>VoicePromptsGenerateServlet</servlet-name>
         <url-pattern>/api/v1/voice-prompts/generate</url-pattern>
+    </servlet-mapping>
+
+    <!-- Notifications Servlet -->
+    <servlet>
+        <servlet-name>NotificationServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.NotificationServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>NotificationServlet</servlet-name>
+        <url-pattern>/api/v1/notifications</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>NotificationServlet</servlet-name>
+        <url-pattern>/api/v1/notifications/*</url-pattern>
     </servlet-mapping>
 
 </web-app>
