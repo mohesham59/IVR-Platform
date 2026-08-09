@@ -39,3 +39,7 @@ asterisk-sounds/
 
 # Asterisk CDR CSV output (runtime call records)
 asterisk-cdr/
+
+# Local HTTP debug/test response captures
+buzz_history.json
+history.json
