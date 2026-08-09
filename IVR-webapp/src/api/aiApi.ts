@@ -3,6 +3,8 @@
  * Connects React frontend components to backend Servlets at /api/v1/ai/*
  */
 
+import { fetchWithRetry } from './backendUrl';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1/ai';
 const DEFAULT_TENANT_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -135,7 +137,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   };
 
   try {
-    const res = await fetch(url, { ...options, headers });
+    const res = await fetchWithRetry(url, { ...options, headers });
     if (!res.ok) {
       const errorText = await res.text();
       if (res.status === 404) {

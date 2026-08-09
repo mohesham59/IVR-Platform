@@ -15,12 +15,25 @@ export interface DbTenant {
   status: string
   createdAt: string
   updatedAt: string
+  subscriptionPlanId?: string
+  subscriptionStatus?: string
+  subscriptionExpiresAt?: string
+  subscriptionPlanName?: string
+  subscriptionPlanPrice?: number
+  subscriptionPlanInterval?: string
 }
 
 export interface UserOption {
   id: string
   username: string
   email: string
+}
+
+export interface SubscriptionPlan {
+  id: string
+  name: string
+  pricePiasters: number
+  billingInterval: string
 }
 
 const STATUSES = ['All Status', 'ACTIVE', 'INACTIVE', 'SUSPENDED']
@@ -45,6 +58,7 @@ function formatDate(dateStr?: string): string {
 export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void }) {
   const [tenantsList, setTenantsList] = useState<DbTenant[]>([])
   const [userOptions, setUserOptions] = useState<UserOption[]>([])
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([])
   const [selectedTenant, setSelectedTenant] = useState<DbTenant | null>(null)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState('All Status')
@@ -62,10 +76,33 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
   const [formDisplayName, setFormDisplayName] = useState('')
   const [formOwnerUserId, setFormOwnerUserId] = useState('')
   const [formStatus, setFormStatus] = useState('ACTIVE')
+  const [formSubscriptionPlanId, setFormSubscriptionPlanId] = useState('')
 
   // Searchable Owner Select State
   const [ownerSearch, setOwnerSearch] = useState('')
   const [isOwnerDropdownOpen, setIsOwnerDropdownOpen] = useState(false)
+  const [showOverrideConfirm, setShowOverrideConfirm] = useState(false)
+
+  const fetchPlans = async () => {
+    try {
+      const token = localStorage.getItem('nexus_jwt_token')
+      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
+      let res = await fetch('/api/payments/plans', { headers }).catch(() => null)
+      if (!res || !res.ok) {
+        res = await fetch(backendUrl('/api/payments/plans'), { headers })
+      }
+      const data = await res.json()
+      // API returns a plain array (not {success, plans})
+      if (Array.isArray(data)) {
+        setPlans(data)
+      } else if (data.success && Array.isArray(data.plans)) {
+        // Handle wrapped shape defensively
+        setPlans(data.plans)
+      }
+    } catch (e) {
+      console.error('Failed to fetch plans:', e)
+    }
+  }
 
   const fetchTenants = async () => {
     setIsLoading(true)
@@ -96,6 +133,7 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
 
   useEffect(() => {
     fetchTenants()
+    fetchPlans()
   }, [])
 
   const filtered = tenantsList.filter((t) => {
@@ -116,7 +154,9 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
     setFormOwnerUserId(defaultOwner)
     setOwnerSearch('')
     setFormStatus('ACTIVE')
+    setFormSubscriptionPlanId('')
     setIsOwnerDropdownOpen(false)
+    fetchPlans() // always refresh plan list when opening modal
     setModalConfig({ isOpen: true, mode: 'add' })
   }
 
@@ -125,7 +165,9 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
     setFormOwnerUserId(tenant.ownerUserId || (userOptions.length > 0 ? userOptions[0].id : ''))
     setOwnerSearch('')
     setFormStatus(tenant.status)
+    setFormSubscriptionPlanId(tenant.subscriptionPlanId || '')
     setIsOwnerDropdownOpen(false)
+    fetchPlans() // always refresh plan list when opening modal
     setModalConfig({ isOpen: true, mode: 'edit', tenant })
   }
 
@@ -140,7 +182,7 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
     u.email.toLowerCase().includes(ownerSearch.toLowerCase())
   )
 
-  const handleSubmitModal = async () => {
+  const handleSubmitModal = async (isOverrideConfirmed = false) => {
     const token = localStorage.getItem('nexus_jwt_token')
     const headers = {
       'Content-Type': 'application/json',
@@ -166,7 +208,8 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
           body: JSON.stringify({
             displayName: formDisplayName,
             ownerUserId: formOwnerUserId,
-            status: formStatus
+            status: formStatus,
+            subscriptionPlanId: formSubscriptionPlanId
           })
         })
         const data = await res.json()
@@ -177,6 +220,15 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
       } else if (modalConfig.mode === 'edit' && modalConfig.tenant) {
         if (!formDisplayName.trim()) return alert('Please enter company name.')
         if (!formOwnerUserId) return alert('Please select a company owner user.')
+
+        const oldPlanId = modalConfig.tenant.subscriptionPlanId || ''
+        const isPlanChanged = formSubscriptionPlanId !== oldPlanId
+
+        if (isPlanChanged && !isOverrideConfirmed) {
+          setShowOverrideConfirm(true)
+          return
+        }
+
         const res = await doFetch('/api/v1/super-admin/companies', {
           method: 'PUT',
           headers,
@@ -184,7 +236,8 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
             id: modalConfig.tenant.id,
             displayName: formDisplayName,
             ownerUserId: formOwnerUserId,
-            status: formStatus
+            status: formStatus,
+            subscriptionPlanId: formSubscriptionPlanId
           })
         })
         const data = await res.json()
@@ -255,7 +308,7 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                  {['Company', 'Owner', 'Status', 'Created', ''].map((h) => (
+                  {['Company', 'Owner', 'Subscription', 'Status', 'Created', ''].map((h) => (
                     <th key={h} className="text-left px-4 py-3 text-[#9CA3AF] text-xs font-semibold uppercase tracking-wide whitespace-nowrap">
                       {h}
                     </th>
@@ -283,6 +336,18 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
                       <div>
                         <p className="text-[#1F2937] font-medium text-xs">{tenant.ownerUsername}</p>
                         <p className="text-[#9CA3AF] text-[11px]">{tenant.ownerEmail}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div>
+                        <p className="text-[#1F2937] font-semibold text-xs">
+                          {tenant.subscriptionPlanName || 'None'}
+                        </p>
+                        {tenant.subscriptionPlanPrice !== undefined && tenant.subscriptionPlanPrice !== null && (
+                          <p className="text-[#9CA3AF] text-[10px]">
+                            {tenant.subscriptionPlanPrice / 100} EGP / {tenant.subscriptionPlanInterval ? tenant.subscriptionPlanInterval.toLowerCase() : ''}
+                          </p>
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-3">
@@ -372,6 +437,10 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
                 <div className="flex items-center justify-between">
                   <span className="text-[#6B7280]">Owner Email:</span>
                   <span className="text-[#374151]">{selectedTenant.ownerEmail}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[#6B7280]">Subscription Plan:</span>
+                  <span className="font-semibold text-[#1F2937]">{selectedTenant.subscriptionPlanName || 'None'}</span>
                 </div>
 
                 <div className="flex items-center justify-between pt-2 border-t border-[#F3F4F6]">
@@ -482,6 +551,22 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
                   </div>
 
                   <div>
+                    <label className="block text-xs font-semibold text-[#374151] mb-1">Subscription Plan</label>
+                    <select
+                      value={formSubscriptionPlanId}
+                      onChange={(e) => setFormSubscriptionPlanId(e.target.value)}
+                      className="w-full h-10 px-3 rounded-lg border border-[#E5E7EB] text-sm outline-none focus:border-[#2563EB] bg-white cursor-pointer"
+                    >
+                      <option value="">No Plan (None)</option>
+                      {plans.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} ({(p.pricePiasters / 100).toLocaleString()} EGP / {p.billingInterval.toLowerCase()})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
                     <label className="block text-xs font-semibold text-[#374151] mb-1">Status</label>
                     <select
                       value={formStatus}
@@ -502,10 +587,50 @@ export default function SuperAdminCompanies({ onLogout }: { onLogout: () => void
                 Cancel
               </button>
               <button
-                onClick={handleSubmitModal}
+                onClick={() => handleSubmitModal(false)}
                 className={`px-4 py-2 rounded-lg text-white text-xs font-semibold ${modalConfig.mode === 'delete' ? 'bg-[#EF4444] hover:bg-[#DC2626]' : 'bg-[#2563EB] hover:bg-[#1E40AF]'}`}
               >
                 {modalConfig.mode === 'delete' ? 'Delete Company' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showOverrideConfirm && modalConfig.tenant && (
+        <div className="fixed inset-0 z-55 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-amber-200 shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-6 py-4 bg-amber-50 border-b border-amber-100 flex items-center gap-3 text-amber-800">
+              <span className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center font-bold text-base flex-shrink-0">⚠️</span>
+              <h3 className="font-bold text-sm">Confirm Plan Override</h3>
+            </div>
+            <div className="p-6 text-xs text-[#4B5563] space-y-3 leading-relaxed">
+              <p>
+                This will change <strong className="text-slate-900">{modalConfig.tenant.displayName}</strong>'s subscription plan from:
+              </p>
+              <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-1">
+                <p className="text-[11px]"><span className="text-[#6B7280]">From:</span> <strong className="text-slate-800">{modalConfig.tenant.subscriptionPlanName || 'No Plan (None)'}</strong></p>
+                <p className="text-[11px]"><span className="text-[#6B7280]">To:</span> <strong className="text-blue-600">{plans.find(p => p.id === formSubscriptionPlanId)?.name || 'No Plan (None)'}</strong></p>
+              </div>
+              <p className="text-[#CA8A04] font-medium">
+                The tenant admin will be notified of this manual subscription override.
+              </p>
+            </div>
+            <div className="px-6 py-4 border-t border-[#F3F4F6] bg-[#F9FAFB] flex items-center justify-end gap-2.5">
+              <button 
+                onClick={() => setShowOverrideConfirm(false)}
+                className="px-3.5 py-2 rounded-lg border border-[#E5E7EB] text-xs font-semibold text-[#4B5563] bg-white hover:bg-slate-50 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  setShowOverrideConfirm(false);
+                  handleSubmitModal(true);
+                }}
+                className="px-4 py-2 rounded-lg bg-[#D97706] hover:bg-[#B45309] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer"
+              >
+                Confirm Override
               </button>
             </div>
           </div>

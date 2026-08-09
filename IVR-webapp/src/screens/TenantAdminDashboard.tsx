@@ -1,15 +1,12 @@
 import { useState, useEffect } from 'react'
 import type { ReactElement } from 'react'
-import { NavLink } from 'react-router-dom'
+import TenantLayout from '../components/TenantLayout'
 import { aiApi } from '../api/aiApi'
-import { backendUrl } from '../api/backendUrl'
 import type { CdrSummary, CdrCall } from '../api/aiApi'
 import {
-  LayoutDashboard, Building2, Phone, GitBranch, Volume2, Server,
-  Bot, Radio, History, BarChart3, Settings, Bell, Search,
-  ChevronDown, LogOut, Clock, CheckCircle,
+  GitBranch, Volume2, Radio, Clock, CheckCircle,
   PhoneMissed, PhoneCall, Headphones, List, ChevronLeft, ChevronRight,
-  ArrowUpRight, ArrowDownRight, Layers, Moon,
+  ArrowUpRight, ArrowDownRight
 } from 'lucide-react'
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
@@ -61,20 +58,7 @@ const recentCalls = [
   { caller: '+1 (702) 684-2255', status: 'Answered', duration: '5m 18s', agent: 'Tom B.', queue: 'Sales' },
 ]
 
-const navItems = [
-  { icon: <LayoutDashboard className="w-4 h-4" />, label: 'Dashboard', path: '/tenant/dashboard' },
-  { icon: <Building2 className="w-4 h-4" />, label: 'Companies', path: '/tenant/companies' },
-  { icon: <Phone className="w-4 h-4" />, label: 'Phone Numbers', path: '/tenant/phone-numbers' },
-  { icon: <Server className="w-4 h-4" />, label: 'SIP Extensions', path: '/tenant/sip-extensions' },
-  { icon: <List className="w-4 h-4" />, label: 'Queues', path: '/tenant/queues' },
-  { icon: <Volume2 className="w-4 h-4" />, label: 'Voice Prompts', path: '/tenant/voice-prompts' },
-  { icon: <GitBranch className="w-4 h-4" />, label: 'IVR Builder', path: '/tenant/ivr-builder' },
-  { icon: <Bot className="w-4 h-4" />, label: 'AI Assistant', path: '/tenant/ai-assistant' },
-  { icon: <Radio className="w-4 h-4" />, label: 'Call Monitoring', path: '/tenant/call-monitoring' },
-  { icon: <History className="w-4 h-4" />, label: 'Call History', path: '/tenant/call-history' },
-  { icon: <BarChart3 className="w-4 h-4" />, label: 'Reports', path: '/tenant/reports' },
-  { icon: <Settings className="w-4 h-4" />, label: 'Settings', path: '/tenant/settings' },
-]
+
 
 const statusStyle: Record<string, string> = {
   Answered: 'bg-[#DCFCE7] text-[#15803D]',
@@ -87,74 +71,6 @@ const statusIcon: Record<string, ReactElement> = {
 }
 
 export default function TenantAdminDashboard({ onLogout }: { onLogout: () => void }) {
-  const [collapsed, setCollapsed] = useState(false)
-  const [activeWorkspaceName, setActiveWorkspaceName] = useState<string>('Loading...')
-  const [currentUser, setCurrentUser] = useState<{username: string, isSuperadmin: boolean} | null>(null)
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark')
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
-    }
-  }, [darkMode])
-
-  useEffect(() => {
-    const fetchActiveWorkspace = async () => {
-      try {
-        const token = localStorage.getItem('nexus_jwt_token')
-        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
-        let res = await fetch('/api/v1/tenant/companies', { headers }).catch(() => null)
-        if (!res || !res.ok) {
-          res = await fetch(backendUrl('/api/v1/tenant/companies'), { headers })
-        }
-        const data = await res.json()
-        if (data.success && Array.isArray(data.tenants)) {
-          const active = data.tenants.find((t: any) => t.isActive)
-          setActiveWorkspaceName(active ? active.displayName : 'No Active Workspace')
-        } else {
-          setActiveWorkspaceName('Unknown Workspace')
-        }
-      } catch (e) {
-        console.error('Failed to fetch workspace name', e)
-        setActiveWorkspaceName('Unknown Workspace')
-      }
-    }
-    fetchActiveWorkspace()
-
-    const fetchUser = async () => {
-      try {
-        const token = localStorage.getItem('nexus_jwt_token')
-        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
-        let res = await fetch('/api/v1/auth/me', { headers }).catch(() => null)
-        if (!res || !res.ok) {
-          res = await fetch(backendUrl('/api/v1/auth/me'), { headers })
-        }
-        const data = await res.json()
-        if (data.success && data.user) {
-          setCurrentUser(data.user)
-        }
-      } catch (e) {
-        console.error('Failed to fetch user', e)
-      }
-    }
-    fetchUser()
-
-    const handleWorkspaceUpdate = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      if (customEvent.detail && customEvent.detail.name) {
-        setActiveWorkspaceName(customEvent.detail.name)
-      } else {
-        fetchActiveWorkspace()
-      }
-    }
-
-    window.addEventListener('workspace-updated', handleWorkspaceUpdate)
-    return () => window.removeEventListener('workspace-updated', handleWorkspaceUpdate)
-  }, [])
   const [activeSessions, setActiveSessions] = useState(0)
 
   useEffect(() => {
@@ -221,144 +137,24 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
   }, [activeSessions])
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] overflow-hidden" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-      {/* Sidebar */}
-      <aside className={`${collapsed ? 'w-16' : 'w-60'} flex-shrink-0 bg-white border-r border-[#E5E7EB] flex flex-col transition-all duration-200 z-30 hidden lg:flex`}>
-        {/* Logo */}
-        <div className={`flex items-center gap-3 px-4 h-16 border-b border-[#E5E7EB] ${collapsed ? 'justify-center' : ''}`}>
-          <div className="w-8 h-8 rounded-lg bg-[#2563EB] flex items-center justify-center flex-shrink-0">
-            <Phone className="w-4 h-4 text-white" />
-          </div>
-          {!collapsed && (
-            <div>
-              <div className="text-[#1F2937] font-bold text-sm leading-tight">NexusIVR</div>
-              <div className="text-[#9CA3AF] text-[10px]">{activeWorkspaceName}</div>
-            </div>
-          )}
-        </div>
-
-        {/* Tenant badge */}
-        {!collapsed && (
-          <div className="mx-3 mt-3 mb-1 p-2.5 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE]">
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded bg-[#2563EB] flex items-center justify-center flex-shrink-0">
-                <Layers className="w-3 h-3 text-white" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[#2563EB] text-[10px] font-bold truncate">{activeWorkspaceName}</p>
-                <p className="text-[#93C5FD] text-[9px]">Enterprise Plan</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Nav */}
-        <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => `w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                isActive ? 'bg-[#EFF6FF] text-[#2563EB]' : 'text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#1F2937]'
-              } ${collapsed ? 'justify-center' : ''}`}
-              title={collapsed ? item.label : undefined}
-            >
-              {item.icon}
-              {!collapsed && <span>{item.label}</span>}
-            </NavLink>
-          ))}
-        </nav>
-
-        {/* Collapse */}
-        <div className="p-3 border-t border-[#E5E7EB]">
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] text-sm transition-colors"
-          >
-            {collapsed ? <ChevronRight className="w-4 h-4" /> : (
-              <>
-                <ChevronLeft className="w-4 h-4" />
-                <span>Collapse</span>
-              </>
-            )}
+    <TenantLayout
+      pageTitle="Operations Dashboard"
+      pageSubtitle="Thursday, December 12, 2024 — Live data"
+      onLogout={onLogout}
+      headerActions={
+        <div className="flex gap-2">
+          <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] text-[#374151] text-sm font-medium hover:border-[#2563EB] hover:text-[#2563EB] transition-all shadow-sm">
+            <Radio className="w-4 h-4" />
+            Live Monitor
+          </button>
+          <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1E40AF] transition-all shadow-md shadow-[#2563EB]/20">
+            <GitBranch className="w-4 h-4" />
+            Open IVR Builder
           </button>
         </div>
-      </aside>
-
-      {/* Main */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top bar */}
-        <header className="h-16 bg-white border-b border-[#E5E7EB] flex items-center px-6 gap-4 flex-shrink-0 z-20">
-          {/* Search */}
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
-            <input
-              placeholder="Search calls, agents, queues…"
-              className="w-full h-9 pl-9 pr-4 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] text-[#1F2937] text-sm placeholder-[#9CA3AF] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition-all"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 ml-auto">
-            {/* Live status */}
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#F0FDF4] border border-[#BBF7D0] rounded-lg">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse" />
-              <span className="text-[#15803D] text-xs font-semibold">18 Active Calls</span>
-            </div>
-
-            {/* Dark mode */}
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${darkMode ? 'bg-[#1F2937] text-white' : 'text-[#6B7280] hover:bg-[#F3F4F6]'}`}
-            >
-              <Moon className="w-4 h-4" />
-            </button>
-
-            {/* Notifications */}
-            <button className="relative w-8 h-8 rounded-lg flex items-center justify-center text-[#6B7280] hover:bg-[#F3F4F6] transition-colors">
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#EF4444]" />
-            </button>
-
-            {/* Profile */}
-            <button className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-lg hover:bg-[#F3F4F6] transition-colors">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#2563EB] to-[#7C3AED] flex items-center justify-center text-white text-xs font-bold">
-                {currentUser?.username ? currentUser.username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U'}
-              </div>
-              <div className="text-left hidden sm:block">
-                <div className="text-[#1F2937] text-xs font-semibold leading-tight">{currentUser?.username || 'User'}</div>
-                <div className="text-[#9CA3AF] text-[10px]">{currentUser?.isSuperadmin ? 'Super Admin' : 'Tenant Admin'}</div>
-              </div>
-              <ChevronDown className="w-3 h-3 text-[#9CA3AF]" />
-            </button>
-
-            <button
-              onClick={onLogout}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-[#9CA3AF] hover:text-[#EF4444] hover:bg-[#FEF2F2] transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
-        </header>
-
-        {/* Body */}
-        <main className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-[#1F2937] text-xl font-bold">Operations Dashboard</h1>
-              <p className="text-[#6B7280] text-sm mt-0.5">Thursday, December 12, 2024 — Live data</p>
-            </div>
-            <div className="flex gap-2">
-              <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] text-[#374151] text-sm font-medium hover:border-[#2563EB] hover:text-[#2563EB] transition-all shadow-sm">
-                <Radio className="w-4 h-4" />
-                Live Monitor
-              </button>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1E40AF] transition-all shadow-md shadow-[#2563EB]/20">
-                <GitBranch className="w-4 h-4" />
-                Open IVR Builder
-              </button>
-            </div>
-          </div>
+      }
+    >
+      <div className="space-y-6">
 
           {/* KPI cards — 8 cards */}
           <div className="grid grid-cols-4 xl:grid-cols-8 gap-3">
@@ -575,8 +371,7 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
               </div>
             </div>
           </div>
-        </main>
-      </div>
-    </div>
-  )
+        </div>
+      </TenantLayout>
+    )
 }
