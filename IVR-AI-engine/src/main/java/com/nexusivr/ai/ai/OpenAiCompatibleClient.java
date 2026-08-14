@@ -187,6 +187,8 @@ public class OpenAiCompatibleClient implements LlmClient {
                 }
             }
 
+            int requestMaxTokens = Math.max(com.nexusivr.ai.config.GlobalAiConfig.getInstance().getMaxTokens(), 8192);
+
             JsonObject requestBody = new JsonObject();
             if (isStudentProxy) {
                 requestBody.addProperty("model_id", requestModel);
@@ -196,6 +198,7 @@ public class OpenAiCompatibleClient implements LlmClient {
                 requestBody.addProperty("model", requestModel);
             }
             requestBody.addProperty("temperature", temperature);
+            requestBody.addProperty("max_tokens", requestMaxTokens);
 
             // Handle structured JSON output format
             if (jsonMode && !isStudentProxy) {
@@ -265,6 +268,7 @@ public class OpenAiCompatibleClient implements LlmClient {
                         retryRequestBody.addProperty("model", requestModel);
                     }
                     retryRequestBody.addProperty("temperature", temperature);
+                    retryRequestBody.addProperty("max_tokens", requestMaxTokens);
                     if (jsonMode && !isStudentProxy) {
                         if ("ollama".equals(providerName)) {
                             retryRequestBody.addProperty("format", "json");
@@ -351,6 +355,11 @@ public class OpenAiCompatibleClient implements LlmClient {
 
             logger.info("[{}] LLM Latency: {}ms. Token Usage: input={}, output={}, total={}. Model: {}.",
                     providerName, latencyMs, promptTokens, completionTokens, promptTokens + completionTokens, requestModel);
+
+            if ((completionTokens >= requestMaxTokens - 100 || completionTokens >= 4000) && (content == null || content.isBlank())) {
+                logger.warn("[{}] Likely truncated due to max_tokens ceiling (outputTokens={}, maxTokens={}) — consider raising max_tokens for this provider/model",
+                        providerName, completionTokens, requestMaxTokens);
+            }
 
             return new AiResponse(content, requestModel, promptTokens, completionTokens, false);
 

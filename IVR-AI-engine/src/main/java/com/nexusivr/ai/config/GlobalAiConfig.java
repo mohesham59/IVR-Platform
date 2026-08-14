@@ -62,7 +62,7 @@ public class GlobalAiConfig {
         }
 
         this.temperature = 0.7;
-        this.maxTokens = 2048;
+        this.maxTokens = LlmConfig.getMaxTokens();
         this.streamingEnabled = false;
         this.structuredOutputEnabled = true;
         this.retryCount = 3;

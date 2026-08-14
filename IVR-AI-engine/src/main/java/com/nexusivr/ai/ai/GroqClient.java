@@ -121,6 +121,8 @@ public class GroqClient implements LlmClient {
             JsonObject requestBody = new JsonObject();
             requestBody.addProperty("model", model);
             requestBody.addProperty("temperature", 0.7);
+            int maxTokens = Math.max(com.nexusivr.ai.config.GlobalAiConfig.getInstance().getMaxTokens(), 8192);
+            requestBody.addProperty("max_tokens", maxTokens);
 
             if (jsonMode) {
                 JsonObject responseFormat = new JsonObject();

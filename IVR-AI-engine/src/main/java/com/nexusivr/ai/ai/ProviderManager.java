@@ -784,6 +784,28 @@ public class ProviderManager {
         return statuses;
     }
 
+    public Map<String, Map<String, Object>> getProviderHealthOverview() {
+        Map<String, Map<String, Object>> overview = new LinkedHashMap<>();
+        for (String provider : List.of("groq", "gemini", "openrouter", "ollama")) {
+            Map<String, Object> item = new HashMap<>();
+            ProviderHealth health = getHealth(provider);
+            CircuitBreaker breaker = circuitBreakerMap.get(provider);
+
+            boolean available = isProviderAvailable(provider);
+            String state = breaker != null ? breaker.getStateName() : "CLOSED";
+            long cooldownMs = getCooldownRemainingMs(provider);
+
+            item.put("provider", provider);
+            item.put("status", available ? "HEALTHY" : (state.equals("OPEN") ? "CIRCUIT_OPEN" : "UNHEALTHY"));
+            item.put("circuitState", state);
+            item.put("cooldownRemainingSeconds", (int) Math.max(0, cooldownMs / 1000));
+            item.put("consecutiveFailures", health != null ? health.getConsecutiveFailures() : 0);
+            item.put("lastFailureReason", (health != null && health.getLastFailureReason() != null) ? health.getLastFailureReason() : "None");
+            overview.put(provider, item);
+        }
+        return overview;
+    }
+
     private static String capitalize(String value) {
         if (value == null || value.isBlank()) return value;
         return value.substring(0, 1).toUpperCase() + value.substring(1);

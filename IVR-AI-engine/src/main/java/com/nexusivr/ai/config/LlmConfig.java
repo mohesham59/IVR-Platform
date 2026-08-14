@@ -151,9 +151,9 @@ public class LlmConfig {
         return resolve("gemini.apiKey", "GEMINI_API_KEY", "").trim();
     }
 
-    /** Gemini model identifier. Default: gemini-2.5-flash. */
+    /** Gemini model identifier. Default: gemini-2.0-flash. */
     public static String getGeminiModel() {
-        return resolve("gemini.model", "GEMINI_MODEL", "gemini-2.5-flash").trim();
+        return resolve("gemini.model", "GEMINI_MODEL", "gemini-2.0-flash").trim();
     }
 
     /** Gemini model for Stage 1 planning. Default: gemini-2.0-flash. */
@@ -259,6 +259,10 @@ public class LlmConfig {
 
     public static int getOpenrouterTimeout() {
         return parseIntOrDefault(resolve("openrouter.timeout", "OPENROUTER_TIMEOUT", "35"), 35);
+    }
+
+    public static int getMaxTokens() {
+        return parseIntOrDefault(resolve("ai.maxTokens", "AI_MAX_TOKENS", "8192"), 8192);
     }
 
     // ----------------------------------------------------------------

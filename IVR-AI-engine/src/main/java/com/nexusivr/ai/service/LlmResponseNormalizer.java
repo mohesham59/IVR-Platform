@@ -265,8 +265,9 @@ public class LlmResponseNormalizer {
         }
 
         if (!VXML_CLOSE_PATTERN.matcher(trimmed).find()) {
+            logger.warn("[LlmResponseNormalizer] Normalized output is missing closing </vxml> tag (length={} chars). Likely truncated due to max_tokens ceiling — consider raising max_tokens for this provider/model", trimmed.length());
             throw new LlmResponseNormalizationException(
-                    "Normalized output is truncated: missing closing </vxml> tag."
+                    "Normalized output is truncated: missing closing </vxml> tag. Likely truncated due to max_tokens ceiling — consider raising max_tokens for this provider/model."
             );
         }
     }
