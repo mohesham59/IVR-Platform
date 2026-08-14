@@ -1,10 +1,11 @@
 import { useState, useEffect, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import { backendUrl } from '../api/backendUrl'
+import NotificationBell from './NotificationBell'
 import {
   LayoutDashboard, Building2, Phone, Server, List, Volume2, GitBranch,
-  Bot, Radio, History, BarChart3, Settings, Bell, Search,
-  ChevronDown, LogOut, ChevronLeft, ChevronRight, Layers, Moon,
+  Bot, Radio, History, BarChart3, Settings, Search,
+  ChevronDown, LogOut, ChevronLeft, ChevronRight, Layers, Moon, CreditCard,
 } from 'lucide-react'
 
 const navItems = [
@@ -17,6 +18,7 @@ const navItems = [
   { icon: <Bot className="w-4 h-4" />, label: 'AI Assistant', path: '/tenant/ai-assistant' },
   { icon: <History className="w-4 h-4" />, label: 'Call Analytics', path: '/tenant/call-analytics' },
   { icon: <Settings className="w-4 h-4" />, label: 'Settings', path: '/tenant/settings' },
+  { icon: <CreditCard className="w-4 h-4" />, label: 'Billing', path: '/tenant/billing' },
 ]
 
 interface TenantLayoutProps {
@@ -38,10 +40,18 @@ export default function TenantLayout({
   headerActions,
   liveCount = 18,
 }: TenantLayoutProps) {
+  console.log('[Sidebar Audit] TenantLayout rendered with navItems:', navItems.map(i => i.label))
   const [collapsed, setCollapsed] = useState(false)
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark')
   const [activeWorkspaceName, setActiveWorkspaceName] = useState<string>('Loading...')
-  const [currentUser, setCurrentUser] = useState<{username: string, isSuperadmin: boolean} | null>(null)
+  const [currentUser, setCurrentUser] = useState<{username: string, isSuperadmin: boolean} | null>(() => {
+    const saved = localStorage.getItem('nexus_user')
+    try {
+      return saved ? JSON.parse(saved) : null
+    } catch {
+      return null
+    }
+  })
 
   useEffect(() => {
     if (darkMode) {
@@ -199,10 +209,7 @@ export default function TenantLayout({
               <Moon className="w-4 h-4" />
             </button>
 
-            <button className="relative w-8 h-8 rounded-lg flex items-center justify-center text-[#6B7280] hover:bg-[#F3F4F6] transition-colors">
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#EF4444]" />
-            </button>
+            <NotificationBell />
 
             <button className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-lg hover:bg-[#F3F4F6] transition-colors">
               <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#2563EB] to-[#7C3AED] flex items-center justify-center text-white text-xs font-bold">

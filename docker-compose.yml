@@ -20,6 +20,7 @@ services:
       # Persist CDR CSV output on the host (asterisk writes Master.csv here;
       # also gives the dashboard a data source for call analytics)
       - ./asterisk-cdr:/var/log/asterisk/cdr-csv
+    entrypoint: ["/bin/sh", "-c", "rm -f /var/run/asterisk/asterisk.ctl /var/run/asterisk/asterisk.pid && exec /usr/local/bin/entrypoint.sh /usr/sbin/asterisk -vvvdddf -T -W -U asterisk -p"]
     restart: unless-stopped
 
   # 2. IVR Engine (FastAGI Server)
@@ -80,12 +81,43 @@ services:
       - DATABASE_PASSWORD=npg_6OuHh2PKRUWk
       # Point to Asterisk on the host
       - AMI_HOST=host.docker.internal
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/nexusivr-ai-engine/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
     # Need this to resolve host.docker.internal on Linux hosts
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
 
-  # 4. IVR WebApp (React Frontend)
+  # 4. IVR Payment Service (Paymob & Subscriptions REST API)
+  ivr-payment-service:
+    build:
+      context: ./IVR-payment-service
+      dockerfile: Dockerfile
+    container_name: ivr-payment-service
+    ports:
+      - "8082:8082"
+    env_file:
+      - ./IVR-payment-service/.env
+    environment:
+      - PAYMENT_SERVICE_PORT=8082
+      - DATABASE_URL=${DATABASE_URL:-jdbc:postgresql://ep-empty-cell-ay0ibimz-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require}
+      - DATABASE_USER=${DATABASE_USER:-neondb_owner}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD:-npg_6OuHh2PKRUWk}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8082/nexusivr-payment-service/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+      start_period: 10s
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # 5. IVR WebApp (React Frontend)
   ivr-webapp:
     build:
       context: ./IVR-webapp
@@ -94,5 +126,8 @@ services:
     ports:
       - "3000:80"
     depends_on:
-      - ivr-ai-engine
+      ivr-ai-engine:
+        condition: service_healthy
+      ivr-payment-service:
+        condition: service_healthy
     restart: unless-stopped

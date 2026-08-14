@@ -4,8 +4,11 @@ import LoginPage from './screens/LoginPage'
 import SuperAdminDashboard from './screens/SuperAdminDashboard'
 import SuperAdminUsers from './screens/SuperAdminUsers'
 import SuperAdminCompanies from './screens/SuperAdminCompanies'
+import SuperAdminSubscriptions from './screens/SuperAdminSubscriptions'
 import TenantAdminDashboard from './screens/TenantAdminDashboard'
 import TenantCompanies from './screens/TenantCompanies'
+import TenantBilling from './screens/TenantBilling'
+import PaymentCallback from './screens/PaymentCallback'
 import PhoneNumbers from './screens/PhoneNumbers'
 import SIPExtensions from './screens/SIPExtensions'
 import QueueManagement from './screens/QueueManagement'
@@ -68,9 +71,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
         <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 text-slate-800 p-6">
           <div className="bg-white rounded-xl border border-red-200 shadow-xl p-8 max-w-md w-full text-center">
             <span className="text-4xl">⚠️</span>
-            <h2 className="text-lg font-bold mt-4 text-red-600">IVR Builder Error</h2>
+            <h2 className="text-lg font-bold mt-4 text-red-600">Application Error</h2>
             <p className="text-xs text-slate-500 mt-2">
-              An unexpected error occurred while rendering the builder canvas.
+              An unexpected error occurred. Please try reloading the application.
             </p>
             <button
               onClick={() => window.location.reload()}
@@ -91,24 +94,39 @@ export default function App() {
   const logout = () => navigate('/')
 
   return (
-    <Routes>
-      <Route path="/" element={<LogoutRoute />} />
-      <Route path="/super-admin/dashboard" element={<SuperAdminDashboard onLogout={logout} />} />
-      <Route path="/super-admin/companies" element={<SuperAdminCompanies onLogout={logout} />} />
-      <Route path="/super-admin/users" element={<SuperAdminUsers onLogout={logout} />} />
-      {superAdminPages.filter(([slug]) => slug !== 'users' && slug !== 'companies').map(([slug, title]) => (
-        <Route key={slug} path={`/super-admin/${slug}`} element={<SuperAdminSection title={title} />} />
-      ))}
-      <Route path="/tenant/dashboard" element={<TenantAdminDashboard onLogout={logout} />} />
-      <Route path="/tenant/companies" element={<TenantCompanies onLogout={logout} />} />
-      <Route path="/tenant/sip-extensions" element={<SIPExtensions onLogout={logout} />} />
-      <Route path="/tenant/queues" element={<QueueManagement onLogout={logout} />} />
-      <Route path="/tenant/voice-prompts" element={<VoicePrompts onLogout={logout} />} />
-      <Route path="/tenant/ivr-builder" element={<ErrorBoundary><IVRBuilder onLogout={logout} /></ErrorBoundary>} />
-      <Route path="/tenant/ai-assistant" element={<AIAssistant onLogout={logout} />} />
-      <Route path="/tenant/call-analytics" element={<CallAnalytics onLogout={logout} />} />
-      <Route path="/tenant/settings" element={<Settings onLogout={logout} />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <ErrorBoundary>
+      <Routes>
+        <Route path="/" element={<LogoutRoute />} />
+        <Route path="/super-admin/dashboard" element={<SuperAdminDashboard onLogout={logout} />} />
+        <Route path="/super-admin/companies" element={<SuperAdminCompanies onLogout={logout} />} />
+        <Route path="/super-admin/users" element={<SuperAdminUsers onLogout={logout} />} />
+        <Route path="/super-admin/subscriptions" element={<SuperAdminSubscriptions onLogout={logout} />} />
+        {superAdminPages.filter(([slug]) => slug !== 'users' && slug !== 'companies' && slug !== 'subscriptions').map(([slug, title]) => (
+          <Route key={slug} path={`/super-admin/${slug}`} element={<SuperAdminSection title={title} />} />
+        ))}
+        <Route path="/tenant/dashboard" element={<TenantAdminDashboard onLogout={logout} />} />
+        <Route path="/tenant/companies" element={<TenantCompanies onLogout={logout} />} />
+        <Route path="/tenant/phone-numbers" element={<PhoneNumbers onLogout={logout} />} />
+        <Route path="/tenant/sip-extensions" element={<SIPExtensions onLogout={logout} />} />
+        <Route path="/tenant/queues" element={<QueueManagement onLogout={logout} />} />
+        <Route path="/tenant/voice-prompts" element={<VoicePrompts onLogout={logout} />} />
+        <Route path="/tenant/ivr-builder" element={<ErrorBoundary fallback={
+          <div className="flex flex-col items-center justify-center p-6 text-slate-800">
+            <span className="text-2xl">⚠️</span>
+            <h3 className="font-bold mt-2 text-red-600">IVR Builder Error</h3>
+            <p className="text-xs text-slate-500 mt-1">An error occurred rendering the builder canvas.</p>
+          </div>
+        }><IVRBuilder onLogout={logout} /></ErrorBoundary>} />
+        <Route path="/tenant/ai-assistant" element={<AIAssistant onLogout={logout} />} />
+        <Route path="/tenant/call-analytics" element={<CallAnalytics onLogout={logout} />} />
+        <Route path="/tenant/call-monitoring" element={<CallMonitoring onLogout={logout} />} />
+        <Route path="/tenant/call-history" element={<CallHistory onLogout={logout} />} />
+        <Route path="/tenant/reports" element={<Reports onLogout={logout} />} />
+        <Route path="/tenant/settings" element={<Settings onLogout={logout} />} />
+        <Route path="/tenant/billing" element={<TenantBilling onLogout={logout} />} />
+        <Route path="/payment/callback" element={<PaymentCallback />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </ErrorBoundary>
   )
 }

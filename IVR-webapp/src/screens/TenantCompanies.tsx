@@ -15,6 +15,11 @@ export interface UserTenant {
   isActive: boolean
   createdAt: string
   updatedAt: string
+  // Subscription fields (provided by backend)
+  subscriptionPlanId?: string | null
+  subscriptionPlanName?: string | null
+  subscriptionPlanPrice?: number | null
+  subscriptionPlanInterval?: string | null
 }
 
 const STATUSES = ['All Status', 'ACTIVE', 'INACTIVE', 'SUSPENDED']
@@ -223,6 +228,7 @@ export default function TenantCompanies({ onLogout }: { onLogout: () => void }) 
                     <th className="py-3.5 px-4">Company Name</th>
                     <th className="py-3.5 px-4">Workspace Status</th>
                     <th className="py-3.5 px-4">State</th>
+                    <th className="py-3.5 px-4">Subscription Plan</th>
                     <th className="py-3.5 px-4">Company Owner</th>
                     <th className="py-3.5 px-4 text-center">Action</th>
                   </tr>
@@ -230,13 +236,13 @@ export default function TenantCompanies({ onLogout }: { onLogout: () => void }) 
                 <tbody className="divide-y divide-[#E5E7EB] text-sm text-[#374151]">
                   {isLoading ? (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-[#9CA3AF]">
+                      <td colSpan={6} className="py-8 text-center text-[#9CA3AF]">
                         Loading companies...
                       </td>
                     </tr>
                   ) : paginated.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-[#9CA3AF]">
+                      <td colSpan={6} className="py-8 text-center text-[#9CA3AF]">
                         No companies found.
                       </td>
                     </tr>
@@ -276,6 +282,15 @@ export default function TenantCompanies({ onLogout }: { onLogout: () => void }) 
                             }`}>
                               {tenant.status}
                             </span>
+                          </td>
+                          <td className="py-3.5 px-4">
+                            {tenant.subscriptionPlanName ? (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
+                                {tenant.subscriptionPlanName} · {(tenant.subscriptionPlanPrice ?? 0) / 100} EGP/{tenant.subscriptionPlanInterval ? tenant.subscriptionPlanInterval.toLowerCase() : ''}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-[#9CA3AF]">No active plan</span>
+                            )}
                           </td>
                           <td className="py-3.5 px-4">
                             <div>

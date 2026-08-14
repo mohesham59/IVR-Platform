@@ -1,12 +1,7 @@
-import { useState, useEffect } from 'react'
-import { NavLink } from 'react-router-dom'
-import { backendUrl } from '../api/backendUrl'
+import SuperAdminLayout from '../components/SuperAdminLayout'
 import {
-  LayoutDashboard, Building2, Users, CreditCard, Activity, ScrollText,
-  BarChart3, Settings, Bell, Search, ChevronLeft, ChevronRight, Moon,
-  TrendingUp, Phone, Cpu, FileText, Plus, UserPlus, Download,
-  LogOut, ChevronDown, ArrowUpRight, ArrowDownRight, Menu,
-  CheckCircle2,
+  Building2, Users, TrendingUp, Phone, Cpu, FileText, Plus, UserPlus, Download,
+  ArrowUpRight, ArrowDownRight, CheckCircle2,
 } from 'lucide-react'
 import {
   AreaChart, Area, BarChart, Bar,
@@ -70,16 +65,6 @@ const activities = [
   { action: 'API limit exceeded', subject: 'Solaris Telecom', time: '2h ago', type: 'danger' },
 ]
 
-const navItems = [
-  { icon: <LayoutDashboard className="w-4 h-4" />, label: 'Dashboard', path: '/super-admin/dashboard' },
-  { icon: <Building2 className="w-4 h-4" />, label: 'Companies', path: '/super-admin/companies' },
-  { icon: <Users className="w-4 h-4" />, label: 'Users', path: '/super-admin/users' },
-  { icon: <CreditCard className="w-4 h-4" />, label: 'Subscriptions', path: '/super-admin/subscriptions' },
-  { icon: <Activity className="w-4 h-4" />, label: 'System Health', path: '/super-admin/system-health' },
-  { icon: <ScrollText className="w-4 h-4" />, label: 'Audit Logs', path: '/super-admin/audit-logs' },
-  { icon: <BarChart3 className="w-4 h-4" />, label: 'Reports', path: '/super-admin/reports' },
-  { icon: <Settings className="w-4 h-4" />, label: 'Settings', path: '/super-admin/settings' },
-]
 
 const statusColor: Record<string, string> = {
   Active: 'bg-[#DCFCE7] text-[#15803D]',
@@ -95,173 +80,25 @@ const activityColor: Record<string, string> = {
 }
 
 export default function SuperAdminDashboard({ onLogout }: { onLogout: () => void }) {
-  const [collapsed, setCollapsed] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark')
-  const [currentUser, setCurrentUser] = useState<{username: string, email: string, isSuperadmin: boolean} | null>(null)
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
-    }
-  }, [darkMode])
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const token = localStorage.getItem('nexus_jwt_token')
-        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
-        let res = await fetch('/api/v1/auth/me', { headers }).catch(() => null)
-        if (!res || !res.ok) {
-          res = await fetch(backendUrl('/api/v1/auth/me'), { headers })
-        }
-        const data = await res.json()
-        if (data.success && data.user) {
-          setCurrentUser(data.user)
-        }
-      } catch (e) {
-        console.error('Failed to fetch user', e)
-      }
-    }
-    fetchUser()
-  }, [])
-
-  const sidebarW = collapsed ? 'w-16' : 'w-60'
+  const headerActions = (
+    <div className="flex gap-2">
+      <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] text-[#374151] text-sm font-medium hover:border-[#2563EB] hover:text-[#2563EB] transition-all shadow-sm">
+        <UserPlus className="w-4 h-4" />
+        Create Admin
+      </button>
+      <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] text-[#374151] text-sm font-medium hover:border-[#2563EB] hover:text-[#2563EB] transition-all shadow-sm">
+        <Download className="w-4 h-4" />
+        Report
+      </button>
+      <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1E40AF] transition-all shadow-md shadow-[#2563EB]/20">
+        <Plus className="w-4 h-4" />
+        Add Company
+      </button>
+    </div>
+  )
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] overflow-hidden" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-      {/* Sidebar */}
-      <aside
-        className={`${sidebarW} flex-shrink-0 bg-white border-r border-[#E5E7EB] flex flex-col transition-all duration-200 z-30 hidden lg:flex`}
-      >
-        {/* Logo */}
-        <div className={`flex items-center gap-3 px-4 h-16 border-b border-[#E5E7EB] ${collapsed ? 'justify-center' : ''}`}>
-          <div className="w-8 h-8 rounded-lg bg-[#2563EB] flex items-center justify-center flex-shrink-0">
-            <Phone className="w-4 h-4 text-white" />
-          </div>
-          {!collapsed && (
-            <div>
-              <div className="text-[#1F2937] font-bold text-sm leading-tight">NexusIVR</div>
-              <div className="text-[#9CA3AF] text-[10px]">Super Admin</div>
-            </div>
-          )}
-        </div>
-
-        {/* Nav */}
-        <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => `w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                isActive ? 'bg-[#EFF6FF] text-[#2563EB]' : 'text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#1F2937]'
-              } ${collapsed ? 'justify-center' : ''}`}
-              title={collapsed ? item.label : undefined}
-            >
-              {item.icon}
-              {!collapsed && <span>{item.label}</span>}
-            </NavLink>
-          ))}
-        </nav>
-
-        {/* Collapse toggle */}
-        <div className="p-3 border-t border-[#E5E7EB]">
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] text-sm transition-colors"
-          >
-            {collapsed ? <ChevronRight className="w-4 h-4" /> : (
-              <>
-                <ChevronLeft className="w-4 h-4" />
-                <span>Collapse</span>
-              </>
-            )}
-          </button>
-        </div>
-      </aside>
-
-      {/* Main */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top bar */}
-        <header className="h-16 bg-white border-b border-[#E5E7EB] flex items-center px-6 gap-4 flex-shrink-0 z-20">
-          <button className="lg:hidden text-[#6B7280]" onClick={() => setMobileOpen(!mobileOpen)}>
-            <Menu className="w-5 h-5" />
-          </button>
-
-          {/* Search */}
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
-            <input
-              placeholder="Search companies, users…"
-              className="w-full h-9 pl-9 pr-4 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] text-[#1F2937] text-sm placeholder-[#9CA3AF] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition-all"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 ml-auto">
-            {/* Dark mode */}
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${darkMode ? 'bg-[#1F2937] text-white' : 'text-[#6B7280] hover:bg-[#F3F4F6]'}`}
-            >
-              <Moon className="w-4 h-4" />
-            </button>
-
-            {/* Notifications */}
-            <button className="relative w-8 h-8 rounded-lg flex items-center justify-center text-[#6B7280] hover:bg-[#F3F4F6] transition-colors">
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#EF4444]" />
-            </button>
-
-            {/* Profile */}
-            <button className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-lg hover:bg-[#F3F4F6] transition-colors">
-              <div className="w-7 h-7 rounded-full bg-[#2563EB] flex items-center justify-center text-white text-xs font-bold">
-                {currentUser?.username ? currentUser.username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'SA'}
-              </div>
-              <div className="text-left hidden sm:block">
-                <div className="text-[#1F2937] text-xs font-semibold leading-tight">{currentUser?.username || 'Super Admin'}</div>
-                <div className="text-[#9CA3AF] text-[10px]">{currentUser ? (currentUser.isSuperadmin ? 'Super Admin' : 'Tenant Admin') : 'Super Admin'}</div>
-              </div>
-              <ChevronDown className="w-3 h-3 text-[#9CA3AF]" />
-            </button>
-
-            <button
-              onClick={onLogout}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-[#9CA3AF] hover:text-[#EF4444] hover:bg-[#FEF2F2] transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
-        </header>
-
-        {/* Dashboard body */}
-        <main className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Page heading */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-[#1F2937] text-xl font-bold">Platform Overview</h1>
-              <p className="text-[#6B7280] text-sm mt-0.5">Thursday, December 12, 2024</p>
-            </div>
-
-            {/* Quick actions */}
-            <div className="flex gap-2">
-              <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] text-[#374151] text-sm font-medium hover:border-[#2563EB] hover:text-[#2563EB] transition-all shadow-sm">
-                <UserPlus className="w-4 h-4" />
-                Create Admin
-              </button>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] text-[#374151] text-sm font-medium hover:border-[#2563EB] hover:text-[#2563EB] transition-all shadow-sm">
-                <Download className="w-4 h-4" />
-                Report
-              </button>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1E40AF] transition-all shadow-md shadow-[#2563EB]/20">
-                <Plus className="w-4 h-4" />
-                Add Company
-              </button>
-            </div>
-          </div>
+    <SuperAdminLayout pageTitle="Platform Overview" pageSubtitle="Thursday, December 12, 2024" headerActions={headerActions} onLogout={onLogout}>
 
           {/* KPI cards */}
           <div className="grid grid-cols-2 xl:grid-cols-6 gap-4">
@@ -450,8 +287,6 @@ export default function SuperAdminDashboard({ onLogout }: { onLogout: () => void
               </div>
             </div>
           </div>
-        </main>
-      </div>
-    </div>
+    </SuperAdminLayout>
   )
 }
