@@ -1,12 +1,7 @@
 package com.nexusivr.ai.controller;
 
-import com.nexusivr.ai.dao.NotificationDao;
-import com.nexusivr.ai.dao.UserDao;
 import com.nexusivr.ai.model.Notification;
-import com.nexusivr.ai.model.User;
-import com.nexusivr.ai.security.JwtUtil;
-import io.jsonwebtoken.Claims;
-import jakarta.servlet.ServletException;
+import com.nexusivr.ai.service.NotificationService;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,55 +15,36 @@ import java.util.*;
 })
 public class NotificationServlet extends BaseAiServlet {
 
-    private final NotificationDao notificationDao = new NotificationDao();
-    private final UserDao userDao = new UserDao();
+    private final NotificationService notificationService;
+
+    public NotificationServlet(NotificationService notificationService) {
+        this.notificationService = notificationService;
+    }
+
+    public NotificationServlet() {
+        this(ServiceRegistry.getNotificationService());
+    }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
-            Claims claims = validateAuth(req, resp);
-            if (claims == null) return;
+            boolean isSuperAdmin = isSuperAdmin(req);
+            UUID tenantId = isSuperAdmin ? null : extractTenantId(req);
 
-            String userIdStr = claims.getSubject();
-            String activeTenantIdStr = (String) claims.get("activeTenantId");
+            String unreadOnlyStr = req.getParameter("unreadOnly");
+            boolean unreadOnly = "true".equalsIgnoreCase(unreadOnlyStr);
 
-            UUID userId = userIdStr != null ? UUID.fromString(userIdStr) : null;
+            String limitStr = req.getParameter("limit");
+            int limit = limitStr != null ? Integer.parseInt(limitStr) : 20;
 
-            // Prefer the fresh active_tenant_id from the DB (in case user re-assigned a tenant
-            // without re-logging in and the JWT claim is stale).
-            if (userIdStr != null) {
-                User user = userDao.findById(userIdStr);
-                if (user != null && user.getActiveTenantId() != null && !user.getActiveTenantId().isBlank()) {
-                    activeTenantIdStr = user.getActiveTenantId();
-                }
-            }
+            List<Notification> list = notificationService.getNotifications(tenantId, isSuperAdmin, unreadOnly, limit);
 
-            UUID activeTenantId = (activeTenantIdStr != null && !activeTenantIdStr.isBlank())
-                    ? UUID.fromString(activeTenantIdStr)
-                    : null;
-
-            logger.info("GET /api/v1/notifications: userId={}, activeTenantId={}", userId, activeTenantId);
-
-            List<Notification> notifications = notificationDao.getNotificationsForUser(activeTenantId, userId);
-            
-            // Format response list
-            List<Map<String, Object>> responseList = new ArrayList<>();
-            for (Notification n : notifications) {
-                Map<String, Object> map = new LinkedHashMap<>();
-                map.put("id", n.getId().toString());
-                map.put("tenantId", n.getTenantId() != null ? n.getTenantId().toString() : null);
-                map.put("userId", n.getUserId() != null ? n.getUserId().toString() : null);
-                map.put("message", n.getMessage());
-                map.put("linkUrl", n.getLinkUrl());
-                map.put("isRead", n.isRead());
-                map.put("createdAt", n.getCreatedAt() != null ? n.getCreatedAt().toString() : "");
-                map.put("type", n.getType());
-                responseList.add(map);
-            }
+            int unreadCount = (int) list.stream().filter(n -> !n.isRead()).count();
 
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("success", true);
-            result.put("notifications", responseList);
+            result.put("unreadCount", unreadCount);
+            result.put("data", list);
             sendJsonResponse(resp, HttpServletResponse.SC_OK, result);
         } catch (Exception e) {
             handleError(resp, e);
@@ -76,51 +52,61 @@ public class NotificationServlet extends BaseAiServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
-            Claims claims = validateAuth(req, resp);
-            if (claims == null) return;
+            boolean isSuperAdmin = isSuperAdmin(req);
+            UUID tenantId = isSuperAdmin ? null : extractTenantId(req);
+            String path = req.getRequestURI();
 
-            String pathInfo = req.getPathInfo(); // e.g. "/{id}/read"
-            if (pathInfo != null) {
-                String[] parts = pathInfo.split("/");
-                // Expecting parts to be: ["", "{id}", "read"]
-                if (parts.length >= 3 && "read".equalsIgnoreCase(parts[2])) {
-                    String idStr = parts[1];
+            if (path.contains("/read-all")) {
+                boolean updated = notificationService.markAllAsRead(tenantId);
+                Map<String, Object> result = new LinkedHashMap<>();
+                result.put("success", updated);
+                result.put("message", "All notifications marked as read");
+                sendJsonResponse(resp, HttpServletResponse.SC_OK, result);
+                return;
+            }
+
+            if (path.contains("/read")) {
+                String idStr = extractIdFromPath(path, "/notifications/");
+                if (idStr != null && idStr.contains("/read")) {
+                    idStr = idStr.replace("/read", "");
+                }
+                if (idStr != null && !idStr.isBlank()) {
                     UUID id = UUID.fromString(idStr);
-                    boolean marked = notificationDao.markAsRead(id);
-                    
+                    boolean updated = notificationService.markAsRead(tenantId, id);
                     Map<String, Object> result = new LinkedHashMap<>();
-                    result.put("success", marked);
-                    result.put("message", marked ? "Notification marked as read" : "Failed to mark notification as read");
+                    result.put("success", updated);
+                    result.put("message", "Notification marked as read");
                     sendJsonResponse(resp, HttpServletResponse.SC_OK, result);
                     return;
                 }
             }
-            sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid action path");
+
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid notification POST action");
         } catch (Exception e) {
             handleError(resp, e);
         }
     }
 
-    private Claims validateAuth(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String authHeader = req.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            Map<String, Object> err = new LinkedHashMap<>();
-            err.put("success", false);
-            err.put("error", "Missing or invalid authorization header");
-            sendJsonResponse(resp, HttpServletResponse.SC_UNAUTHORIZED, err);
-            return null;
+    private boolean isSuperAdmin(HttpServletRequest req) {
+        String roleHeader = req.getHeader("X-User-Role");
+        if (roleHeader != null && roleHeader.equalsIgnoreCase("tenant_admin")) {
+            return false;
         }
-        String token = authHeader.substring(7);
-        Claims claims = JwtUtil.validateToken(token);
-        if (claims == null) {
-            Map<String, Object> err = new LinkedHashMap<>();
-            err.put("success", false);
-            err.put("error", "Invalid or expired token");
-            sendJsonResponse(resp, HttpServletResponse.SC_UNAUTHORIZED, err);
-            return null;
+        String superAdminHeader = req.getHeader("X-Is-SuperAdmin");
+        return superAdminHeader != null && superAdminHeader.equalsIgnoreCase("true");
+    }
+
+    private String extractIdFromPath(String path, String prefix) {
+        int idx = path.indexOf(prefix);
+        if (idx != -1) {
+            String sub = path.substring(idx + prefix.length());
+            String[] parts = sub.split("/");
+            if (parts.length > 0 && !parts[0].isBlank()) {
+                return parts[0];
+            }
         }
-        return claims;
+        return null;
     }
 }

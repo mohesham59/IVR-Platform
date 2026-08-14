@@ -4,16 +4,28 @@ import java.sql.Timestamp;
 import java.util.UUID;
 
 public class Notification {
+
     private UUID id;
     private UUID tenantId;
     private UUID userId;
     private String message;
     private String linkUrl;
-    private boolean read;
+    private boolean read = false;
     private Timestamp createdAt;
     private String type;
 
     public Notification() {}
+
+    public Notification(UUID id, UUID tenantId, UUID userId, String message, String linkUrl, boolean read, Timestamp createdAt, String type) {
+        this.id = id;
+        this.tenantId = tenantId;
+        this.userId = userId;
+        this.message = message;
+        this.linkUrl = linkUrl;
+        this.read = read;
+        this.createdAt = createdAt;
+        this.type = type;
+    }
 
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }

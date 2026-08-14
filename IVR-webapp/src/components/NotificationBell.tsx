@@ -20,16 +20,32 @@ export default function NotificationBell() {
   const dropdownRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
 
+  const getAuthHeaders = (): Record<string, string> => {
+    const token = localStorage.getItem('nexus_jwt_token')
+    const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
+    
+    const savedUser = localStorage.getItem('nexus_user')
+    let isSuperadmin = false
+    try {
+      if (savedUser) isSuperadmin = JSON.parse(savedUser).isSuperadmin
+    } catch (e) {}
+
+    if (isSuperadmin || window.location.pathname.startsWith('/super-admin')) {
+      headers['X-Is-SuperAdmin'] = 'true'
+    }
+    return headers
+  }
+
   const fetchNotifications = async () => {
     try {
-      const token = localStorage.getItem('nexus_jwt_token')
-      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
+      const headers = getAuthHeaders()
       
       const res = await fetch(backendUrl('/api/v1/notifications'), { headers })
       if (res.ok) {
         const data = await res.json()
-        if (data.success && Array.isArray(data.notifications)) {
-          setNotifications(data.notifications)
+        if (data.success) {
+          const list = Array.isArray(data.data) ? data.data : (Array.isArray(data.notifications) ? data.notifications : [])
+          setNotifications(list)
         }
       }
     } catch (e) {
@@ -60,8 +76,7 @@ export default function NotificationBell() {
     setIsOpen(false)
     if (!n.isRead) {
       try {
-        const token = localStorage.getItem('nexus_jwt_token')
-        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
+        const headers = getAuthHeaders()
         
         const res = await fetch(backendUrl(`/api/v1/notifications/${n.id}/read`), {
           method: 'POST',
@@ -80,18 +95,14 @@ export default function NotificationBell() {
   }
 
   const handleMarkAllAsRead = async () => {
-    const unread = notifications.filter(n => !n.isRead)
-    for (const n of unread) {
-      try {
-        const token = localStorage.getItem('nexus_jwt_token')
-        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
-        await fetch(backendUrl(`/api/v1/notifications/${n.id}/read`), {
-          method: 'POST',
-          headers
-        })
-      } catch (e) {
-        console.error(e)
-      }
+    try {
+      const headers = getAuthHeaders()
+      await fetch(backendUrl('/api/v1/notifications/read-all'), {
+        method: 'POST',
+        headers
+      })
+    } catch (e) {
+      console.error(e)
     }
     setNotifications(prev => prev.map(item => ({ ...item, isRead: true })))
   }

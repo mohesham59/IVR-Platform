@@ -1,135 +1,142 @@
 package com.nexusivr.ai.dao;
 
 import com.nexusivr.ai.model.Notification;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public class NotificationDao {
 
-    private static final Logger logger = LoggerFactory.getLogger(NotificationDao.class);
+    public NotificationDao() {}
 
-    public boolean createNotification(UUID tenantId, UUID userId, String message, String linkUrl, String type) {
-        String sql = """
-            INSERT INTO notifications (id, tenant_id, user_id, message, link_url, is_read, created_at, type)
-            VALUES (gen_random_uuid(), ?, ?, ?, ?, false, CURRENT_TIMESTAMP, ?)
-            """;
-        logger.info("Attempting to create notification for tenantId={}, userId={}, message='{}'", tenantId, userId, message);
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            
-            if (tenantId != null) {
-                ps.setObject(1, tenantId);
-            } else {
-                ps.setNull(1, java.sql.Types.OTHER);
-            }
-            
-            if (userId != null) {
-                ps.setObject(2, userId);
-            } else {
-                ps.setNull(2, java.sql.Types.OTHER);
-            }
-            
-            ps.setString(3, message);
-            ps.setString(4, linkUrl);
-            ps.setString(5, type);
-            
-            boolean inserted = ps.executeUpdate() > 0;
-            if (inserted) {
-                logger.info("Notification created successfully for tenantId={}, userId={}", tenantId, userId);
-            }
-            return inserted;
-        } catch (SQLException e) {
-            logger.error("Error creating notification: {}", e.getMessage(), e);
-            return false;
-        }
-    }
-
-    public List<Notification> getNotificationsForUser(UUID tenantId, UUID userId) {
-        logger.info("Fetching notifications for tenantId={}, userId={}", tenantId, userId);
+    public List<Notification> findByTenantId(UUID tenantId, boolean unreadOnly, int limit) {
         List<Notification> list = new ArrayList<>();
-
-        // Collect tenant-scoped notifications (plan overrides etc. — user_id may be null)
-        if (tenantId != null) {
-            String tenantSql = """
-                SELECT id, tenant_id, user_id, message, link_url, is_read, created_at, type
-                FROM notifications
-                WHERE tenant_id = ?
-                ORDER BY created_at DESC
-                """;
-            try (Connection conn = DatabaseManager.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(tenantSql)) {
-                ps.setObject(1, tenantId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        list.add(mapNotification(rs));
-                    }
-                }
-            } catch (SQLException e) {
-                logger.error("Error fetching tenant-scoped notifications for tenantId={}: {}", tenantId, e.getMessage(), e);
-            }
+        StringBuilder sql = new StringBuilder("SELECT id, tenant_id, user_id, message, link_url, is_read, created_at, type FROM notifications WHERE tenant_id = ? ");
+        if (unreadOnly) {
+            sql.append("AND is_read = false ");
         }
+        sql.append("ORDER BY created_at DESC LIMIT ?");
 
-        // Collect user-scoped notifications (direct user messages), avoiding duplicates
-        if (userId != null) {
-            String userSql = """
-                SELECT id, tenant_id, user_id, message, link_url, is_read, created_at, type
-                FROM notifications
-                WHERE user_id = ?
-                  AND (tenant_id IS NULL OR tenant_id != ?)
-                ORDER BY created_at DESC
-                """;
-            try (Connection conn = DatabaseManager.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(userSql)) {
-                ps.setObject(1, userId);
-                // Exclude already-fetched tenant-scoped rows; if no tenantId, use a dummy that won't match
-                if (tenantId != null) {
-                    ps.setObject(2, tenantId);
-                } else {
-                    ps.setNull(2, java.sql.Types.OTHER);
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+
+            pstmt.setObject(1, tenantId);
+            pstmt.setInt(2, limit > 0 ? limit : 20);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRow(rs));
                 }
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        list.add(mapNotification(rs));
-                    }
-                }
-            } catch (SQLException e) {
-                logger.error("Error fetching user-scoped notifications for userId={}: {}", userId, e.getMessage(), e);
             }
+        } catch (SQLException e) {
+            System.err.println("Error fetching notifications for tenant " + tenantId + ": " + e.getMessage());
         }
-
-        // Sort combined list by createdAt DESC
-        list.sort((a, b) -> {
-            if (a.getCreatedAt() == null && b.getCreatedAt() == null) return 0;
-            if (a.getCreatedAt() == null) return 1;
-            if (b.getCreatedAt() == null) return -1;
-            return b.getCreatedAt().compareTo(a.getCreatedAt());
-        });
-
-        logger.info("Found {} notification(s) for tenantId={}, userId={}", list.size(), tenantId, userId);
         return list;
     }
 
-    public boolean markAsRead(UUID id) {
-        String sql = "UPDATE notifications SET is_read = true WHERE id = ?";
+    public List<Notification> findPlatformNotifications(boolean unreadOnly, int limit) {
+        List<Notification> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT id, tenant_id, user_id, message, link_url, is_read, created_at, type FROM notifications WHERE tenant_id IS NULL ");
+        if (unreadOnly) {
+            sql.append("AND is_read = false ");
+        }
+        sql.append("ORDER BY created_at DESC LIMIT ?");
+
         try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setObject(1, id);
-            return ps.executeUpdate() > 0;
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+
+            pstmt.setInt(1, limit > 0 ? limit : 20);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRow(rs));
+                }
+            }
         } catch (SQLException e) {
-            logger.error("Error marking notification as read: {}", e.getMessage(), e);
+            System.err.println("Error fetching platform notifications: " + e.getMessage());
+        }
+        return list;
+    }
+
+    public Notification save(Notification n) {
+        String sql = "INSERT INTO notifications (tenant_id, user_id, message, link_url, is_read, type) VALUES (?, ?, ?, ?, ?, ?) RETURNING id, tenant_id, user_id, message, link_url, is_read, created_at, type";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setObject(1, n.getTenantId());
+            pstmt.setObject(2, n.getUserId());
+            pstmt.setString(3, n.getMessage());
+            pstmt.setString(4, n.getLinkUrl());
+            pstmt.setBoolean(5, n.isRead());
+            pstmt.setString(6, n.getType() != null ? n.getType() : "INFO");
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapRow(rs);
+                }
+            }
+        } catch (SQLException e) {
+            if (e.getMessage() != null && e.getMessage().contains("foreign key constraint")) {
+                System.err.println("Warning: Cannot save notification for tenant ID (" + n.getTenantId() + "): tenant does not exist in tenants table.");
+            } else {
+                System.err.println("Error saving notification: " + e.getMessage());
+            }
+        }
+        return null;
+    }
+
+    public Notification createNotification(UUID tenantId, UUID userId, String message, String linkUrl, String type) {
+        Notification n = new Notification();
+        n.setTenantId(tenantId);
+        n.setUserId(userId);
+        n.setType(type != null ? type : "INFO");
+        n.setMessage(message);
+        n.setLinkUrl(linkUrl);
+        n.setRead(false);
+        return save(n);
+    }
+
+    public boolean markAsRead(UUID tenantId, UUID id) {
+        String sql = tenantId != null
+                ? "UPDATE notifications SET is_read = true WHERE tenant_id = ? AND id = ?"
+                : "UPDATE notifications SET is_read = true WHERE tenant_id IS NULL AND id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            if (tenantId != null) {
+                pstmt.setObject(1, tenantId);
+                pstmt.setObject(2, id);
+            } else {
+                pstmt.setObject(1, id);
+            }
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error marking notification as read: " + e.getMessage());
             return false;
         }
     }
 
-    private Notification mapNotification(ResultSet rs) throws SQLException {
+    public boolean markAllAsRead(UUID tenantId) {
+        String sql = tenantId != null
+                ? "UPDATE notifications SET is_read = true WHERE tenant_id = ?"
+                : "UPDATE notifications SET is_read = true WHERE tenant_id IS NULL";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            if (tenantId != null) {
+                pstmt.setObject(1, tenantId);
+            }
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error marking all notifications as read: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private Notification mapRow(ResultSet rs) throws SQLException {
         Notification n = new Notification();
         n.setId((UUID) rs.getObject("id"));
         n.setTenantId((UUID) rs.getObject("tenant_id"));
