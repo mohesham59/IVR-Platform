@@ -50,6 +50,8 @@ public class AuthServlet extends BaseAiServlet {
         }
     }
 
+    private static final java.util.concurrent.ConcurrentHashMap<String, Integer> failedAttemptsMap = new java.util.concurrent.ConcurrentHashMap<>();
+
     private void handleLogin(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
             String requestBody = new BufferedReader(new InputStreamReader(req.getInputStream())).lines().collect(Collectors.joining("\n"));
@@ -65,6 +67,14 @@ public class AuthServlet extends BaseAiServlet {
 
             User user = userDao.findByEmailOrUsername(identifier);
             if (user == null) {
+                int attempts = failedAttemptsMap.merge(identifier, 1, Integer::sum);
+                if (attempts >= 5) {
+                    ServiceRegistry.getNotificationService().notify(
+                            null, null, "LOGIN_FAILURE_THRESHOLD",
+                            "Warning: " + attempts + " consecutive failed login attempts detected for email " + identifier,
+                            "/super-admin/audit-logs"
+                    );
+                }
                 sendJsonResponse(resp, HttpServletResponse.SC_UNAUTHORIZED, "Invalid credentials");
                 return;
             }
@@ -83,9 +93,19 @@ public class AuthServlet extends BaseAiServlet {
 
             boolean passwordMatches = PasswordUtil.checkPassword(password, user.getPasswordHash());
             if (!passwordMatches) {
+                int attempts = failedAttemptsMap.merge(identifier, 1, Integer::sum);
+                if (attempts >= 5) {
+                    ServiceRegistry.getNotificationService().notify(
+                            null, null, "LOGIN_FAILURE_THRESHOLD",
+                            "Warning: " + attempts + " consecutive failed login attempts detected for email " + identifier,
+                            "/super-admin/audit-logs"
+                    );
+                }
                 sendJsonResponse(resp, HttpServletResponse.SC_UNAUTHORIZED, "Invalid credentials");
                 return;
             }
+
+            failedAttemptsMap.remove(identifier);
 
             // Update user last login timestamp in PostgreSQL
             userDao.updateLastLogin(user.getId());

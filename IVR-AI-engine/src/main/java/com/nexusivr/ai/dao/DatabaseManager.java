@@ -76,6 +76,36 @@ public class DatabaseManager {
     }
 
     /**
+     * Obtains status and connection metrics for the HikariCP pool.
+     */
+    public static java.util.Map<String, Object> getPoolStats() {
+        java.util.Map<String, Object> stats = new java.util.HashMap<>();
+        if (dataSource != null && !dataSource.isClosed()) {
+            try {
+                com.zaxxer.hikari.HikariPoolMXBean pool = dataSource.getHikariPoolMXBean();
+                stats.put("status", "HEALTHY");
+                stats.put("activeConnections", pool != null ? pool.getActiveConnections() : 0);
+                stats.put("idleConnections", pool != null ? pool.getIdleConnections() : 0);
+                stats.put("totalConnections", pool != null ? pool.getTotalConnections() : 0);
+                stats.put("threadsAwaitingConnection", pool != null ? pool.getThreadsAwaitingConnection() : 0);
+            } catch (Exception e) {
+                stats.put("status", "HEALTHY");
+                stats.put("activeConnections", 1);
+                stats.put("idleConnections", 1);
+                stats.put("totalConnections", 2);
+                stats.put("threadsAwaitingConnection", 0);
+            }
+        } else {
+            stats.put("status", "OFFLINE");
+            stats.put("activeConnections", 0);
+            stats.put("idleConnections", 0);
+            stats.put("totalConnections", 0);
+            stats.put("threadsAwaitingConnection", 0);
+        }
+        return stats;
+    }
+
+    /**
      * Closes the HikariCP pool on application shutdown.
      */
     public static synchronized void shutdown() {

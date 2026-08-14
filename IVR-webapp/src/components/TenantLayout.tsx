@@ -1,16 +1,18 @@
-import { useState, useEffect, type ReactNode } from 'react'
+import { useState, useEffect, type ReactNode, useRef } from 'react'
 import { NavLink } from 'react-router-dom'
 import { backendUrl } from '../api/backendUrl'
 import NotificationBell from './NotificationBell'
+import AccountMenu from './AccountMenu'
 import {
   LayoutDashboard, Building2, Phone, Server, List, Volume2, GitBranch,
-  Bot, Radio, History, BarChart3, Settings, Search,
-  ChevronDown, LogOut, ChevronLeft, ChevronRight, Layers, Moon, CreditCard,
+  Bot, History, Settings, Search,
+  ChevronDown, LogOut, ChevronLeft, ChevronRight, Layers, Moon, CreditCard, User as UserIcon
 } from 'lucide-react'
 
 const navItems = [
   { icon: <LayoutDashboard className="w-4 h-4" />, label: 'Dashboard', path: '/tenant/dashboard' },
   { icon: <Building2 className="w-4 h-4" />, label: 'Companies', path: '/tenant/companies' },
+  { icon: <Phone className="w-4 h-4" />, label: 'Phone Numbers', path: '/tenant/phone-numbers' },
   { icon: <Server className="w-4 h-4" />, label: 'SIP Extensions', path: '/tenant/sip-extensions' },
   { icon: <List className="w-4 h-4" />, label: 'Queues', path: '/tenant/queues' },
   { icon: <Volume2 className="w-4 h-4" />, label: 'Voice Prompts', path: '/tenant/voice-prompts' },
@@ -28,7 +30,6 @@ interface TenantLayoutProps {
   pageTitle: string
   pageSubtitle?: string
   headerActions?: ReactNode
-  liveCount?: number
 }
 
 export default function TenantLayout({
@@ -38,20 +39,11 @@ export default function TenantLayout({
   pageTitle,
   pageSubtitle,
   headerActions,
-  liveCount = 18,
 }: TenantLayoutProps) {
-  console.log('[Sidebar Audit] TenantLayout rendered with navItems:', navItems.map(i => i.label))
   const [collapsed, setCollapsed] = useState(false)
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark')
   const [activeWorkspaceName, setActiveWorkspaceName] = useState<string>('Loading...')
-  const [currentUser, setCurrentUser] = useState<{username: string, isSuperadmin: boolean} | null>(() => {
-    const saved = localStorage.getItem('nexus_user')
-    try {
-      return saved ? JSON.parse(saved) : null
-    } catch {
-      return null
-    }
-  })
+  const [liveCallsCount, setLiveCallsCount] = useState<number>(0)
 
   useEffect(() => {
     if (darkMode) {
@@ -62,6 +54,30 @@ export default function TenantLayout({
       localStorage.setItem('theme', 'light')
     }
   }, [darkMode])
+
+  // Fetch active calls count
+  useEffect(() => {
+    const fetchActiveCalls = async () => {
+      try {
+        const tenantId = localStorage.getItem('tenant_id') || '11111111-1111-1111-1111-111111111111'
+        const res = await fetch('/api/v1/calls/active-count', {
+          headers: { 'X-Tenant-ID': tenantId }
+        })
+        if (res.ok) {
+          const data = await res.json()
+          if (data.success && typeof data.activeCalls === 'number') {
+            setLiveCallsCount(data.activeCalls)
+          }
+        }
+      } catch (e) {
+        console.error('Failed to fetch active calls count', e)
+      }
+    }
+
+    fetchActiveCalls()
+    const interval = setInterval(fetchActiveCalls, 5000)
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     const fetchActiveWorkspace = async () => {
@@ -84,26 +100,6 @@ export default function TenantLayout({
         setActiveWorkspaceName('Unknown Workspace')
       }
     }
-    fetchActiveWorkspace()
-
-    const fetchUser = async () => {
-      try {
-        const token = localStorage.getItem('nexus_jwt_token')
-        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
-        let res = await fetch('/api/v1/auth/me', { headers }).catch(() => null)
-        if (!res || !res.ok) {
-          res = await fetch(backendUrl('/api/v1/auth/me'), { headers })
-        }
-        const data = await res.json()
-        if (data.success && data.user) {
-          setCurrentUser(data.user)
-        }
-      } catch (e) {
-        console.error('Failed to fetch user', e)
-      }
-    }
-    fetchUser()
-
     const handleWorkspaceUpdate = (e: Event) => {
       const customEvent = e as CustomEvent;
       if (customEvent.detail && customEvent.detail.name) {
@@ -197,9 +193,10 @@ export default function TenantLayout({
           </div>
 
           <div className="flex items-center gap-2 ml-auto">
+            {/* Live active calls badge */}
             <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#F0FDF4] border border-[#BBF7D0] rounded-lg">
               <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse" />
-              <span className="text-[#15803D] text-xs font-semibold">{liveCount} Active Calls</span>
+              <span className="text-[#15803D] text-xs font-semibold">{liveCallsCount} Active Calls</span>
             </div>
 
             <button
@@ -209,25 +206,11 @@ export default function TenantLayout({
               <Moon className="w-4 h-4" />
             </button>
 
+            {/* Notification Bell Dropdown */}
             <NotificationBell />
 
-            <button className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-lg hover:bg-[#F3F4F6] transition-colors">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#2563EB] to-[#7C3AED] flex items-center justify-center text-white text-xs font-bold">
-                {currentUser?.username ? currentUser.username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U'}
-              </div>
-              <div className="text-left hidden sm:block">
-                <div className="text-[#1F2937] text-xs font-semibold leading-tight">{currentUser?.username || 'User'}</div>
-                <div className="text-[#9CA3AF] text-[10px]">{currentUser?.isSuperadmin ? 'Super Admin' : 'Tenant Admin'}</div>
-              </div>
-              <ChevronDown className="w-3 h-3 text-[#9CA3AF]" />
-            </button>
-
-            <button
-              onClick={onLogout}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-[#9CA3AF] hover:text-[#EF4444] hover:bg-[#FEF2F2] transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+            {/* User Account Dropdown Menu */}
+            <AccountMenu role="tenant_admin" onLogout={onLogout} />
           </div>
         </header>
 

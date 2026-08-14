@@ -297,5 +297,148 @@
         <servlet-name>NotificationServlet</servlet-name>
         <url-pattern>/api/v1/notifications/*</url-pattern>
     </servlet-mapping>
+    <!-- Tenant Phone Numbers Servlet -->
+    <servlet>
+        <servlet-name>TenantPhoneNumberServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.TenantPhoneNumberServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TenantPhoneNumberServlet</servlet-name>
+        <url-pattern>/api/v1/tenant/phone-numbers</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TenantPhoneNumberServlet</servlet-name>
+        <url-pattern>/api/v1/tenant/phone-numbers/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TenantPhoneNumberServlet</servlet-name>
+        <url-pattern>/api/v1/tenant/published-flows</url-pattern>
+    </servlet-mapping>
+
+    <!-- Tenant SIP Extensions Servlet -->
+    <servlet>
+        <servlet-name>TenantSipExtensionServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.TenantSipExtensionServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TenantSipExtensionServlet</servlet-name>
+        <url-pattern>/api/v1/tenant/sip-extensions</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TenantSipExtensionServlet</servlet-name>
+        <url-pattern>/api/v1/tenant/sip-extensions/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Tenant Queues & Agents Servlet -->
+    <servlet>
+        <servlet-name>TenantQueueServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.TenantQueueServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TenantQueueServlet</servlet-name>
+        <url-pattern>/api/v1/queues</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TenantQueueServlet</servlet-name>
+        <url-pattern>/api/v1/queues/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TenantQueueServlet</servlet-name>
+        <url-pattern>/api/v1/agents</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TenantQueueServlet</servlet-name>
+        <url-pattern>/api/v1/agents/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Operations Dashboard Servlet -->
+    <servlet>
+        <servlet-name>DashboardServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.DashboardServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DashboardServlet</servlet-name>
+        <url-pattern>/api/v1/dashboard/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DashboardServlet</servlet-name>
+        <url-pattern>/api/v1/calls/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Super Admin Platform Overview Servlet -->
+    <servlet>
+        <servlet-name>SuperAdminDashboardServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.SuperAdminDashboardServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SuperAdminDashboardServlet</servlet-name>
+        <url-pattern>/api/v1/admin/platform-stats</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SuperAdminDashboardServlet</servlet-name>
+        <url-pattern>/api/v1/admin/company-growth</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SuperAdminDashboardServlet</servlet-name>
+        <url-pattern>/api/v1/admin/ai-requests-today</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SuperAdminDashboardServlet</servlet-name>
+        <url-pattern>/api/v1/admin/calls-per-day</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SuperAdminDashboardServlet</servlet-name>
+        <url-pattern>/api/v1/admin/latest-companies</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SuperAdminDashboardServlet</servlet-name>
+        <url-pattern>/api/v1/admin/recent-activity</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SuperAdminDashboardServlet</servlet-name>
+        <url-pattern>/api/v1/super-admin/dashboard/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- System Health Servlet -->
+    <servlet>
+        <servlet-name>SystemHealthServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.SystemHealthServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SystemHealthServlet</servlet-name>
+        <url-pattern>/api/v1/admin/system-health</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SystemHealthServlet</servlet-name>
+        <url-pattern>/api/v1/super-admin/system-health</url-pattern>
+    </servlet-mapping>
+
+    <!-- Audit Logs Servlet -->
+    <servlet>
+        <servlet-name>AuditLogsServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.AuditLogsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AuditLogsServlet</servlet-name>
+        <url-pattern>/api/v1/admin/audit-logs</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AuditLogsServlet</servlet-name>
+        <url-pattern>/api/v1/super-admin/audit-logs</url-pattern>
+    </servlet-mapping>
+
+    <!-- Super Admin Reports Servlet -->
+    <servlet>
+        <servlet-name>SuperAdminReportsServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.SuperAdminReportsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SuperAdminReportsServlet</servlet-name>
+        <url-pattern>/api/v1/admin/reports/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SuperAdminReportsServlet</servlet-name>
+        <url-pattern>/api/v1/super-admin/reports/*</url-pattern>
+    </servlet-mapping>
 
 </web-app>

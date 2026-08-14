@@ -91,6 +91,13 @@ public class SuperAdminTenantsServlet extends BaseAiServlet {
 
             TenantDao.Tenant created = tenantDao.createTenant(displayName, ownerUserId, status, subscriptionPlanId);
             if (created != null) {
+                // Fire platform notification for Super Admin
+                ServiceRegistry.getNotificationService().notify(
+                        null, null, "COMPANY_CREATED",
+                        "New tenant company '" + displayName + "' onboarded",
+                        "/super-admin/companies"
+                );
+
                 Map<String, Object> result = new LinkedHashMap<>();
                 result.put("success", true);
                 result.put("message", "Company created successfully");
@@ -147,15 +154,20 @@ public class SuperAdminTenantsServlet extends BaseAiServlet {
                     String newPlanName = tenantDao.getPlanNameById(subscriptionPlanId);
                     String message = "Your administrator changed your subscription plan from " + existingPlanName + " to " + newPlanName + ".";
                     String linkUrl = "/tenant/companies";
-                    logger.info("Creating PLAN_OVERRIDE notification for tenantId={}, message='{}'", tenantId, message);
-                    boolean notifCreated = new com.nexusivr.ai.dao.NotificationDao().createNotification(
+                    new com.nexusivr.ai.dao.NotificationDao().createNotification(
                             java.util.UUID.fromString(tenantId),
                             null,
                             message,
                             linkUrl,
                             "PLAN_OVERRIDE"
                     );
-                    logger.info("PLAN_OVERRIDE notification created={} for tenantId={}", notifCreated, tenantId);
+
+                    // Platform notification for Super Admin
+                    ServiceRegistry.getNotificationService().notify(
+                            null, null, "SUBSCRIPTION_CHANGED",
+                            "Tenant '" + (displayName != null ? displayName : tenantId) + "' subscription plan updated to " + newPlanName,
+                            "/super-admin/subscriptions"
+                    );
                 }
             }
 

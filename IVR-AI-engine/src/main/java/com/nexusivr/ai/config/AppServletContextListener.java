@@ -36,24 +36,30 @@ public class AppServletContextListener implements ServletContextListener {
     private void runDbMigration() {
         try (java.sql.Connection conn = DatabaseManager.getConnection()) {
             if (conn == null) return;
-            java.io.InputStream is = getClass().getResourceAsStream("/009_users_and_tenants.sql");
+            executeSqlScript(conn, "/009_users_and_tenants.sql", "Database/AI-database/009_users_and_tenants.sql");
+            executeSqlScript(conn, "/010_telephony_analytics.sql", "Database/AI-database/010_telephony_analytics.sql");
+            executeSqlScript(conn, "/011_phone_numbers.sql", "Database/AI-database/011_phone_numbers.sql");
+            executeSqlScript(conn, "/012_sip_extensions.sql", "Database/AI-database/012_sip_extensions.sql");
+            executeSqlScript(conn, "/013_queue_management.sql", "Database/AI-database/013_queue_management.sql");
+            executeSqlScript(conn, "/014_voice_prompts.sql", "Database/AI-database/014_voice_prompts.sql");
+            executeSqlScript(conn, "/015_audit_logs.sql", "Database/AI-database/015_audit_logs.sql");
+            logger.info("Database schema and seeds verified successfully.");
+        } catch (Exception e) {
+            logger.warn("Database migration execution skipped or encountered an issue: {}", e.getMessage());
+        }
+    }
+
+    private void executeSqlScript(java.sql.Connection conn, String resourceName, String fallbackRelativePath) {
+        try {
+            java.io.InputStream is = getClass().getResourceAsStream(resourceName);
             if (is == null) {
-                String envScript = System.getenv("NEXUSIVR_DB_SCRIPT");
-                if (envScript != null && !envScript.isBlank()) {
-                    java.io.File file = new java.io.File(envScript);
-                    if (file.exists()) {
-                        is = new java.io.FileInputStream(file);
-                    }
-                }
-            }
-            if (is == null) {
-                java.io.File relative = new java.io.File("Database/AI-database/009_users_and_tenants.sql");
+                java.io.File relative = new java.io.File(fallbackRelativePath);
                 if (relative.exists()) {
                     is = new java.io.FileInputStream(relative);
                 }
             }
             if (is == null) {
-                logger.warn("DB migration script not found on classpath, via NEXUSIVR_DB_SCRIPT, or relative to working dir. Skipping schema migration.");
+                logger.warn("DB script {} not found. Skipping.", resourceName);
                 return;
             }
             String sqlContent = new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
@@ -66,10 +72,9 @@ public class AppServletContextListener implements ServletContextListener {
                         } catch (Exception ignored) {}
                     }
                 }
-                logger.info("Database schema and seeds verified successfully.");
             }
         } catch (Exception e) {
-            logger.warn("Database migration execution skipped or encountered an issue: {}", e.getMessage());
+            logger.warn("Script execution encountered issue for {}: {}", resourceName, e.getMessage());
         }
     }
 
