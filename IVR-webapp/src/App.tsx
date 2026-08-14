@@ -17,6 +17,7 @@ import AIAssistant from './screens/AIAssistant'
 import VoicePrompts from './screens/VoicePrompts'
 import CallAnalytics from './screens/CallAnalytics'
 import Settings from './screens/Settings'
+import SuperAdminSettings from './screens/SuperAdminSettings'
 import SuperAdminLayout from './components/SuperAdminLayout'
 
 const superAdminPages = [
@@ -101,7 +102,8 @@ export default function App() {
         <Route path="/super-admin/companies" element={<SuperAdminCompanies onLogout={logout} />} />
         <Route path="/super-admin/users" element={<SuperAdminUsers onLogout={logout} />} />
         <Route path="/super-admin/subscriptions" element={<SuperAdminSubscriptions onLogout={logout} />} />
-        {superAdminPages.filter(([slug]) => slug !== 'users' && slug !== 'companies' && slug !== 'subscriptions').map(([slug, title]) => (
+        <Route path="/super-admin/settings" element={<SuperAdminSettings onLogout={logout} />} />
+        {superAdminPages.filter(([slug]) => !['users', 'companies', 'subscriptions', 'settings'].includes(slug)).map(([slug, title]) => (
           <Route key={slug} path={`/super-admin/${slug}`} element={<SuperAdminSection title={title} />} />
         ))}
         <Route path="/tenant/dashboard" element={<TenantAdminDashboard onLogout={logout} />} />
