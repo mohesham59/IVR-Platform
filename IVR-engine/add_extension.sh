@@ -25,16 +25,28 @@ fi
 sed -i "/^exten => ${EXTENSION},/d" "$CONF_FILE" 2>/dev/null || true
 sed -i "/^; VXML Scenario: .* (ext ${EXTENSION})/d" "$CONF_FILE" 2>/dev/null || true
 
-# Insert the extension before the [menu] section so it goes into the [default] context
-awk '/^\[menu\]/{
-  print "; VXML Scenario: '"$SCENARIO_NAME"' (ext '"$EXTENSION"')"
-  print "exten => '"$EXTENSION"',1,NoOp(Incoming call for VXML Scenario: '"$SCENARIO_NAME"')"
-  print "exten => '"$EXTENSION"',n,Answer()"
-  print "exten => '"$EXTENSION"',n,Set(VXML_FILE='"$VXML_FILE_PATH"')"
-  print "exten => '"$EXTENSION"',n,AGI(agi://127.0.0.1:4573/default)"
-  print "exten => '"$EXTENSION"',n,Hangup()"
-  print ""
-}1' "$CONF_FILE" > /tmp/asterisk_ext_tmp && cat /tmp/asterisk_ext_tmp > "$CONF_FILE" && rm -f /tmp/asterisk_ext_tmp
+# Insert the extension before [menu] if present, otherwise append to end of file
+if grep -q "^\[menu\]" "$CONF_FILE"; then
+  awk '/^\[menu\]/{
+    print "; VXML Scenario: '"$SCENARIO_NAME"' (ext '"$EXTENSION"')"
+    print "exten => '"$EXTENSION"',1,NoOp(Incoming call for VXML Scenario: '"$SCENARIO_NAME"')"
+    print "exten => '"$EXTENSION"',n,Answer()"
+    print "exten => '"$EXTENSION"',n,Set(VXML_FILE='"$VXML_FILE_PATH"')"
+    print "exten => '"$EXTENSION"',n,AGI(agi://127.0.0.1:4573/default)"
+    print "exten => '"$EXTENSION"',n,Hangup()"
+    print ""
+  }1' "$CONF_FILE" > /tmp/asterisk_ext_tmp && cat /tmp/asterisk_ext_tmp > "$CONF_FILE" && rm -f /tmp/asterisk_ext_tmp
+else
+  cat << EOF >> "$CONF_FILE"
+
+; VXML Scenario: $SCENARIO_NAME (ext $EXTENSION)
+exten => $EXTENSION,1,NoOp(Incoming call for VXML Scenario: $SCENARIO_NAME)
+exten => $EXTENSION,n,Answer()
+exten => $EXTENSION,n,Set(VXML_FILE=$VXML_FILE_PATH)
+exten => $EXTENSION,n,AGI(agi://127.0.0.1:4573/default)
+exten => $EXTENSION,n,Hangup()
+EOF
+fi
 
 echo "Extension $EXTENSION for scenario '$SCENARIO_NAME' added successfully to $CONF_FILE."
 
