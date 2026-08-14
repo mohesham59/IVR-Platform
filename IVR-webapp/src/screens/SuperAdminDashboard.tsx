@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import SuperAdminLayout from '../components/SuperAdminLayout'
 import {
   Building2, Users, TrendingUp, Phone, Cpu, FileText, Plus, UserPlus, Download,
@@ -8,67 +10,58 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts'
 
-const monthlyCompanies = [
-  { month: 'Jan', companies: 210 },
-  { month: 'Feb', companies: 248 },
-  { month: 'Mar', companies: 295 },
-  { month: 'Apr', companies: 340 },
-  { month: 'May', companies: 398 },
-  { month: 'Jun', companies: 462 },
-  { month: 'Jul', companies: 530 },
-  { month: 'Aug', companies: 610 },
-  { month: 'Sep', companies: 695 },
-  { month: 'Oct', companies: 780 },
-  { month: 'Nov', companies: 890 },
-  { month: 'Dec', companies: 1020 },
-]
+interface PlatformStats {
+  totalCompanies: number
+  activeCompanies: number
+  totalUsers: number
+  activeCalls: number
+  publishedIvrs: number
+  aiRequestsToday: number
+}
 
-const callsPerDay = [
-  { day: 'Mon', calls: 14200, ai: 8400 },
-  { day: 'Tue', calls: 18900, ai: 11200 },
-  { day: 'Wed', calls: 22100, ai: 13800 },
-  { day: 'Thu', calls: 19500, ai: 12100 },
-  { day: 'Fri', calls: 24300, ai: 15600 },
-  { day: 'Sat', calls: 9800, ai: 6200 },
-  { day: 'Sun', calls: 7400, ai: 4800 },
-]
+interface MonthlyGrowthPoint {
+  month: string
+  companies: number
+}
 
-const aiUsage = [
-  { hour: '00:00', requests: 820 },
-  { hour: '04:00', requests: 450 },
-  { hour: '08:00', requests: 2100 },
-  { hour: '12:00', requests: 4800 },
-  { hour: '16:00', requests: 5200 },
-  { hour: '20:00', requests: 2900 },
-]
+interface AiUsagePoint {
+  hour: string
+  requests: number
+}
 
-const companies = [
-  { name: 'Meridian Health', plan: 'Enterprise', users: 142, status: 'Active', joined: 'Dec 12, 2024' },
-  { name: 'Vantage Retail', plan: 'Business', users: 56, status: 'Active', joined: 'Dec 10, 2024' },
-  { name: 'Apex Logistics', plan: 'Business', users: 38, status: 'Trial', joined: 'Dec 9, 2024' },
-  { name: 'ClearPath Finance', plan: 'Enterprise', users: 218, status: 'Active', joined: 'Dec 8, 2024' },
-  { name: 'Solaris Telecom', plan: 'Starter', users: 12, status: 'Inactive', joined: 'Dec 7, 2024' },
-]
+interface CallsPerDayPoint {
+  day: string
+  calls: number
+  ai: number
+}
 
-const recentUsers = [
-  { name: 'Marcus Webb', email: 'marcus@meridian.io', role: 'Tenant Admin', company: 'Meridian Health', joined: '2h ago' },
-  { name: 'Priya Nair', email: 'priya@vantage.com', role: 'Agent', company: 'Vantage Retail', joined: '5h ago' },
-  { name: 'Tom Brecker', email: 'tom@apex.co', role: 'Tenant Admin', company: 'Apex Logistics', joined: '9h ago' },
-  { name: 'Sofia Alvarez', email: 'sofia@clearpath.io', role: 'Supervisor', company: 'ClearPath Finance', joined: '12h ago' },
-]
+interface CompanyItem {
+  name: string
+  plan: string
+  users: number
+  status: string
+  joined: string
+}
 
-const activities = [
-  { action: 'Company created', subject: 'Meridian Health', time: '2 min ago', type: 'success' },
-  { action: 'IVR published', subject: 'Support Flow v3', time: '14 min ago', type: 'info' },
-  { action: 'Login failed (5×)', subject: 'priya@vantage.com', time: '31 min ago', type: 'warning' },
-  { action: 'Subscription upgraded', subject: 'ClearPath Finance → Enterprise', time: '1h ago', type: 'success' },
-  { action: 'API limit exceeded', subject: 'Solaris Telecom', time: '2h ago', type: 'danger' },
-]
+interface UserItem {
+  name: string
+  email: string
+  company: string
+  joined: string
+}
 
+interface ActivityItem {
+  action: string
+  subject: string
+  time: string
+  type: string
+}
 
 const statusColor: Record<string, string> = {
+  ACTIVE: 'bg-[#DCFCE7] text-[#15803D]',
   Active: 'bg-[#DCFCE7] text-[#15803D]',
   Trial: 'bg-[#FEF9C3] text-[#A16207]',
+  INACTIVE: 'bg-[#FEE2E2] text-[#B91C1C]',
   Inactive: 'bg-[#FEE2E2] text-[#B91C1C]',
 }
 
@@ -80,36 +73,98 @@ const activityColor: Record<string, string> = {
 }
 
 export default function SuperAdminDashboard({ onLogout }: { onLogout: () => void }) {
+  const navigate = useNavigate()
+  const [stats, setStats] = useState<PlatformStats | null>(null)
+  const [monthlyCompanies, setMonthlyCompanies] = useState<MonthlyGrowthPoint[]>([])
+  const [aiUsage, setAiUsage] = useState<AiUsagePoint[]>([])
+  const [callsPerDay, setCallsPerDay] = useState<CallsPerDayPoint[]>([])
+  const [companies, setCompanies] = useState<CompanyItem[]>([])
+  const [recentUsers, setRecentUsers] = useState<UserItem[]>([])
+  const [activities, setActivities] = useState<ActivityItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchDashboardData = async () => {
+    try {
+      const headers = { 'X-Is-SuperAdmin': 'true' }
+      const [sRes, gRes, aRes, cRes, lRes, rRes] = await Promise.all([
+        fetch('/api/v1/admin/platform-stats', { headers }).then(r => r.json()).catch(() => null),
+        fetch('/api/v1/admin/company-growth', { headers }).then(r => r.json()).catch(() => null),
+        fetch('/api/v1/admin/ai-requests-today', { headers }).then(r => r.json()).catch(() => null),
+        fetch('/api/v1/admin/calls-per-day', { headers }).then(r => r.json()).catch(() => null),
+        fetch('/api/v1/admin/latest-companies', { headers }).then(r => r.json()).catch(() => null),
+        fetch('/api/v1/admin/recent-activity', { headers }).then(r => r.json()).catch(() => null),
+      ])
+
+      if (sRes?.success && sRes.data) setStats(sRes.data)
+      if (gRes?.success && gRes.data) setMonthlyCompanies(gRes.data)
+      if (aRes?.success && aRes.data) setAiUsage(aRes.data)
+      if (cRes?.success && cRes.data) setCallsPerDay(cRes.data)
+      if (lRes?.success && lRes.data) setCompanies(lRes.data)
+      if (rRes?.success) {
+        if (rRes.data) setActivities(rRes.data)
+        if (rRes.users) setRecentUsers(rRes.users)
+      }
+    } catch (err) {
+      console.error('Error fetching super admin dashboard data:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchDashboardData()
+    const interval = setInterval(fetchDashboardData, 10000)
+    return () => clearInterval(interval)
+  }, [])
+
   const headerActions = (
     <div className="flex gap-2">
-      <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] text-[#374151] text-sm font-medium hover:border-[#2563EB] hover:text-[#2563EB] transition-all shadow-sm">
+      <button
+        onClick={() => navigate('/super-admin/users')}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] text-[#374151] text-sm font-medium hover:border-[#2563EB] hover:text-[#2563EB] transition-all shadow-sm cursor-pointer"
+      >
         <UserPlus className="w-4 h-4" />
         Create Admin
       </button>
-      <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] text-[#374151] text-sm font-medium hover:border-[#2563EB] hover:text-[#2563EB] transition-all shadow-sm">
+      <button
+        onClick={() => navigate('/super-admin/reports')}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] text-[#374151] text-sm font-medium hover:border-[#2563EB] hover:text-[#2563EB] transition-all shadow-sm cursor-pointer"
+      >
         <Download className="w-4 h-4" />
         Report
       </button>
-      <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1E40AF] transition-all shadow-md shadow-[#2563EB]/20">
+      <button
+        onClick={() => navigate('/super-admin/companies')}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1E40AF] transition-all shadow-md shadow-[#2563EB]/20 cursor-pointer"
+      >
         <Plus className="w-4 h-4" />
         Add Company
       </button>
     </div>
   )
 
-  return (
-    <SuperAdminLayout pageTitle="Platform Overview" pageSubtitle="Thursday, December 12, 2024" headerActions={headerActions} onLogout={onLogout}>
+  const kpis = [
+    { label: 'Total Companies', value: stats?.totalCompanies.toLocaleString() ?? '—', delta: '+100%', up: true, icon: <Building2 className="w-5 h-5" />, color: '#2563EB', bg: '#EFF6FF' },
+    { label: 'Active Companies', value: stats?.activeCompanies.toLocaleString() ?? '—', delta: 'Active', up: true, icon: <CheckCircle2 className="w-5 h-5" />, color: '#22C55E', bg: '#F0FDF4' },
+    { label: 'Total Users', value: stats?.totalUsers.toLocaleString() ?? '—', delta: 'System', up: true, icon: <Users className="w-5 h-5" />, color: '#8B5CF6', bg: '#F5F3FF' },
+    { label: 'Active Calls', value: stats?.activeCalls.toString() ?? '0', delta: 'Live', up: true, icon: <Phone className="w-5 h-5" />, color: '#F59E0B', bg: '#FFFBEB' },
+    { label: 'Published IVRs', value: stats?.publishedIvrs.toLocaleString() ?? '—', delta: 'Live', up: true, icon: <FileText className="w-5 h-5" />, color: '#06B6D4', bg: '#ECFEFF' },
+    { label: 'AI Requests Today', value: stats?.aiRequestsToday.toLocaleString() ?? '—', delta: 'Today', up: true, icon: <Cpu className="w-5 h-5" />, color: '#EC4899', bg: '#FDF2F8' },
+  ]
 
+  const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+
+  return (
+    <SuperAdminLayout pageTitle="Platform Overview" pageSubtitle={todayStr} headerActions={headerActions} onLogout={onLogout}>
+      {loading ? (
+        <div className="flex items-center justify-center h-64 text-[#6B7280]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2563EB]"></div>
+        </div>
+      ) : (
+        <div className="space-y-6">
           {/* KPI cards */}
           <div className="grid grid-cols-2 xl:grid-cols-6 gap-4">
-            {[
-              { label: 'Total Companies', value: '3,412', delta: '+24', up: true, icon: <Building2 className="w-5 h-5" />, color: '#2563EB', bg: '#EFF6FF' },
-              { label: 'Active Companies', value: '3,104', delta: '+18', up: true, icon: <CheckCircle2 className="w-5 h-5" />, color: '#22C55E', bg: '#F0FDF4' },
-              { label: 'Total Users', value: '48,291', delta: '+312', up: true, icon: <Users className="w-5 h-5" />, color: '#8B5CF6', bg: '#F5F3FF' },
-              { label: 'Active Calls', value: '1,847', delta: '-92', up: false, icon: <Phone className="w-5 h-5" />, color: '#F59E0B', bg: '#FFFBEB' },
-              { label: 'Published IVRs', value: '9,263', delta: '+67', up: true, icon: <FileText className="w-5 h-5" />, color: '#06B6D4', bg: '#ECFEFF' },
-              { label: 'AI Requests Today', value: '284K', delta: '+8.2%', up: true, icon: <Cpu className="w-5 h-5" />, color: '#EC4899', bg: '#FDF2F8' },
-            ].map((kpi) => (
+            {kpis.map((kpi) => (
               <div key={kpi.label} className="col-span-1 bg-white rounded-xl border border-[#E5E7EB] p-4 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-3">
                   <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: kpi.bg, color: kpi.color }}>
@@ -137,7 +192,7 @@ export default function SuperAdminDashboard({ onLogout }: { onLogout: () => void
                 </div>
                 <div className="flex items-center gap-1.5 bg-[#F0FDF4] border border-[#BBF7D0] rounded-full px-2.5 py-1">
                   <TrendingUp className="w-3 h-3 text-[#22C55E]" />
-                  <span className="text-[#22C55E] text-xs font-semibold">+38.5%</span>
+                  <span className="text-[#22C55E] text-xs font-semibold">Active</span>
                 </div>
               </div>
               <ResponsiveContainer width="100%" height={180}>
@@ -210,7 +265,7 @@ export default function SuperAdminDashboard({ onLogout }: { onLogout: () => void
             <div className="col-span-3 bg-white rounded-xl border border-[#E5E7EB] shadow-sm overflow-hidden">
               <div className="flex items-center justify-between px-5 py-4 border-b border-[#F3F4F6]">
                 <h3 className="text-[#1F2937] font-semibold text-sm">Latest Registered Companies</h3>
-                <button className="text-[#2563EB] text-xs font-medium hover:underline">View all</button>
+                <button onClick={() => navigate('/super-admin/companies')} className="text-[#2563EB] text-xs font-medium hover:underline cursor-pointer">View all</button>
               </div>
               <table className="w-full text-sm">
                 <thead>
@@ -234,7 +289,7 @@ export default function SuperAdminDashboard({ onLogout }: { onLogout: () => void
                       <td className="px-5 py-3 text-[#6B7280] text-xs">{c.plan}</td>
                       <td className="px-5 py-3 text-[#6B7280] text-xs">{c.users}</td>
                       <td className="px-5 py-3">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColor[c.status]}`}>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColor[c.status] || 'bg-gray-100 text-gray-700'}`}>
                           {c.status}
                         </span>
                       </td>
@@ -249,12 +304,12 @@ export default function SuperAdminDashboard({ onLogout }: { onLogout: () => void
             <div className="col-span-2 bg-white rounded-xl border border-[#E5E7EB] shadow-sm overflow-hidden">
               <div className="flex items-center justify-between px-5 py-4 border-b border-[#F3F4F6]">
                 <h3 className="text-[#1F2937] font-semibold text-sm">Recent Activity</h3>
-                <button className="text-[#2563EB] text-xs font-medium hover:underline">View logs</button>
+                <button onClick={() => navigate('/super-admin/audit-logs')} className="text-[#2563EB] text-xs font-medium hover:underline cursor-pointer">View logs</button>
               </div>
               <div className="p-5 space-y-4">
                 {activities.map((a, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${activityColor[a.type]}`} />
+                    <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${activityColor[a.type] || 'bg-[#2563EB]'}`} />
                     <div className="flex-1 min-w-0">
                       <p className="text-[#374151] text-xs font-medium leading-snug">{a.action}</p>
                       <p className="text-[#9CA3AF] text-[11px] mt-0.5 truncate">{a.subject}</p>
@@ -268,7 +323,7 @@ export default function SuperAdminDashboard({ onLogout }: { onLogout: () => void
               <div className="border-t border-[#F3F4F6]">
                 <div className="flex items-center justify-between px-5 py-4 border-b border-[#F3F4F6]">
                   <h3 className="text-[#1F2937] font-semibold text-sm">Latest Users</h3>
-                  <button className="text-[#2563EB] text-xs font-medium hover:underline">View all</button>
+                  <button onClick={() => navigate('/super-admin/users')} className="text-[#2563EB] text-xs font-medium hover:underline cursor-pointer">View all</button>
                 </div>
                 <div className="divide-y divide-[#F9FAFB]">
                   {recentUsers.map((u) => (
@@ -287,6 +342,8 @@ export default function SuperAdminDashboard({ onLogout }: { onLogout: () => void
               </div>
             </div>
           </div>
+        </div>
+      )}
     </SuperAdminLayout>
   )
 }
