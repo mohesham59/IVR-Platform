@@ -47,7 +47,9 @@ CREATE INDEX IF NOT EXISTS idx_users_active_tenant ON users(active_tenant_id);
 -- Seed Data
 -- ---------------------------------------------------------------------------
 INSERT INTO tenants (id, display_name, status, created_at, updated_at)
-VALUES ('11111111-1111-1111-1111-111111111111', 'Default Enterprise Tenant', 'ACTIVE', now(), now())
+VALUES 
+  ('11111111-1111-1111-1111-111111111111', 'Default Enterprise Tenant', 'ACTIVE', now(), now()),
+  ('00000000-0000-0000-0000-000000000001', 'Demo Test Tenant', 'ACTIVE', now(), now())
 ON CONFLICT (id) DO UPDATE SET display_name = COALESCE(tenants.display_name, EXCLUDED.display_name);
 
 -- SuperAdmin user
