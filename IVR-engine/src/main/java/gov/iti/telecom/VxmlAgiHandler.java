@@ -14,6 +14,8 @@ import java.util.Map;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.UUID;
+import gov.iti.telecom.dao.CallLogDao;
 
 /**
  * VxmlAgiHandler — intelligent FastAGI handler for dynamic VXML execution.
@@ -98,6 +100,7 @@ public class VxmlAgiHandler extends BaseAgiScript {
         String vxmlName = "hello"; // Default VXML
         String sessionId = null;
         AnalyticsTracker tracker = null;
+        UUID tenantId = UUID.fromString("11111111-1111-1111-1111-111111111111"); // Default tenant ID
 
         try {
             bargeDigit = 0;
@@ -123,6 +126,9 @@ public class VxmlAgiHandler extends BaseAgiScript {
                 System.out.println("[VxmlAgiHandler] Could not start MixMonitor: " + e.getMessage());
             }
 
+            // Log call initialization to Database
+            CallLogDao.saveNewCallLog(sessionId, tenantId, callerId, vxmlName);
+
             // Step 3: Initialize VXML engine if needed
             initializeEngine();
 
@@ -140,9 +146,11 @@ public class VxmlAgiHandler extends BaseAgiScript {
             handlePostExecution(channel, vxmlSession);
 
             System.out.println("[VxmlAgiHandler] Call completed successfully");
+            CallLogDao.updateCallStatus(sessionId, "ANSWERED", null);
 
         } catch (Exception e) {
             logger.error("[VxmlAgiHandler] Exception: " + e.getMessage(), e);
+            CallLogDao.updateCallStatus(sessionId, "FAILED", null);
             handleError(channel, sessionId, e);
         } finally {
             if (tracker != null) {
@@ -391,6 +399,7 @@ public class VxmlAgiHandler extends BaseAgiScript {
             }
 
             if (targetFormId != null) {
+                CallLogDao.logMenuSelection(session != null ? (String) session.getVariable("agi_session_id") : null, targetFormId);
                 renderDialogById(menu.getOwnerDocument(), targetFormId, channel, session);
             } else {
                 if (session != null && session.getTracker() != null) {

@@ -28,6 +28,13 @@
             <version>5.1.0</version>
         </dependency>
 
+        <!-- Asterisk Java -->
+        <dependency>
+            <groupId>org.asteriskjava</groupId>
+            <artifactId>asterisk-java</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+
         <!-- Jakarta Servlet API -->
         <dependency>
             <groupId>jakarta.servlet</groupId>
