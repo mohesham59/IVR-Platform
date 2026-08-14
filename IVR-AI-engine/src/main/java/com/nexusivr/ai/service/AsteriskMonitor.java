@@ -4,7 +4,7 @@ import org.asteriskjava.manager.ManagerConnection;
 import org.asteriskjava.manager.ManagerConnectionFactory;
 import org.asteriskjava.manager.ManagerConnectionState;
 import org.asteriskjava.manager.action.CoreShowChannelsAction;
-import org.asteriskjava.manager.response.CoreShowChannelsResponse;
+import org.asteriskjava.manager.response.ManagerResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,10 +16,11 @@ public class AsteriskMonitor {
     private AsteriskMonitor() {
         // Fallback or read from properties in production
         String host = System.getenv().getOrDefault("AMI_HOST", "localhost");
-        String user = System.getenv().getOrDefault("AMI_USER", "ami_user");
-        String pass = System.getenv().getOrDefault("AMI_PASS", "ami_password");
+        int port = Integer.parseInt(System.getenv().getOrDefault("AMI_PORT", "5038"));
+        String user = System.getenv().getOrDefault("AMI_USER", "admin");
+        String pass = System.getenv().getOrDefault("AMI_PASS", "admin123");
         
-        ManagerConnectionFactory factory = new ManagerConnectionFactory(host, user, pass);
+        ManagerConnectionFactory factory = new ManagerConnectionFactory(host, port, user, pass);
         this.connection = factory.createManagerConnection();
     }
 
@@ -35,7 +36,7 @@ public class AsteriskMonitor {
             if (connection.getState() != ManagerConnectionState.CONNECTED) {
                 connection.login();
             }
-            CoreShowChannelsResponse response = (CoreShowChannelsResponse) connection.sendAction(new CoreShowChannelsAction());
+            ManagerResponse response = connection.sendAction(new CoreShowChannelsAction());
             // It might return channels list; we parse the list size
             // Note: Asterisk-Java CoreShowChannels might return a list of channels or just fire events.
             // A simpler reliable way is to count NewChannel/Hangup events, or use StatusAction.
