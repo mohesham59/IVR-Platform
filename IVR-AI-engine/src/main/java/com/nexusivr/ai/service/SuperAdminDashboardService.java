@@ -28,6 +28,10 @@ public class SuperAdminDashboardService {
         // Cross-tenant live active calls count via shared AsteriskAmiClient
         int activeCalls = 0;
         List<Queue> allQueues = queueDao.findAllQueues();
+
+        // Refresh live queue stats from Asterisk CLI
+        amiClient.refreshQueueStatsFromCli();
+
         for (Queue q : allQueues) {
             AsteriskAmiClient.LiveQueueStats live = amiClient.getLiveStats(q.getName());
             if (live != null) {

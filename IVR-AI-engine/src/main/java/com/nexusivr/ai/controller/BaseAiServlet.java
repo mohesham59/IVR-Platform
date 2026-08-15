@@ -30,7 +30,7 @@ import java.util.UUID;
 public abstract class BaseAiServlet extends HttpServlet {
 
     protected static final Logger logger = LoggerFactory.getLogger(BaseAiServlet.class);
-    protected static final UUID DEFAULT_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    protected static final UUID DEFAULT_TENANT_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
 
     protected final Gson gson = new GsonBuilder()
             .registerTypeAdapter(Instant.class, (JsonSerializer<Instant>) (src, typeOfSrc, context) ->

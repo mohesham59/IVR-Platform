@@ -92,7 +92,7 @@ public class TenantSipExtensionServlet extends BaseAiServlet {
                 throw new ValidationException("displayName parameter is required");
             }
             if (sipPassword == null || sipPassword.isBlank()) {
-                sipPassword = "1234"; // Default fallback password if none specified
+                throw new ValidationException("sipPassword parameter is required for security");
             }
 
             SipExtension created = sipExtensionService.createSipExtension(tenantId, extensionNumber, displayName, sipPassword, tlsEnabled);

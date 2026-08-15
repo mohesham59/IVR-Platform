@@ -80,6 +80,9 @@ public class DashboardService {
         if (tenantId == null) return Collections.emptyList();
         List<Queue> queues = queueDao.findByTenantId(tenantId);
 
+        // Refresh live queue stats from Asterisk CLI
+        amiClient.refreshQueueStatsFromCli();
+
         List<Map<String, Object>> result = new ArrayList<>();
         for (Queue q : queues) {
             AsteriskAmiClient.LiveQueueStats live = amiClient.getLiveStats(q.getName());
@@ -108,6 +111,10 @@ public class DashboardService {
         if (tenantId == null) return 0;
         int activeCalls = 0;
         List<Queue> queues = queueDao.findByTenantId(tenantId);
+
+        // Refresh live queue stats from Asterisk CLI
+        amiClient.refreshQueueStatsFromCli();
+
         for (Queue q : queues) {
             AsteriskAmiClient.LiveQueueStats live = amiClient.getLiveStats(q.getName());
             if (live != null) {

@@ -39,6 +39,9 @@ public class QueueService {
         if (tenantId == null) return Collections.emptyList();
         List<Queue> queues = queueDao.findByTenantId(tenantId);
 
+        // Refresh live queue stats from Asterisk CLI
+        amiClient.refreshQueueStatsFromCli();
+
         for (Queue q : queues) {
             AsteriskAmiClient.LiveQueueStats live = amiClient.getLiveStats(q.getName());
             if (live != null) {
@@ -57,6 +60,9 @@ public class QueueService {
 
         Queue queue = queueDao.findById(tenantId, queueId);
         if (queue == null) throw new ValidationException("Queue not found");
+
+        // Refresh live queue stats from Asterisk CLI
+        amiClient.refreshQueueStatsFromCli();
 
         AsteriskAmiClient.LiveQueueStats live = amiClient.getLiveStats(queue.getName());
         if (live != null) {

@@ -5,7 +5,7 @@ import NotificationBell from './NotificationBell'
 import AccountMenu from './AccountMenu'
 import {
   Activity, BarChart3, Building2, ChevronDown, ChevronLeft, ChevronRight,
-  CreditCard, LayoutDashboard, LogOut, Moon, Phone, ScrollText, Search, Settings, Users,
+  CreditCard, LayoutDashboard, LogOut, Moon, Phone, ScrollText, Settings, Users,
 } from 'lucide-react'
 
 const navItems = [
@@ -60,7 +60,6 @@ export default function SuperAdminLayout({ children, pageTitle, pageSubtitle, he
       </aside>
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header className="h-16 bg-white border-b border-[#E5E7EB] flex items-center px-6 gap-4 flex-shrink-0 z-20">
-          <div className="relative flex-1 max-w-sm"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" /><input placeholder="Search companies, users…" className="w-full h-9 pl-9 pr-4 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] text-[#1F2937] text-sm placeholder-[#9CA3AF] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition-all" /></div>
           <div className="flex items-center gap-2 ml-auto">
             <button onClick={() => setDarkMode(!darkMode)} className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${darkMode ? 'bg-[#1F2937] text-white' : 'text-[#6B7280] hover:bg-[#F3F4F6]'}`}><Moon className="w-4 h-4" /></button>
             <NotificationBell />

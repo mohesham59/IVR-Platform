@@ -72,6 +72,7 @@ public class SipExtensionService {
         if (extNum == null || extNum.isBlank()) throw new ValidationException("Extension number is required");
         if (displayName == null || displayName.isBlank()) throw new ValidationException("Display name is required");
         if (password == null || password.isBlank()) throw new ValidationException("SIP password is required");
+        if (password.length() < 4) throw new ValidationException("SIP password must be at least 4 characters");
 
         String cleanExt = extNum.trim();
         if (!cleanExt.matches("^[0-9]{3,10}$")) {
@@ -130,8 +131,9 @@ public class SipExtensionService {
         try {
             Path pjsipPath = Paths.get(PJSIP_CONF_PATH);
             if (!Files.exists(pjsipPath)) {
-                logger.warn("pjsip.conf not found at {}. Skipping file update.", PJSIP_CONF_PATH);
-                return;
+                logger.warn("pjsip.conf not found at {}. Creating new file.", PJSIP_CONF_PATH);
+                Files.createDirectories(pjsipPath.getParent());
+                Files.writeString(pjsipPath, "; Auto-generated PJSIP configuration\n", StandardCharsets.UTF_8);
             }
 
             // Remove any old config for this extension if present to avoid duplication
@@ -162,7 +164,7 @@ public class SipExtensionService {
                     extNum, extNum, extNum, extNum, transport, extNum, extNum, password, extNum
             );
 
-            Files.writeString(pjsipPath, pjsipBlock, StandardCharsets.UTF_8, java.nio.file.StandardOpenOption.APPEND);
+            Files.writeString(pjsipPath, pjsipBlock, StandardCharsets.UTF_8, java.nio.file.StandardOpenOption.APPEND, java.nio.file.StandardOpenOption.CREATE);
             logger.info("Successfully appended PJSIP endpoint block for extension {} into {}", extNum, PJSIP_CONF_PATH);
         } catch (Exception e) {
             logger.error("Error provisioning PJSIP endpoint for ext {}: {}", extNum, e.getMessage(), e);
@@ -184,22 +186,34 @@ public class SipExtensionService {
             boolean skipping = false;
             for (String line : lines) {
                 String trimmed = line.trim();
-                if (trimmed.equalsIgnoreCase("[" + extNum + "]") ||
-                    trimmed.equalsIgnoreCase("[auth" + extNum + "]") ||
-                    trimmed.contains("Tenant SIP Extension " + extNum)) {
+                String upperTrimmed = trimmed.toUpperCase();
+
+                // Match section headers like [1005], [auth1005], possibly with comments
+                boolean isSectionStart = upperTrimmed.startsWith("[" + extNum.toUpperCase() + "]") ||
+                                         upperTrimmed.startsWith("[AUTH" + extNum.toUpperCase() + "]");
+
+                // Match tenant comment lines
+                boolean isTenantComment = trimmed.contains("Tenant SIP Extension " + extNum);
+
+                if (isSectionStart || isTenantComment) {
                     skipping = true;
                     continue;
                 }
-                if (skipping && trimmed.startsWith("[") && trimmed.endsWith("]")) {
+
+                // Stop skipping when we hit the next section or end of block
+                if (skipping && upperTrimmed.startsWith("[") && upperTrimmed.endsWith("]")) {
                     skipping = false;
                 }
+
                 if (!skipping) {
                     filtered.add(line);
                 }
             }
 
-            Files.write(pjsipPath, filtered, StandardCharsets.UTF_8);
-            logger.info("Removed PJSIP configuration block for extension {}", extNum);
+            if (filtered.size() != lines.size()) {
+                Files.write(pjsipPath, filtered, StandardCharsets.UTF_8);
+                logger.info("Removed PJSIP configuration block for extension {}", extNum);
+            }
         } catch (Exception e) {
             logger.error("Error removing PJSIP endpoint ext {}: {}", extNum, e.getMessage());
         }
@@ -216,10 +230,15 @@ public class SipExtensionService {
             if (exitCode == 0) {
                 logger.info("Asterisk PJSIP module reloaded successfully.");
             } else {
-                logger.warn("asterisk -rx 'pjsip reload' returned non-zero exit code: {}", exitCode);
+                String errorOutput = new String(p.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
+                logger.error("asterisk -rx 'pjsip reload' returned non-zero exit code: {}. Error: {}", exitCode, errorOutput);
+                throw new ServiceException("Asterisk PJSIP reload failed with exit code " + exitCode + ": " + errorOutput);
             }
+        } catch (ServiceException e) {
+            throw e;
         } catch (Exception e) {
-            logger.warn("Could not execute Asterisk PJSIP reload command: {}", e.getMessage());
+            logger.error("Could not execute Asterisk PJSIP reload command: {}", e.getMessage(), e);
+            throw new ServiceException("Failed to reload Asterisk PJSIP: " + e.getMessage());
         }
     }
 
@@ -242,10 +261,11 @@ public class SipExtensionService {
                 String currentEndpoint = null;
                 EndpointStatus currentStatus = null;
 
-                // Example Regex matching:
-                //  Endpoint:  1001                                                 Not in use    0 of inf
-                //  Endpoint:  1002                                                 Unavailable   0 of inf
-                Pattern endpointPattern = Pattern.compile("^\\s*Endpoint:\\s+([A-Za-z0-9_]+)\\s+([A-Za-z0-9_ ]+?)\\s+(\\d+)\\s+of\\s+");
+                // Flexible regex to handle various Asterisk pjsip show endpoints formats:
+                //   Endpoint:  1001                                                 Not in use    0 of inf
+                //   Endpoint:  1002                                                 Unavailable   0 of inf
+                //   Endpoint:  sales                                                In use        1 of inf
+                Pattern endpointPattern = Pattern.compile("^\\s*Endpoint:\\s+(\\S+)\\s+(.+?)\\s+(\\d+)\\s+of\\s+");
                 Pattern contactPattern = Pattern.compile("^\\s*Contact:\\s+.*?\\s+(Reachable|Available|Unreachable|Unknown)");
 
                 while ((line = reader.readLine()) != null) {
@@ -261,18 +281,24 @@ public class SipExtensionService {
                         currentStatus = new EndpointStatus();
                         currentStatus.activeChannels = channels;
 
-                        if ("Unavailable".equalsIgnoreCase(rawState)) {
+                        // Map various Asterisk states to our UI states
+                        String stateUpper = rawState.toUpperCase();
+                        if (stateUpper.contains("UNAVAILABLE") || stateUpper.contains("UNREACHABLE")) {
                             currentStatus.registrationStatus = "Offline";
+                        } else if (stateUpper.contains("REGISTER") || stateUpper.contains("REACHABLE") || stateUpper.contains("AVAILABLE")) {
+                            currentStatus.registrationStatus = "Registered";
                         } else {
+                            // "Not in use", "In use", "Ringing", etc.
                             currentStatus.registrationStatus = "Registered";
                         }
 
-                        if (channels > 0 || "In use".equalsIgnoreCase(rawState) || "Ringing".equalsIgnoreCase(rawState)) {
+                        if (channels > 0 || stateUpper.contains("IN USE") || stateUpper.contains("RINGING")) {
                             currentStatus.callStatus = "In Call";
                         } else {
                             currentStatus.callStatus = "Idle";
                         }
                     } else if (contactPattern.matcher(line).find() && currentStatus != null) {
+                        // Contact line confirms reachability
                         currentStatus.registrationStatus = "Registered";
                     }
                 }

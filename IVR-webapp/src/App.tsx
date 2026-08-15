@@ -9,7 +9,6 @@ import TenantAdminDashboard from './screens/TenantAdminDashboard'
 import TenantCompanies from './screens/TenantCompanies'
 import TenantBilling from './screens/TenantBilling'
 import PaymentCallback from './screens/PaymentCallback'
-import PhoneNumbers from './screens/PhoneNumbers'
 import SIPExtensions from './screens/SIPExtensions'
 import QueueManagement from './screens/QueueManagement'
 import IVRBuilder from './screens/IVRBuilder'
@@ -114,7 +113,6 @@ export default function App() {
         ))}
         <Route path="/tenant/dashboard" element={<TenantAdminDashboard onLogout={logout} />} />
         <Route path="/tenant/companies" element={<TenantCompanies onLogout={logout} />} />
-        <Route path="/tenant/phone-numbers" element={<PhoneNumbers onLogout={logout} />} />
         <Route path="/tenant/sip-extensions" element={<SIPExtensions onLogout={logout} />} />
         <Route path="/tenant/queues" element={<QueueManagement onLogout={logout} />} />
         <Route path="/tenant/voice-prompts" element={<VoicePrompts onLogout={logout} />} />

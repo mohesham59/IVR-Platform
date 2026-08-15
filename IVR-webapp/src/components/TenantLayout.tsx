@@ -5,14 +5,13 @@ import NotificationBell from './NotificationBell'
 import AccountMenu from './AccountMenu'
 import {
   LayoutDashboard, Building2, Phone, Server, List, Volume2, GitBranch,
-  Bot, History, Settings, Search,
+  Bot, History, Settings,
   ChevronDown, LogOut, ChevronLeft, ChevronRight, Layers, Moon, CreditCard, User as UserIcon
 } from 'lucide-react'
 
 const navItems = [
   { icon: <LayoutDashboard className="w-4 h-4" />, label: 'Dashboard', path: '/tenant/dashboard' },
   { icon: <Building2 className="w-4 h-4" />, label: 'Companies', path: '/tenant/companies' },
-  { icon: <Phone className="w-4 h-4" />, label: 'Phone Numbers', path: '/tenant/phone-numbers' },
   { icon: <Server className="w-4 h-4" />, label: 'SIP Extensions', path: '/tenant/sip-extensions' },
   { icon: <List className="w-4 h-4" />, label: 'Queues', path: '/tenant/queues' },
   { icon: <Volume2 className="w-4 h-4" />, label: 'Voice Prompts', path: '/tenant/voice-prompts' },
@@ -184,14 +183,6 @@ export default function TenantLayout({
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
         <header className="h-16 bg-white border-b border-[#E5E7EB] flex items-center px-6 gap-4 flex-shrink-0 z-20">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
-            <input
-              placeholder="Search…"
-              className="w-full h-9 pl-9 pr-4 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] text-[#1F2937] text-sm placeholder-[#9CA3AF] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition-all"
-            />
-          </div>
-
           <div className="flex items-center gap-2 ml-auto">
             {/* Live active calls badge */}
             <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#F0FDF4] border border-[#BBF7D0] rounded-lg">

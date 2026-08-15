@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+  <meta name="flow-name" content="Frontend Flow"/>
+  <!-- Start (n1) -->
+  <form id="n1">
+    <block>
+      <prompt bargein="false">Entry Point</prompt>
+      <goto next="#n2"/>
+    </block>
+  </form>
+  <!-- Lang select (n2) -->
+  <menu id="n2">
+      <prompt bargein="true" xml:lang="en">
+        Press 1 for English, Press 2 for Arabic.
+      </prompt>
+      <prompt bargein="true" xml:lang="ar">
+        اضغط 1 للإنجليزية، اضغط 2 للعربية.
+      </prompt>
+      <choice dtmf="1" next="#n3"/>
+      <choice dtmf="2" next="#n4"/>
+      <noinput>
+        <prompt xml:lang="en">We did not receive any input. Please try again.</prompt>
+        <prompt xml:lang="ar">لم نتلق أي إدخال. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </noinput>
+      <nomatch>
+        <prompt xml:lang="en">Invalid option. Please try again.</prompt>
+        <prompt xml:lang="ar">خيار غير صالح. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </nomatch>
+  </menu>
+  <!-- Lang en (n3) -->
+  <form id="n3">
+    <block>
+      <assign name="language" expr="'en'"/>
+      <goto next="#n5"/>
+    </block>
+  </form>
+  <!-- Lang ar (n4) -->
+  <form id="n4">
+    <block>
+      <assign name="language" expr="'ar'"/>
+      <goto next="#n5"/>
+    </block>
+  </form>
+  <!-- Main menu (n5) -->
+  <menu id="n5">
+      <prompt bargein="true" xml:lang="en">
+        For Takeout Orders, press 1. For Reservations, press 2. For Hours and Location, press 3. For Hostess, press 0.
+      </prompt>
+      <prompt bargein="true" xml:lang="ar">
+        لأوامر التوصيل، اضغط 1. للحجوزات، اضغط 2. لساعات و الموقع، اضغط 3. للست الحفل، اضغط 0.
+      </prompt>
+      <choice dtmf="1" next="#n6"/>
+      <choice dtmf="2" next="#n11"/>
+      <choice dtmf="3" next="#n17"/>
+      <choice dtmf="0" next="#n18"/>
+      <noinput>
+        <prompt xml:lang="en">We did not receive any input. Please try again.</prompt>
+        <prompt xml:lang="ar">لم نتلق أي إدخال. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </noinput>
+      <nomatch>
+        <prompt xml:lang="en">Invalid option. Please try again.</prompt>
+        <prompt xml:lang="ar">خيار غير صالح. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </nomatch>
+  </menu>
+  <!-- Takeout Order Flow (n6) -->
+  <form id="n6">
+    <block>
+      <prompt bargein="false">Convert text to voice</prompt>
+      <goto next="#n7"/>
+    </block>
+  </form>
+  <!-- Takeout size (n7) -->
+  <form id="n7">
+    <field name="n7" type="digits">
+      <prompt bargein="true" xml:lang="en">
+        Choose pizza size: Press 1 for Small, Press 2 for Medium, Press 3 for Large.
+      </prompt>
+      <prompt bargein="true" xml:lang="ar">
+        اختر حجم البيتزا: اضغط 1 للصغيرة، 2 للمتوسطة، 3 للكبيرة.
+      </prompt>
+      <filled>
+        <goto next="#n8"/>
+      </filled>
+      <noinput>
+        <prompt xml:lang="en">We did not receive any input. Please try again.</prompt>
+        <prompt xml:lang="ar">لم نتلق أي إدخال. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </noinput>
+      <nomatch>
+        <prompt xml:lang="en">Invalid option. Please try again.</prompt>
+        <prompt xml:lang="ar">خيار غير صالح. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </nomatch>
+    </field>
+  </form>
+  <!-- Takeout toppings (n8) -->
+  <form id="n8">
+    <field name="n8" type="digits">
+      <prompt bargein="true" xml:lang="en">
+        Choose a topping: Press 1 for Pepperoni, Press 2 for Mushrooms, Press 3 for Onions.
+      </prompt>
+      <prompt bargein="true" xml:lang="ar">
+        اختر إضافة: اضغط 1 للبيبروني، 2 للفطر، 3 للبصل.
+      </prompt>
+      <filled>
+        <goto next="#n9"/>
+      </filled>
+      <noinput>
+        <prompt xml:lang="en">We did not receive any input. Please try again.</prompt>
+        <prompt xml:lang="ar">لم نتلق أي إدخال. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </noinput>
+      <nomatch>
+        <prompt xml:lang="en">Invalid option. Please try again.</prompt>
+        <prompt xml:lang="ar">خيار غير صالح. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </nomatch>
+    </field>
+  </form>
+  <!-- Takeout confirm (n9) -->
+  <menu id="n9">
+      <prompt bargein="true" xml:lang="en">
+        Press 1 to confirm your order, Press 0 to cancel.
+      </prompt>
+      <prompt bargein="true" xml:lang="ar">
+        اضغط 1 لتأكيد طلبك، اضغط 0 للإلغاء.
+      </prompt>
+      <choice dtmf="1" next="#n10"/>
+      <choice dtmf="0" next="#n5"/>
+      <noinput>
+        <prompt xml:lang="en">We did not receive any input. Please try again.</prompt>
+        <prompt xml:lang="ar">لم نتلق أي إدخال. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </noinput>
+      <nomatch>
+        <prompt xml:lang="en">Invalid option. Please try again.</prompt>
+        <prompt xml:lang="ar">خيار غير صالح. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </nomatch>
+  </menu>
+  <!-- Takeout estimate (n10) -->
+  <form id="n10">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Your order will be ready in 30 minutes. Thank you for choosing us.
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        سيكون طلبك جاهزًا خلال 30 دقيقة. شكرًا لاختيارك لنا.
+      </prompt>
+      <goto next="#n19"/>
+    </block>
+  </form>
+  <!-- Reservation Flow (n11) -->
+  <form id="n11">
+    <block>
+      <prompt bargein="false">Convert text to voice</prompt>
+      <goto next="#n12"/>
+    </block>
+  </form>
+  <!-- Reservation date (n12) -->
+  <form id="n12">
+    <field name="n12" type="digits">
+      <prompt bargein="true" xml:lang="en">
+        Enter reservation date as 4 digits (MMDD) followed by pound.
+      </prompt>
+      <prompt bargein="true" xml:lang="ar">
+        أدخل تاريخ الحجز بصيغة 4 أرقام (MMDD) متبوعة بشارة.
+      </prompt>
+      <filled>
+        <goto next="#n13"/>
+      </filled>
+      <noinput>
+        <prompt xml:lang="en">We did not receive any input. Please try again.</prompt>
+        <prompt xml:lang="ar">لم نتلق أي إدخال. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </noinput>
+      <nomatch>
+        <prompt xml:lang="en">Invalid option. Please try again.</prompt>
+        <prompt xml:lang="ar">خيار غير صالح. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </nomatch>
+    </field>
+  </form>
+  <!-- Reservation time (n13) -->
+  <form id="n13">
+    <field name="n13" type="digits">
+      <prompt bargein="true" xml:lang="en">
+        Enter reservation time as 2 digits (HH) followed by pound.
+      </prompt>
+      <prompt bargein="true" xml:lang="ar">
+        أدخل وقت الحجز بصيغة 2 أرقام (HH) متبوعة بشارة.
+      </prompt>
+      <filled>
+        <goto next="#n14"/>
+      </filled>
+      <noinput>
+        <prompt xml:lang="en">We did not receive any input. Please try again.</prompt>
+        <prompt xml:lang="ar">لم نتلق أي إدخال. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </noinput>
+      <nomatch>
+        <prompt xml:lang="en">Invalid option. Please try again.</prompt>
+        <prompt xml:lang="ar">خيار غير صالح. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </nomatch>
+    </field>
+  </form>
+  <!-- Reservation party (n14) -->
+  <form id="n14">
+    <field name="n14" type="digits">
+      <prompt bargein="true" xml:lang="en">
+        Enter party size (number of people) followed by pound.
+      </prompt>
+      <prompt bargein="true" xml:lang="ar">
+        أدخل حجم الحفلة (عدد الأشخاص) متبوعًا بشارة.
+      </prompt>
+      <filled>
+        <goto next="#n15"/>
+      </filled>
+      <noinput>
+        <prompt xml:lang="en">We did not receive any input. Please try again.</prompt>
+        <prompt xml:lang="ar">لم نتلق أي إدخال. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </noinput>
+      <nomatch>
+        <prompt xml:lang="en">Invalid option. Please try again.</prompt>
+        <prompt xml:lang="ar">خيار غير صالح. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </nomatch>
+    </field>
+  </form>
+  <!-- Reservation confirm (n15) -->
+  <menu id="n15">
+      <prompt bargein="true" xml:lang="en">
+        Press 1 to confirm reservation, Press 0 to cancel.
+      </prompt>
+      <prompt bargein="true" xml:lang="ar">
+        اضغط 1 لتأكيد الحجز، اضغط 0 للإلغاء.
+      </prompt>
+      <choice dtmf="1" next="#n16"/>
+      <choice dtmf="0" next="#n5"/>
+      <noinput>
+        <prompt xml:lang="en">We did not receive any input. Please try again.</prompt>
+        <prompt xml:lang="ar">لم نتلق أي إدخال. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </noinput>
+      <nomatch>
+        <prompt xml:lang="en">Invalid option. Please try again.</prompt>
+        <prompt xml:lang="ar">خيار غير صالح. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </nomatch>
+  </menu>
+  <!-- Reservation check (n16) -->
+  <form id="n16">
+    <block>
+      <prompt bargein="false">Convert text to voice</prompt>
+      <goto next="#n18"/>
+    </block>
+  </form>
+  <!-- Hours &amp; Location (n17) -->
+  <form id="n17">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Our hours are Monday to Friday 10 AM to 9 PM, Saturday 10 AM to 10 PM, Sunday 12 PM to 8 PM. We are located at 123 Pizza Street.
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        ساعاتنا من الاثنين إلى الجمعة من 10 صباحًا إلى 9 مساءً، السبت من 10 صباحًا إلى 10 مساءً، الأحد من 12 ظهرًا إلى 8 مساءً. نحن موجودون في 123 شارع البيتزا.
+      </prompt>
+      <goto next="#n19"/>
+    </block>
+  </form>
+  <!-- Hostess Transfer (n18) -->
+  <form id="n18">
+    <block>
+      <prompt bargein="false">Transfer the call to an agent or number</prompt>
+      <transfer dest="Transfer the call to an agent or number"/>
+    </block>
+  </form>
+  <!-- Closing (n19) -->
+  <form id="n19">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Thank you for choosing us. Have a great day!
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        شكرًا لاختيارك لنا. نتمنى لك يومًا سعيدًا!
+      </prompt>
+      <disconnect/>
+    </block>
+  </form>
+</vxml>

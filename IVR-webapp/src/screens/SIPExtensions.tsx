@@ -78,12 +78,15 @@ export default function SIPExtensions({ onLogout }: { onLogout: () => void }) {
   const [actionError, setActionError] = useState<string | null>(null)
   const [actionSuccess, setActionSuccess] = useState<string | null>(null)
 
+  // Use consistent tenant ID from localStorage, matching seed data and other screens
+  const tenantId = localStorage.getItem('tenant_id') || '11111111-1111-1111-1111-111111111111'
+
   const fetchExtensions = async () => {
     try {
-      setLoading(true)
       const token = localStorage.getItem('nexus_jwt_token')
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
+        'X-Tenant-ID': tenantId,
         ...(token ? { Authorization: `Bearer ${token}` } : {})
       }
       let res = await fetch('/api/v1/tenant/sip-extensions', { headers }).catch(() => null)
@@ -105,7 +108,9 @@ export default function SIPExtensions({ onLogout }: { onLogout: () => void }) {
 
   useEffect(() => {
     fetchExtensions()
-  }, [])
+    const interval = setInterval(fetchExtensions, 5000)
+    return () => clearInterval(interval)
+  }, [tenantId])
 
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -118,6 +123,7 @@ export default function SIPExtensions({ onLogout }: { onLogout: () => void }) {
       const token = localStorage.getItem('nexus_jwt_token')
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
+        'X-Tenant-ID': tenantId,
         ...(token ? { Authorization: `Bearer ${token}` } : {})
       }
       const body = JSON.stringify({
@@ -161,6 +167,7 @@ export default function SIPExtensions({ onLogout }: { onLogout: () => void }) {
       const token = localStorage.getItem('nexus_jwt_token')
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
+        'X-Tenant-ID': tenantId,
         ...(token ? { Authorization: `Bearer ${token}` } : {})
       }
       let res = await fetch(`/api/v1/tenant/sip-extensions/${ext.id}`, { method: 'DELETE', headers }).catch(() => null)

@@ -13,11 +13,14 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class AsteriskAmiClient {
 
@@ -35,6 +38,10 @@ public class AsteriskAmiClient {
 
     private volatile boolean connected = false;
     private ScheduledExecutorService executor;
+
+    // Queue stats CLI cache
+    private static final long QUEUE_STATS_CACHE_TTL_MS = 5000;
+    private long lastQueueStatsRefresh = 0;
 
     public static class LiveQueueStats {
         public String queueName;
@@ -219,6 +226,70 @@ public class AsteriskAmiClient {
 
     public boolean isConnected() {
         return checkConnection();
+    }
+
+    /**
+     * Queries Asterisk CLI for live queue statistics and updates the internal cache.
+     * Parses "queue show" output to extract waiting calls, holdtime, and available agents.
+     * Results are cached for 5 seconds to avoid excessive CLI calls.
+     */
+    public void refreshQueueStatsFromCli() {
+        long now = System.currentTimeMillis();
+        if (now - lastQueueStatsRefresh < QUEUE_STATS_CACHE_TTL_MS && !queueStatsMap.isEmpty()) {
+            return;
+        }
+
+        try {
+            ProcessBuilder pb = new ProcessBuilder("asterisk", "-rx", "queue show");
+            Process process = pb.start();
+            String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+            int exitCode = process.waitFor();
+
+            if (exitCode == 0) {
+                parseQueueShowOutput(output);
+                lastQueueStatsRefresh = now;
+            } else {
+                logger.warn("[AMI CLI] queue show returned exit code: {}", exitCode);
+            }
+        } catch (Exception e) {
+            logger.warn("[AMI CLI] Failed to query queue show: {}", e.getMessage());
+        }
+    }
+
+    private void parseQueueShowOutput(String output) {
+        if (output == null || output.isBlank()) return;
+
+        String[] lines = output.split("\n");
+        Pattern queuePattern = Pattern.compile(
+            "^(.+?)\\s+has\\s+(\\d+)\\s+calls\\s+\\(max\\s+([^)]+)\\)\\s+in\\s+'([^']+)'\\s+strategy(?:\\s+\\(([^)]+)\\))?\\s*,\\s*W:(\\d+)\\s*,\\s*C:(\\d+)\\s*,\\s*A:(\\d+)"
+        );
+
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (trimmed.isEmpty() || trimmed.startsWith("- ")) continue;
+
+            Matcher matcher = queuePattern.matcher(trimmed);
+            if (matcher.find()) {
+                String queueName = matcher.group(1).trim();
+                int waiting = Integer.parseInt(matcher.group(6));
+                int available = Integer.parseInt(matcher.group(8));
+
+                LiveQueueStats stats = queueStatsMap.computeIfAbsent(queueName, k -> new LiveQueueStats());
+                stats.queueName = queueName;
+                stats.waitingCalls = waiting;
+                stats.activeMembers = available;
+
+                // Parse holdtime from strategy options if present, e.g. "0s holdtime, 15s wrapup"
+                String strategyOpts = matcher.group(5);
+                if (strategyOpts != null && !strategyOpts.isBlank()) {
+                    Pattern holdPattern = Pattern.compile("(\\d+)s\\s+holdtime");
+                    Matcher holdMatcher = holdPattern.matcher(strategyOpts);
+                    if (holdMatcher.find()) {
+                        stats.avgWaitSeconds = Integer.parseInt(holdMatcher.group(1));
+                    }
+                }
+            }
+        }
     }
 
     public Map<String, Object> getAmiHealthStatus() {
