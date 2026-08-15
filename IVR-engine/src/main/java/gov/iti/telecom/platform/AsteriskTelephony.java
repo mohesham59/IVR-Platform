@@ -32,7 +32,7 @@ public class AsteriskTelephony implements Telephony, ExternalResource {
 
     @Override
     public String getType() {
-        return "dummy";
+        return "asterisk-call-control";
     }
 
     @Override

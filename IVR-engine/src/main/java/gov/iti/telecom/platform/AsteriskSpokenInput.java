@@ -32,7 +32,7 @@ public class AsteriskSpokenInput implements SpokenInput, ExternalResource {
 
     @Override
     public String getType() {
-        return "dummy";
+        return "asterisk-input";
     }
 
     @Override

@@ -29,7 +29,7 @@ public class AsteriskSynthesizedOutput implements SynthesizedOutput, ExternalRes
 
     @Override
     public String getType() {
-        return "dummy";
+        return "asterisk-output";
     }
 
     @Override

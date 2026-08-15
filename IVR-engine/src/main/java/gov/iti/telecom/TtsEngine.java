@@ -133,7 +133,8 @@ public class TtsEngine {
 
             Files.deleteIfExists(Paths.get(mp3File));
         } else {
-            throw new IOException("Speech synthesis failed for text: " + text);
+            boolean fileExists = Files.exists(Paths.get(mp3File));
+            throw new IOException("Speech synthesis failed for text: " + text + ". exitTts=" + exitTts + ", fileExists=" + fileExists + ", mp3File=" + mp3File);
         }
     }
 
@@ -160,10 +161,9 @@ public class TtsEngine {
     }
 
     private static void consume(java.io.InputStream stream) {
-        try (java.io.InputStream in = stream) {
-            byte[] buffer = new byte[1024];
-            while (in.read(buffer) != -1) {
-                // discard output
+        try (java.util.Scanner s = new java.util.Scanner(stream).useDelimiter("\\A")) {
+            if (s.hasNext()) {
+                System.out.println("[TtsEngine Subprocess] " + s.next());
             }
         } catch (Exception ignored) {
         }

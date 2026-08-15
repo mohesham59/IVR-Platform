@@ -106,6 +106,9 @@ public class VxmlAgiHandler extends BaseAgiScript {
             bargeDigit = 0;
             // Extract caller information
             callerId = request.getCallerId() != null ? request.getCallerId() : request.getCallerIdName();
+            if (callerId == null || callerId.trim().isEmpty()) {
+                callerId = "unknown";
+            }
             System.out.println("\n[VxmlAgiHandler] *** New Call from: " + callerId + " ***");
 
             // Step 1: Determine which VXML to execute

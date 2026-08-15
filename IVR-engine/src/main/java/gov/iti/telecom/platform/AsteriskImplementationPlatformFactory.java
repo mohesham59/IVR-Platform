@@ -75,6 +75,7 @@ public class AsteriskImplementationPlatformFactory implements org.jvoicexml.Impl
 
             return platform;
         } catch (Throwable e) {
+            e.printStackTrace();
             throw new NoresourceError("Failed to create implementation platform", e);
         }
     }
