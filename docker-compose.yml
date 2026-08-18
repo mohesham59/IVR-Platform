@@ -81,6 +81,11 @@ services:
       - DATABASE_PASSWORD=npg_6OuHh2PKRUWk
       # Point to Asterisk on the host
       - AMI_HOST=host.docker.internal
+      # Point to RAG microservice container
+      - RAG_SERVICE_URL=http://ivr-rag-service:8085/query
+    depends_on:
+      ivr-rag-service:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8081/nexusivr-ai-engine/health || exit 1"]
       interval: 5s
@@ -131,3 +136,25 @@ services:
       ivr-payment-service:
         condition: service_healthy
     restart: unless-stopped
+
+  # 6. IVR RAG Engine (Vector DB & Retrieval REST API)
+  ivr-rag-service:
+    build:
+      context: ./IVR-AI-engine/rag
+      dockerfile: Dockerfile
+    container_name: ivr-rag-service
+    ports:
+      - "8085:8085"
+    volumes:
+      # Mount project repository documentation so the container can sync live docs
+      - ./Documentation:/app/Documentation
+      - ./IVR-engine/scenarios:/app/IVR-engine/scenarios
+      - ./Database:/app/Database
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8085/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+      start_period: 15s
+    restart: unless-stopped
+
