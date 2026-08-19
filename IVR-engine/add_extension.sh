@@ -24,12 +24,13 @@ fi
 
 # Remove any existing dialplan entries for this extension to guarantee idempotency
 sed -i "/^exten => ${EXTENSION},/d" "$CONF_FILE" 2>/dev/null || true
+sed -i "/^exten => '${EXTENSION}',/d" "$CONF_FILE" 2>/dev/null || true
 sed -i "/^; VXML Scenario: .* (ext ${EXTENSION})/d" "$CONF_FILE" 2>/dev/null || true
 
 # Format TENANT_ID assignment if provided
 TENANT_SET_LINE=""
 if [ -n "$TENANT_ID" ]; then
-    TENANT_SET_LINE="    print \"exten => '"$EXTENSION"',n,Set(TENANT_ID='"$TENANT_ID"')\""
+    TENANT_SET_LINE="    print \"exten => "$EXTENSION",n,Set(TENANT_ID="$TENANT_ID")\""
 fi
 
 # Insert the extension before [menu] if present, otherwise append to end of file
