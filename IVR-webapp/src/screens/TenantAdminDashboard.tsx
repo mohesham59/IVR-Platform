@@ -320,25 +320,33 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
               <h3 className="text-[#1F2937] font-semibold text-sm">Call Distribution</h3>
               <p className="text-[#9CA3AF] text-xs mt-0.5">By queue / department</p>
             </div>
-            <ResponsiveContainer width="100%" height={120}>
-              <PieChart>
-                <Pie data={callDist} cx="50%" cy="50%" innerRadius={35} outerRadius={55} paddingAngle={3} dataKey="value">
-                  {callDist.map((entry: any, index: number) => (
-                    <Cell key={index} fill={entry.color || DIST_COLORS[index % DIST_COLORS.length]} />
+            {callDist.length === 0 ? (
+              <div className="flex items-center justify-center h-[120px] text-[#9CA3AF] text-xs">
+                No data available for this period
+              </div>
+            ) : (
+              <>
+                <ResponsiveContainer width="100%" height={120}>
+                  <PieChart>
+                    <Pie data={callDist} cx="50%" cy="50%" innerRadius={35} outerRadius={55} paddingAngle={3} dataKey="value">
+                      {callDist.map((entry: any, index: number) => (
+                        <Cell key={index} fill={entry.color || DIST_COLORS[index % DIST_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 8, fontSize: 12 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="grid grid-cols-2 gap-1.5 mt-3">
+                  {callDist.map((d: any) => (
+                    <div key={d.name} className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: d.color }} />
+                      <span className="text-[#6B7280] text-[10px] truncate">{d.name}</span>
+                      <span className="text-[#1F2937] text-[10px] font-semibold ml-auto">{d.value}</span>
+                    </div>
                   ))}
-                </Pie>
-                <Tooltip contentStyle={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 8, fontSize: 12 }} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="grid grid-cols-2 gap-1.5 mt-3">
-              {callDist.map((d: any) => (
-                <div key={d.name} className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: d.color }} />
-                  <span className="text-[#6B7280] text-[10px] truncate">{d.name}</span>
-                  <span className="text-[#1F2937] text-[10px] font-semibold ml-auto">{d.value}</span>
                 </div>
-              ))}
-            </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -352,15 +360,21 @@ export default function TenantAdminDashboard({ onLogout }: { onLogout: () => voi
                 <p className="text-[#9CA3AF] text-xs mt-0.5">Calls handled today</p>
               </div>
             </div>
-            <ResponsiveContainer width="100%" height={150}>
-              <BarChart data={agentPerf} margin={{ top: 0, right: 0, left: -24, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
-                <XAxis dataKey="agent" tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 8, fontSize: 12 }} />
-                <Bar dataKey="calls" fill="#2563EB" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {agentPerf.length === 0 ? (
+              <div className="flex items-center justify-center h-[150px] text-[#9CA3AF] text-xs">
+                No data available for this period
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={150}>
+                <BarChart data={agentPerf} margin={{ top: 0, right: 0, left: -24, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+                  <XAxis dataKey="agent" tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 8, fontSize: 12 }} />
+                  <Bar dataKey="calls" fill="#2563EB" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
 
           {/* Queue performance */}

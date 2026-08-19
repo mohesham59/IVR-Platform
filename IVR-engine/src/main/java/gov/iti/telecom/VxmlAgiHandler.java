@@ -322,15 +322,27 @@ public class VxmlAgiHandler extends BaseAgiScript {
                 VxmlLoader loader = new VxmlLoader("scenarios/");
                 org.w3c.dom.Document doc = loader.loadVxml(vxmlName);
 
-                org.w3c.dom.NodeList menus = doc.getElementsByTagName("menu");
-                org.w3c.dom.NodeList forms = doc.getElementsByTagName("form");
+                // Find the first <form> or <menu> element under <vxml>
+                org.w3c.dom.Element firstDialog = null;
+                org.w3c.dom.Element vxmlElement = doc.getDocumentElement();
+                org.w3c.dom.NodeList children = vxmlElement.getChildNodes();
+                for (int i = 0; i < children.getLength(); i++) {
+                    org.w3c.dom.Node node = children.item(i);
+                    if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                        String nodeName = node.getNodeName();
+                        if ("form".equals(nodeName) || "menu".equals(nodeName)) {
+                            firstDialog = (org.w3c.dom.Element) node;
+                            break;
+                        }
+                    }
+                }
 
-                if (menus.getLength() > 0) {
-                    org.w3c.dom.Element menu = (org.w3c.dom.Element) menus.item(0);
-                    renderMenuElement(menu, channel, session);
-                } else if (forms.getLength() > 0) {
-                    org.w3c.dom.Element initialForm = (org.w3c.dom.Element) forms.item(0);
-                    renderFormElement(initialForm, channel, session);
+                if (firstDialog != null) {
+                    if ("menu".equals(firstDialog.getNodeName())) {
+                        renderMenuElement(firstDialog, channel, session);
+                    } else if ("form".equals(firstDialog.getNodeName())) {
+                        renderFormElement(firstDialog, channel, session);
+                    }
                 }
             } catch (Exception e) {
                 System.out.println("[VxmlAgiHandler] Note rendering VXML: " + e.getMessage());

@@ -6,7 +6,7 @@
 import { fetchWithRetry } from './backendUrl';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1/ai';
-const DEFAULT_TENANT_ID = '00000000-0000-0000-0000-000000000001';
+const getTenantId = () => localStorage.getItem('tenant_id') || '11111111-1111-1111-1111-111111111111';
 
 export interface ProviderAttempt {
   provider: string;
@@ -137,7 +137,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   const activeSessionId = localStorage.getItem('nexus_ai_session_id') || '';
   const headers = {
     'Content-Type': 'application/json',
-    'X-Tenant-ID': DEFAULT_TENANT_ID,
+    'X-Tenant-ID': getTenantId(),
     'X-AI-Provider': activeProvider,
     'X-Session-ID': activeSessionId,
     ...(options.headers || {}),

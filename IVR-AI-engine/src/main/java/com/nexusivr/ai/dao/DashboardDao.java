@@ -97,7 +97,7 @@ public class DashboardDao {
         }
 
         // Ensure smooth 24-hour baseline
-        for (int h = 8; h <= 18; h += 2) {
+        for (int h = 0; h < 24; h++) {
             if (hourlyMap.containsKey(h)) {
                 list.add(hourlyMap.get(h));
             } else {
@@ -133,12 +133,6 @@ public class DashboardDao {
             System.err.println("Error fetching call distribution data: " + e.getMessage());
         }
 
-        if (list.isEmpty()) {
-            list.add(Map.of("name", "Support L1", "value", 65));
-            list.add(Map.of("name", "Sales Queue", "value", 25));
-            list.add(Map.of("name", "Billing", "value", 10));
-        }
-
         return list;
     }
 
@@ -167,12 +161,6 @@ public class DashboardDao {
             }
         } catch (SQLException e) {
             System.err.println("Error fetching agent performance data: " + e.getMessage());
-        }
-
-        if (list.isEmpty()) {
-            list.add(Map.of("agent", "User", "calls", 48));
-            list.add(Map.of("agent", "Alex Rivera", "calls", 42));
-            list.add(Map.of("agent", "Sarah Chen", "calls", 36));
         }
 
         return list;
@@ -232,7 +220,7 @@ public class DashboardDao {
     }
 
     private double calculateTrend(double todayVal, double yestVal) {
-        if (yestVal == 0) return todayVal > 0 ? 100.0 : 0.0;
+        if (yestVal == 0) return 0.0;
         return Math.round(((todayVal - yestVal) / yestVal) * 100.0 * 10.0) / 10.0;
     }
 }

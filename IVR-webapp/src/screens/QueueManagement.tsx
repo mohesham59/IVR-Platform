@@ -46,7 +46,7 @@ interface QueueMember {
   agentState: string
 }
 
-const DEFAULT_TENANT_ID = '11111111-1111-1111-1111-111111111111'
+const getTenantId = () => localStorage.getItem('tenant_id') || '11111111-1111-1111-1111-111111111111'
 
 const agentStateConfig: Record<string, { cls: string; dot: string; icon: ReactElement; label: string }> = {
   available: { cls: 'text-[#22C55E]', dot: 'bg-[#22C55E]', icon: <CheckCircle className="w-3 h-3" />, label: 'Available' },
@@ -95,8 +95,8 @@ export default function QueueManagement({ onLogout }: { onLogout: () => void }) 
   const fetchQueuesAndAgents = async () => {
     try {
       const [queuesRes, agentsRes] = await Promise.all([
-        fetch('/api/v1/queues', { headers: { 'X-Tenant-ID': DEFAULT_TENANT_ID } }),
-        fetch('/api/v1/agents', { headers: { 'X-Tenant-ID': DEFAULT_TENANT_ID } }),
+        fetch('/api/v1/queues', { headers: { 'X-Tenant-ID': getTenantId() } }),
+        fetch('/api/v1/agents', { headers: { 'X-Tenant-ID': getTenantId() } }),
       ])
 
       if (queuesRes.ok) {
@@ -126,7 +126,7 @@ export default function QueueManagement({ onLogout }: { onLogout: () => void }) 
   const fetchQueueDetail = async (queueId: string) => {
     try {
       const res = await fetch(`/api/v1/queues/${queueId}`, {
-        headers: { 'X-Tenant-ID': DEFAULT_TENANT_ID },
+        headers: { 'X-Tenant-ID': getTenantId() },
       })
       if (res.ok) {
         const json = await res.json()
@@ -161,7 +161,7 @@ export default function QueueManagement({ onLogout }: { onLogout: () => void }) 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Tenant-ID': DEFAULT_TENANT_ID,
+          'X-Tenant-ID': getTenantId(),
         },
         body: JSON.stringify({
           name: newQueueName.trim(),
@@ -189,7 +189,7 @@ export default function QueueManagement({ onLogout }: { onLogout: () => void }) 
     try {
       const res = await fetch(`/api/v1/queues/${id}`, {
         method: 'DELETE',
-        headers: { 'X-Tenant-ID': DEFAULT_TENANT_ID },
+        headers: { 'X-Tenant-ID': getTenantId() },
       })
 
       if (res.ok) {
@@ -210,7 +210,7 @@ export default function QueueManagement({ onLogout }: { onLogout: () => void }) 
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'X-Tenant-ID': DEFAULT_TENANT_ID,
+          'X-Tenant-ID': getTenantId(),
         },
         body: JSON.stringify({ state: newState }),
       })
@@ -233,7 +233,7 @@ export default function QueueManagement({ onLogout }: { onLogout: () => void }) 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Tenant-ID': DEFAULT_TENANT_ID,
+          'X-Tenant-ID': getTenantId(),
         },
         body: JSON.stringify({ agentId, penalty: 0 }),
       })
@@ -253,7 +253,7 @@ export default function QueueManagement({ onLogout }: { onLogout: () => void }) 
     try {
       const res = await fetch(`/api/v1/queues/${selectedQueue.id}/members/${agentId}`, {
         method: 'DELETE',
-        headers: { 'X-Tenant-ID': DEFAULT_TENANT_ID },
+        headers: { 'X-Tenant-ID': getTenantId() },
       })
 
       if (res.ok) {

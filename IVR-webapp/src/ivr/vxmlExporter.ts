@@ -510,7 +510,6 @@ function renderEnd(node: FlowNode): string {
   <!-- ═══════════════════════════ END CALL ═════════════════════════════════ -->
   <form id="${toFormId(node)}">
     <block>
-      <prompt bargein="false">${esc(node.subtitle || 'Thank you for calling. Goodbye.')}</prompt>
       <disconnect/>
     </block>
   </form>`

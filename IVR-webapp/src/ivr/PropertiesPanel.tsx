@@ -94,6 +94,54 @@ function Toggle({ label, checked, onChange }: { label: string; checked?: boolean
   )
 }
 
+function AudioUploader({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const tenantId = localStorage.getItem('tenant_id') || '11111111-1111-1111-1111-111111111111';
+      const res = await fetch('/api/v1/voice-prompts/upload', {
+        method: 'POST',
+        headers: {
+          'X-Tenant-ID': tenantId
+        },
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success && data.fileName) {
+        onChange(data.fileName);
+      } else {
+        alert(data.message || 'Failed to upload audio file');
+      }
+    } catch (err) {
+      alert('Error uploading file');
+    } finally {
+      setIsUploading(false);
+      e.target.value = ''; // Reset input
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2 w-full">
+      <div className="flex-1 min-w-0">
+        <TextInput value={value} onChange={onChange} placeholder="e.g. uploaded_file.wav" />
+      </div>
+      <label className={`flex-shrink-0 flex items-center justify-center h-8 px-3 rounded-lg border border-[#E5E7EB] bg-white text-xs font-medium cursor-pointer hover:bg-[#F9FAFB] transition-colors ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+        {isUploading ? 'Uploading...' : 'Upload'}
+        <input type="file" accept="audio/wav,.wav" className="hidden" onChange={handleUpload} />
+      </label>
+    </div>
+  );
+}
+
+
 function NodePropsContent({ node, onNodeChange }: { node: FlowNode; onNodeChange?: (updated: FlowNode) => void }) {
   const def = NODE_DEFS[node.type] || { label: node.type, description: '', iconBg: '#EFF6FF', color: '#2563EB' }
 
@@ -129,7 +177,27 @@ function NodePropsContent({ node, onNodeChange }: { node: FlowNode; onNodeChange
         </FieldRow>
 
         {/* Type-specific fields */}
-        {['greeting', 'playback', 'dtmf_menu', 'tts', 'ai', 'voicemail', 'record', 'dtmf_input', 'transfer'].includes(node.type) && (
+        {node.type === 'playback' && (
+          <div className="space-y-3 pt-2 border-t border-[#F3F4F6]">
+            <h4 className="text-[#9CA3AF] text-[10px] font-semibold uppercase tracking-wider">Playback Audio</h4>
+            <div className="p-2.5 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] space-y-3">
+              <FieldRow label="Primary Audio File (en)">
+                 <AudioUploader 
+                    value={node.audioEn || ''}
+                    onChange={(fileName) => handleUpdate({ audioEn: fileName })}
+                 />
+              </FieldRow>
+              <FieldRow label="Secondary Audio File (ar) - Optional">
+                 <AudioUploader 
+                    value={node.audioAr || ''}
+                    onChange={(fileName) => handleUpdate({ audioAr: fileName })}
+                 />
+              </FieldRow>
+            </div>
+          </div>
+        )}
+
+        {['greeting', 'dtmf_menu', 'tts', 'ai', 'voicemail', 'record', 'dtmf_input', 'transfer'].includes(node.type) && (
           <div className="space-y-3 pt-2 border-t border-[#F3F4F6]">
             <h4 className="text-[#9CA3AF] text-[10px] font-semibold uppercase tracking-wider">Bilingual Prompts</h4>
             

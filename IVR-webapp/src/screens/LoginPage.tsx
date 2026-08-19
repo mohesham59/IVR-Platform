@@ -46,6 +46,12 @@ export default function LoginPage({ onLogin }: Props) {
         if (data.token) {
           localStorage.setItem('nexus_jwt_token', data.token)
           localStorage.setItem('nexus_user', JSON.stringify(data.user))
+          if (data.user?.activeTenantId) {
+            localStorage.setItem('tenant_id', data.user.activeTenantId)
+          } else if (data.user?.id) {
+             // Fallback for owners if activeTenantId is not set directly
+             localStorage.setItem('tenant_id', data.user.id)
+          }
         }
         onLogin(data.user?.isSuperadmin ? 'admin@nexusivr.com' : email)
       } else {

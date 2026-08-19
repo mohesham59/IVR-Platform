@@ -91,16 +91,31 @@ public class TtsEngine {
             return null;
         }
 
-        // Check if audio file exists in any common Asterisk format
-        for (String ext : extensions) {
-            Path audioFile = CUSTOM_AUDIO_DIRECTORY.resolve(baseName + ext);
-            if (Files.exists(audioFile)) {
-                System.out.println("[TtsEngine] Found custom audio: " + audioFile);
-                return "ivr-custom/" + baseName;
+        // Check if audio file exists in common Asterisk formats inside ivr-custom, en, or ar directories
+        String[] lookupDirs = {
+            "ivr-custom",
+            "en",
+            "ar",
+            "."
+        };
+
+        Path baseSoundsDir = Paths.get("/var/lib/asterisk/sounds");
+
+        for (String dir : lookupDirs) {
+            for (String ext : extensions) {
+                Path searchDir = baseSoundsDir.resolve(dir);
+                Path audioFile = searchDir.resolve(baseName + ext);
+                if (Files.exists(audioFile)) {
+                    System.out.println("[TtsEngine] Found custom audio: " + audioFile);
+                    if (dir.equals(".")) {
+                        return baseName;
+                    }
+                    return dir + "/" + baseName;
+                }
             }
         }
 
-        System.out.println("[TtsEngine] Custom audio not found for: " + src + " (looked in " + CUSTOM_AUDIO_DIRECTORY + ")");
+        System.out.println("[TtsEngine] Custom audio not found for: " + src + " (looked in /var/lib/asterisk/sounds)");
         return null;
     }
 
