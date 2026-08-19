@@ -31,12 +31,14 @@ public class ChatResponse {
     private com.nexusivr.ai.dto.response.FlowValidationResponse validationResult;
     private boolean templateFallback;
     private String fallbackNotice;
+    private List<SourceCitation> sources;
 
     public ChatResponse() {
         this.role = MessageRole.ASSISTANT;
         this.quotaWarnings = new ArrayList<>();
         this.providerAttempts = new ArrayList<>();
         this.droppedFeatures = new ArrayList<>();
+        this.sources = new ArrayList<>();
     }
 
     public ChatResponse(UUID sessionId, UUID tenantId, String replyMessage, MessageRole role, int turnNumber, Integer tokensUsed) {
@@ -192,6 +194,14 @@ public class ChatResponse {
 
     public String getFallbackNotice() { return fallbackNotice; }
     public void setFallbackNotice(String fallbackNotice) { this.fallbackNotice = fallbackNotice; }
+
+    public List<SourceCitation> getSources() {
+        return sources != null ? sources : new ArrayList<>();
+    }
+
+    public void setSources(List<SourceCitation> sources) {
+        this.sources = sources != null ? sources : new ArrayList<>();
+    }
 
     @Override
     public boolean equals(Object o) {
