@@ -100,7 +100,18 @@ public class VxmlAgiHandler extends BaseAgiScript {
         String vxmlName = "hello"; // Default VXML
         String sessionId = null;
         AnalyticsTracker tracker = null;
-        UUID tenantId = UUID.fromString("11111111-1111-1111-1111-111111111111"); // Default tenant ID
+        UUID tenantId = null;
+        String rawTenantId = request.getParameter("TENANT_ID");
+        if (rawTenantId == null) {
+            rawTenantId = channel.getVariable("TENANT_ID");
+        }
+        if (rawTenantId != null && !rawTenantId.trim().isEmpty()) {
+            try {
+                tenantId = UUID.fromString(rawTenantId.trim());
+            } catch (IllegalArgumentException e) {
+                System.err.println("[VxmlAgiHandler] Invalid TENANT_ID format: " + rawTenantId);
+            }
+        }
 
         try {
             bargeDigit = 0;

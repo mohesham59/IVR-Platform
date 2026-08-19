@@ -303,9 +303,14 @@ public class FlowPublishService {
 
         String vxmlFilePath = businessName;
         command.add(vxmlFilePath);
+        
+        // Add tenantId as 4th arg
+        if (tenantId != null && !tenantId.isBlank()) {
+            command.add(tenantId);
+        }
 
-        logger.info("[FlowPublishService] Executing add_extension.sh: {} with ext='{}', business='{}', vxml_path='{}'",
-                scriptPath.toAbsolutePath(), extToRegister, businessName, vxmlFilePath);
+        logger.info("[FlowPublishService] Executing add_extension.sh: {} with ext='{}', business='{}', vxml_path='{}', tenant_id='{}'",
+                scriptPath.toAbsolutePath(), extToRegister, businessName, vxmlFilePath, tenantId);
 
         try {
             ProcessBuilder pb = new ProcessBuilder(command);
