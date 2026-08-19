@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+  <meta name="flow-name" content="Frontend Flow"/>
+  <!-- Start (d414d574-461a-4288-8cd6-c77a162a3a35) -->
+  <form id="d414d574-461a-4288-8cd6-c77a162a3a35">
+    <block>
+      <prompt bargein="false">Flow entry point</prompt>
+      <goto next="#776f4b2d-cb00-4635-9fe4-9cc85aeb1487"/>
+    </block>
+  </form>
+  <!-- Greeting (776f4b2d-cb00-4635-9fe4-9cc85aeb1487) -->
+  <form id="776f4b2d-cb00-4635-9fe4-9cc85aeb1487">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        <audio src="welcome.wav">Welcome to NexusIVR</audio>
+      </prompt>
+      <goto next="#dc88c855-8eba-42ff-bf9e-6b6ce303dba1"/>
+    </block>
+  </form>
+  <!-- Text to Speech (772329e4-3da2-4dad-b7bf-4ba1ae6761e7) -->
+  <form id="772329e4-3da2-4dad-b7bf-4ba1ae6761e7">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        You chose option 1
+Thanks for calling NexusIVR
+      </prompt>
+      <goto next="#80029cf8-3d40-4fef-a07b-7113862d752c"/>
+    </block>
+  </form>
+  <!-- DTMF Menu (dc88c855-8eba-42ff-bf9e-6b6ce303dba1) -->
+  <menu id="dc88c855-8eba-42ff-bf9e-6b6ce303dba1">
+      <prompt bargein="true" xml:lang="en">
+        <audio src="menu_en.wav">For customer support press 1
+For mangers press 2</audio>
+      </prompt>
+      <choice dtmf="1" next="#772329e4-3da2-4dad-b7bf-4ba1ae6761e7">Key 1</choice>
+      <choice dtmf="2" next="#08087c09-5f71-4429-924d-ff711ed62127">Key 2</choice>
+      <choice dtmf="3" next="#b93ec584-4ec6-4e32-b6c1-4228bec26b3c"/>
+      <noinput>
+        <prompt xml:lang="en">We did not receive any input. Please try again.</prompt>
+        <prompt xml:lang="ar">لم نتلق أي إدخال. يرجى المحاولة مرة أخرى.</prompt>
+        <goto next="#b93ec584-4ec6-4e32-b6c1-4228bec26b3c"/>
+      </noinput>
+      <nomatch>
+        <prompt xml:lang="en">Invalid option. Please try again.</prompt>
+        <prompt xml:lang="ar">خيار غير صالح. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </nomatch>
+  </menu>
+  <!-- Record (08087c09-5f71-4429-924d-ff711ed62127) -->
+  <form id="08087c09-5f71-4429-924d-ff711ed62127">
+    <record name="08087c09-5f71-4429-924d-ff711ed62127">
+      <prompt bargein="true">Record a message from the caller</prompt>
+    </record>
+  </form>
+  <!-- End Call (b93ec584-4ec6-4e32-b6c1-4228bec26b3c) -->
+  <form id="b93ec584-4ec6-4e32-b6c1-4228bec26b3c">
+    <block>
+      <prompt bargein="false">Terminate the call</prompt>
+      <disconnect/>
+    </block>
+  </form>
+  <!-- End Call (Copy) (80029cf8-3d40-4fef-a07b-7113862d752c) -->
+  <form id="80029cf8-3d40-4fef-a07b-7113862d752c">
+    <block>
+      <prompt bargein="false">Terminate the call</prompt>
+      <disconnect/>
+    </block>
+  </form>
+  <!-- End Call (Copy) (Copy) (9c961102-4c03-43c5-87df-7af569754d59) -->
+  <form id="9c961102-4c03-43c5-87df-7af569754d59">
+    <block>
+      <prompt bargein="false">Terminate the call</prompt>
+      <disconnect/>
+    </block>
+  </form>
+</vxml>

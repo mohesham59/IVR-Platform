@@ -1844,27 +1844,27 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
       <input ref={fileInputRef} type="file" accept=".json,.vxml,.xml,application/json,text/xml,application/xml" className="hidden" onChange={handleImport} />
 
       {/* ── TOP BAR ─────────────────────────────────────────── */}
-      <header className="h-12 bg-white border-b border-[#E5E7EB] flex items-center px-4 gap-2 flex-shrink-0 z-30">
+      <header className="h-12 bg-white border-b border-[#E5E7EB] flex items-center px-2 gap-1 flex-shrink-0 z-30">
         <button
           onClick={handleBack}
           title="Back to AI Assistant"
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[#374151] hover:bg-[#F3F4F6] border border-[#E5E7EB] text-xs font-semibold transition-colors mr-1"
+          className="flex items-center gap-1 px-2 py-1 rounded-lg text-[#374151] hover:bg-[#F3F4F6] border border-[#E5E7EB] text-xs font-semibold transition-colors mr-0.5"
         >
           <ArrowLeft className="w-3.5 h-3.5 text-[#6B7280]" />
           <span className="hidden sm:inline">Back</span>
         </button>
 
-        <div className="flex items-center gap-2.5 pr-4 border-r border-[#E5E7EB]">
-          <div className="w-7 h-7 rounded-lg bg-[#2563EB] flex items-center justify-center flex-shrink-0">
-            <Phone className="w-3.5 h-3.5 text-white" />
+        <div className="flex items-center gap-1.5 pr-2 border-r border-[#E5E7EB]">
+          <div className="w-6 h-6 rounded-lg bg-[#2563EB] flex items-center justify-center flex-shrink-0">
+            <Phone className="w-3 h-3 text-white" />
           </div>
-          <div className="hidden sm:block">
+          <div className="hidden lg:block">
             <div className="text-[#1F2937] font-bold text-xs leading-tight">NexusIVR</div>
             <div className="text-[#9CA3AF] text-[9px] leading-tight">IVR Builder</div>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 px-3">
+        <div className="flex items-center gap-1 px-1.5">
           <GitBranch className="w-3.5 h-3.5 text-[#9CA3AF] flex-shrink-0" />
           {isEditingTitle ? (
             <input
@@ -1925,14 +1925,6 @@ export default function IVRBuilder({ onLogout }: { onLogout: () => void }) {
         <button onClick={() => setViewport({ x: -40, y: -80, scale: 0.82 })} title="Fit / Center View"
           className="w-7 h-7 rounded-lg flex items-center justify-center text-[#6B7280] hover:bg-[#F3F4F6]">
           <Minimize2 className="w-3.5 h-3.5" />
-        </button>
-
-        <div className="w-px h-5 bg-[#E5E7EB] mx-1" />
-
-        <button onClick={handleAutoLayout} title="Auto Layout"
-          className="flex items-center gap-1.5 h-7 px-2 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] text-xs font-medium">
-          <Move className="w-3.5 h-3.5" />
-          <span className="hidden md:inline">Auto Layout</span>
         </button>
 
         <button onClick={() => setRightTab('validation')} title="Validate Flow"

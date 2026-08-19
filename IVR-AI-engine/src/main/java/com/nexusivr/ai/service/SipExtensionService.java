@@ -130,10 +130,25 @@ public class SipExtensionService {
     private synchronized void provisionPjsipEndpoint(String extNum, String password, boolean tlsEnabled) {
         try {
             Path pjsipPath = Paths.get(PJSIP_CONF_PATH);
-            if (!Files.exists(pjsipPath)) {
-                logger.warn("pjsip.conf not found at {}. Creating new file.", PJSIP_CONF_PATH);
-                Files.createDirectories(pjsipPath.getParent());
-                Files.writeString(pjsipPath, "; Auto-generated PJSIP configuration\n", StandardCharsets.UTF_8);
+            if (!Files.exists(pjsipPath) || Files.size(pjsipPath) == 0 || new String(Files.readAllBytes(pjsipPath)).contains("[general]")) {
+                logger.warn("Writing base pjsip.conf at {}.", PJSIP_CONF_PATH);
+                if (!Files.exists(pjsipPath)) {
+                    Files.createDirectories(pjsipPath.getParent());
+                }
+                String baseConfig = "; Auto-generated PJSIP configuration\n\n" +
+                        "[transport-udp]\n" +
+                        "type=transport\n" +
+                        "protocol=udp\n" +
+                        "bind=0.0.0.0:5060\n\n" +
+                        "[transport-tcp]\n" +
+                        "type=transport\n" +
+                        "protocol=tcp\n" +
+                        "bind=0.0.0.0:5060\n\n" +
+                        "[transport-tls]\n" +
+                        "type=transport\n" +
+                        "protocol=tls\n" +
+                        "bind=0.0.0.0:5061\n\n";
+                Files.writeString(pjsipPath, baseConfig, StandardCharsets.UTF_8);
             }
 
             // Remove any old config for this extension if present to avoid duplication

@@ -35,6 +35,16 @@
         <url-pattern>/api/v1/health</url-pattern>
     </servlet-mapping>
 
+    <!-- Mock API Servlet -->
+    <servlet>
+        <servlet-name>MockApiServlet</servlet-name>
+        <servlet-class>com.nexusivr.ai.controller.MockApiServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>MockApiServlet</servlet-name>
+        <url-pattern>/api/v1/test/mock</url-pattern>
+    </servlet-mapping>
+
     <!-- Auth Servlet -->
     <servlet>
         <servlet-name>AuthServlet</servlet-name>

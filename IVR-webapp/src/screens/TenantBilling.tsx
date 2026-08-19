@@ -143,7 +143,8 @@ export default function TenantBilling({ onLogout }: { onLogout: () => void }) {
     try {
       const token = localStorage.getItem('nexus_jwt_token')
       const headers: Record<string, string> = {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-Tenant-ID': tenant.id
       }
       if (token) headers['Authorization'] = `Bearer ${token}`
 
