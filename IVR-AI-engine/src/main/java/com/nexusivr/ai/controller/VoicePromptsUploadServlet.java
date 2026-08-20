@@ -71,7 +71,7 @@ public class VoicePromptsUploadServlet extends BaseAiServlet {
             for (String baseDirStr : BASE_SOUND_DIRS) {
                 File baseDir = new File(baseDirStr);
                 if (baseDir.exists() && baseDir.canWrite()) {
-                    File langDir = new File(baseDir, langCode);
+                    File langDir = new File(baseDir, "ivr-tts");
                     if (!langDir.exists()) {
                         langDir.mkdirs();
                     }
@@ -134,7 +134,7 @@ public class VoicePromptsUploadServlet extends BaseAiServlet {
             if (downloadFile != null && !downloadFile.isBlank()) {
                 String fp = dao.getFilePathByName(downloadFile);
                 if (fp == null) {
-                    fp = new File(BASE_SOUND_DIRS[0], new File(downloadFile).getName()).getAbsolutePath();
+                    fp = new File(BASE_SOUND_DIRS[0], "ivr-tts/" + new File(downloadFile).getName()).getAbsolutePath();
                 }
                 File f = new File(fp);
                 if (f.exists() && f.isFile()) {
@@ -186,7 +186,7 @@ public class VoicePromptsUploadServlet extends BaseAiServlet {
                 return;
             }
             
-            File targetFile = new File(BASE_SOUND_DIRS[0], new File(fileName).getName());
+            File targetFile = new File(BASE_SOUND_DIRS[0], "ivr-tts/" + new File(fileName).getName());
             boolean deleted = false;
             if (targetFile.exists() && targetFile.isFile()) {
                 deleted = targetFile.delete();

@@ -93,14 +93,14 @@ function renderBilingualPrompts(node: FlowNode, bargein: boolean = false, fallba
     const text = node.subtitle || fallbackEn || toLabel(node)
     // If it looks like an audio file, render <audio>
     if (text.endsWith('.wav') || text.endsWith('.mp3')) {
-      return `      <prompt${b}>\n        <audio src="${esc(text)}">${esc(toLabel(node))}</audio>\n      </prompt>`
+      return `      <prompt${b}>\n        <audio src="ivr-tts/${esc(text)}">${esc(toLabel(node))}</audio>\n      </prompt>`
     }
     return `      <prompt${b}>${esc(text)}</prompt>`
   }
 
   if (hasEn) {
     if (node.audioEn) {
-      prompts += `      <prompt${b} xml:lang="en">\n        <audio src="${esc(node.audioEn)}">${esc(node.promptEn || '')}</audio>\n      </prompt>\n`
+      prompts += `      <prompt${b} xml:lang="en">\n        <audio src="ivr-tts/${esc(node.audioEn)}">${esc(node.promptEn || '')}</audio>\n      </prompt>\n`
     } else {
       prompts += `      <prompt${b} xml:lang="en">${esc(node.promptEn || '')}</prompt>\n`
     }
@@ -108,7 +108,7 @@ function renderBilingualPrompts(node: FlowNode, bargein: boolean = false, fallba
   
   if (hasAr) {
     if (node.audioAr) {
-      prompts += `      <prompt${b} xml:lang="ar">\n        <audio src="${esc(node.audioAr)}">${esc(node.promptAr || '')}</audio>\n      </prompt>\n`
+      prompts += `      <prompt${b} xml:lang="ar">\n        <audio src="ivr-tts/${esc(node.audioAr)}">${esc(node.promptAr || '')}</audio>\n      </prompt>\n`
     } else {
       prompts += `      <prompt${b} xml:lang="ar">${esc(node.promptAr || '')}</prompt>\n`
     }
