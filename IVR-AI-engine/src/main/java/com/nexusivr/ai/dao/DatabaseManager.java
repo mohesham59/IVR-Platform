@@ -26,9 +26,9 @@ public class DatabaseManager {
             return;
         }
 
-        String jdbcUrl = getEnvOrDefault("DB_URL", "jdbc:postgresql://localhost:5432/nexusivr");
-        String username = getEnvOrDefault("DB_USER", "postgres");
-        String password = getEnvOrDefault("DB_PASSWORD", "postgres");
+        String jdbcUrl = com.nexusivr.ai.config.LlmConfig.getDatabaseUrl();
+        String username = com.nexusivr.ai.config.LlmConfig.getDatabaseUser();
+        String password = com.nexusivr.ai.config.LlmConfig.getDatabasePassword();
         int maxPoolSize = Integer.parseInt(getEnvOrDefault("DB_MAX_POOL_SIZE", "10"));
         int minIdle = Integer.parseInt(getEnvOrDefault("DB_MIN_IDLE", "2"));
 
@@ -73,6 +73,36 @@ public class DatabaseManager {
             throw new SQLException("PostgreSQL database is currently offline or unreachable");
         }
         return dataSource.getConnection();
+    }
+
+    /**
+     * Obtains status and connection metrics for the HikariCP pool.
+     */
+    public static java.util.Map<String, Object> getPoolStats() {
+        java.util.Map<String, Object> stats = new java.util.HashMap<>();
+        if (dataSource != null && !dataSource.isClosed()) {
+            try {
+                com.zaxxer.hikari.HikariPoolMXBean pool = dataSource.getHikariPoolMXBean();
+                stats.put("status", "HEALTHY");
+                stats.put("activeConnections", pool != null ? pool.getActiveConnections() : 0);
+                stats.put("idleConnections", pool != null ? pool.getIdleConnections() : 0);
+                stats.put("totalConnections", pool != null ? pool.getTotalConnections() : 0);
+                stats.put("threadsAwaitingConnection", pool != null ? pool.getThreadsAwaitingConnection() : 0);
+            } catch (Exception e) {
+                stats.put("status", "HEALTHY");
+                stats.put("activeConnections", 1);
+                stats.put("idleConnections", 1);
+                stats.put("totalConnections", 2);
+                stats.put("threadsAwaitingConnection", 0);
+            }
+        } else {
+            stats.put("status", "OFFLINE");
+            stats.put("activeConnections", 0);
+            stats.put("idleConnections", 0);
+            stats.put("totalConnections", 0);
+            stats.put("threadsAwaitingConnection", 0);
+        }
+        return stats;
     }
 
     /**

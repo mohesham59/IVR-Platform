@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+  <meta name="flow-name" content="Frontend Flow"/>
+  <!-- Start (a6f496c2-c840-42b8-bff6-c418b06f6ff4) -->
+  <form id="a6f496c2-c840-42b8-bff6-c418b06f6ff4">
+    <block>
+      <prompt bargein="false">Flow entry point</prompt>
+      <goto next="#2b83697f-64be-4e77-8c78-c1979e5a75da"/>
+    </block>
+  </form>
+  <!-- Greeting (2b83697f-64be-4e77-8c78-c1979e5a75da) -->
+  <form id="2b83697f-64be-4e77-8c78-c1979e5a75da">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        <audio src="welcome_en.wav">Welcome to Nexus IVR</audio>
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        <audio src="welcome_ar.wav">مرحبا في نيكساس</audio>
+      </prompt>
+      <goto next="#e0a9c7e7-9929-430d-be2d-3728777cc470"/>
+    </block>
+  </form>
+  <!-- DTMF Menu (e0a9c7e7-9929-430d-be2d-3728777cc470) -->
+  <menu id="e0a9c7e7-9929-430d-be2d-3728777cc470">
+      <prompt bargein="true" xml:lang="en">
+        <audio src="menu_en.wav">for playback press 1
+for TTS press 2</audio>
+      </prompt>
+      <prompt bargein="true" xml:lang="ar">
+        <audio src="menu_ar.wav">للخدمات الصوتية اضغط 1
+للخدمات المسموعة اضغط 2</audio>
+      </prompt>
+      <choice dtmf="1" next="#0fa253e6-f1cf-4ca5-87e7-a6685ea404ff">Key 1</choice>
+      <choice dtmf="2" next="#200028bf-958d-4b3d-9172-0769890fc7d1">Key 2</choice>
+      <choice dtmf="3" next="#f0eeb27a-4db1-4a51-8b8c-043072b4f3a4"/>
+      <noinput>
+        <prompt xml:lang="en">We did not receive any input. Please try again.</prompt>
+        <prompt xml:lang="ar">لم نتلق أي إدخال. يرجى المحاولة مرة أخرى.</prompt>
+        <goto next="#f0eeb27a-4db1-4a51-8b8c-043072b4f3a4"/>
+      </noinput>
+      <nomatch>
+        <prompt xml:lang="en">Invalid option. Please try again.</prompt>
+        <prompt xml:lang="ar">خيار غير صالح. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </nomatch>
+  </menu>
+  <!-- End Call (f0eeb27a-4db1-4a51-8b8c-043072b4f3a4) -->
+  <form id="f0eeb27a-4db1-4a51-8b8c-043072b4f3a4">
+    <block>
+      <prompt bargein="false">Terminate the call</prompt>
+      <disconnect/>
+    </block>
+  </form>
+  <!-- Playback (0fa253e6-f1cf-4ca5-87e7-a6685ea404ff) -->
+  <form id="0fa253e6-f1cf-4ca5-87e7-a6685ea404ff">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        <audio src="Casio-CTK-611-Touch-Bass-C2.wav"></audio>
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        <audio src="Casio-CTK-611-Touch-Bass-C2(3).wav"></audio>
+      </prompt>
+      <goto next="#612fe837-1acf-4cb1-8fb4-11927acc6b96"/>
+    </block>
+  </form>
+  <!-- Text to Speech (200028bf-958d-4b3d-9172-0769890fc7d1) -->
+  <form id="200028bf-958d-4b3d-9172-0769890fc7d1">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        <audio src="TTS_en.wav">Thanks for using Nexus IVR</audio>
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        <audio src="TTS_ar.wav">شكرا لاستخدامكم خدماتنا</audio>
+      </prompt>
+      <goto next="#71f84a4c-e7df-416d-bab0-3ab4cbef0e4b"/>
+    </block>
+  </form>
+  <!-- End Call (612fe837-1acf-4cb1-8fb4-11927acc6b96) -->
+  <form id="612fe837-1acf-4cb1-8fb4-11927acc6b96">
+    <block>
+      <prompt bargein="false">Terminate the call</prompt>
+      <disconnect/>
+    </block>
+  </form>
+  <!-- End Call (71f84a4c-e7df-416d-bab0-3ab4cbef0e4b) -->
+  <form id="71f84a4c-e7df-416d-bab0-3ab4cbef0e4b">
+    <block>
+      <prompt bargein="false">Terminate the call</prompt>
+      <disconnect/>
+    </block>
+  </form>
+</vxml>

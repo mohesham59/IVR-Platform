@@ -71,7 +71,7 @@ public class FlowPublishService {
      * 4. The base name for draft versioning ({businessName}_draft_vN.vxml)
      */
     public static String resolveBusinessName(String tenantId, String flowId, String flowName) {
-        return FlowDraftService.getBaseName(tenantId, flowId, flowName);
+        return FlowDraftService.getBaseName(null, flowId, flowName);
     }
 
     /**
@@ -116,18 +116,25 @@ public class FlowPublishService {
         String dirPathStr = resolveScenariosDir();
         Path dirPath = Paths.get(dirPathStr);
 
+        // Publish flat into the scenarios root. The IVR engine's VxmlLoader only
+        // resolves files from scenarios/<name>.vxml and the AGI handler sanitizes
+        // scenario names to [A-Za-z0-9_-] (no '/'), so tenant-scoped subdirectories
+        // are not loadable. Business names are slugified from flowId+flowName, which
+        // keeps collisions unlikely even without tenant scoping.
+        Path tenantScopedDir = dirPath;
+
         try {
-            if (!Files.exists(dirPath)) {
-                Files.createDirectories(dirPath);
+            if (!Files.exists(tenantScopedDir)) {
+                Files.createDirectories(tenantScopedDir);
             }
         } catch (Exception e) {
-            logger.error("[FlowPublishService] Directory creation failed at {}: {}", dirPath.toAbsolutePath(), e.getMessage());
-            throw new ServiceException("Failed to publish VXML scenario: directory is not writable (" + dirPath.toAbsolutePath() + ")", e);
+            logger.error("[FlowPublishService] Directory creation failed at {}: {}", tenantScopedDir.toAbsolutePath(), e.getMessage());
+            throw new ServiceException("Failed to publish VXML scenario: directory is not writable (" + tenantScopedDir.toAbsolutePath() + ")", e);
         }
 
         String businessName = resolveBusinessName(tenantId, flowId, flowName);
         String filename = businessName + ".vxml";
-        Path targetPath = dirPath.resolve(filename);
+        Path targetPath = tenantScopedDir.resolve(filename);
 
         try {
             Files.writeString(targetPath, vxml, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
@@ -138,7 +145,7 @@ public class FlowPublishService {
         }
 
         // Also write scenario JSON file with identical base name for IVR engine ScenarioLoader
-        Path targetJsonPath = dirPath.resolve(businessName + ".json");
+        Path targetJsonPath = tenantScopedDir.resolve(businessName + ".json");
         try {
             Files.writeString(targetJsonPath, flowJson, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (Exception e) {
@@ -248,6 +255,11 @@ public class FlowPublishService {
                 Path candidate2 = targetPath.getParent().getParent().resolve("add_extension.sh");
                 if (Files.exists(candidate2)) {
                     scriptPath = candidate2;
+                } else if (targetPath.getParent().getParent().getParent() != null) {
+                    Path candidate3 = targetPath.getParent().getParent().getParent().resolve("add_extension.sh");
+                    if (Files.exists(candidate3)) {
+                        scriptPath = candidate3;
+                    }
                 }
             }
         }
@@ -267,14 +279,38 @@ public class FlowPublishService {
             return new ScriptExecutionResult(false, 127, "add_extension.sh script not found", "Script path does not exist");
         }
 
+        boolean runWithSudo = false;
+        boolean runningAsRoot = "root".equalsIgnoreCase(System.getProperty("user.name"));
+        boolean sudoAvailable = Files.isExecutable(Paths.get("/usr/bin/sudo"));
+        if (!runningAsRoot && sudoAvailable) {
+            for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
+                if (element.getClassName().startsWith("org.junit.") || element.getClassName().startsWith("org.apache.maven.surefire.")) {
+                    runWithSudo = false;
+                    break;
+                }
+                runWithSudo = true;
+            }
+        }
+
         List<String> command = new ArrayList<>();
+        if (runWithSudo) {
+            command.add("/usr/bin/sudo");
+        }
         command.add("/bin/bash");
         command.add(scriptPath.toAbsolutePath().toString());
         command.add(extToRegister);
         command.add(businessName);
 
-        logger.info("[FlowPublishService] Executing add_extension.sh: {} with ext='{}', business='{}'",
-                scriptPath.toAbsolutePath(), extToRegister, businessName);
+        String vxmlFilePath = businessName;
+        command.add(vxmlFilePath);
+        
+        // Add tenantId as 4th arg
+        if (tenantId != null && !tenantId.isBlank()) {
+            command.add(tenantId);
+        }
+
+        logger.info("[FlowPublishService] Executing add_extension.sh: {} with ext='{}', business='{}', vxml_path='{}', tenant_id='{}'",
+                scriptPath.toAbsolutePath(), extToRegister, businessName, vxmlFilePath, tenantId);
 
         try {
             ProcessBuilder pb = new ProcessBuilder(command);

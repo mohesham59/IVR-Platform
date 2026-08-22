@@ -46,8 +46,9 @@ public class ModelToFlowRenderer {
 
         Map<String, JsonObject> nodeMap = new LinkedHashMap<>();
 
+        int index = 0;
         for (FlowNode flowNode : model.getNodes()) {
-            JsonObject node = nodeToJson(flowNode);
+            JsonObject node = nodeToJson(flowNode, index++);
             nodes.add(node);
             nodeMap.put(flowNode.getId(), node);
         }
@@ -76,12 +77,35 @@ public class ModelToFlowRenderer {
         return GSON.toJson(root);
     }
 
-    private JsonObject nodeToJson(FlowNode node) {
+    private JsonObject nodeToJson(FlowNode node, int index) {
         JsonObject json = new JsonObject();
         json.addProperty("id", node.getId());
         json.addProperty("type", node.getType().getBuilderType());
         json.addProperty("title", node.getTitle() != null ? node.getTitle() : node.getId());
         json.addProperty("subtitle", node.getSubtitle() != null ? node.getSubtitle() : "");
+        json.addProperty("x", 100 + (index % 5) * 200);
+        json.addProperty("y", 100 + (index / 5) * 150);
+        if (node.getPrompt() != null && node.getPrompt().getText() != null && !node.getPrompt().getText().isBlank()) {
+            json.addProperty("prompt", node.getPrompt().getText());
+        }
+        if (node.getPromptEn() != null) {
+            json.addProperty("promptEn", node.getPromptEn());
+        }
+        if (node.getPromptAr() != null) {
+            json.addProperty("promptAr", node.getPromptAr());
+        }
+        if (node.getAudioEn() != null) {
+            json.addProperty("audioEn", node.getAudioEn());
+        }
+        if (node.getAudioAr() != null) {
+            json.addProperty("audioAr", node.getAudioAr());
+        }
+        if (node.getVariableName() != null) {
+            json.addProperty("variableName", node.getVariableName());
+        }
+        if (node.getVariableValue() != null) {
+            json.addProperty("variableValue", node.getVariableValue());
+        }
 
         JsonArray ports = new JsonArray();
 
@@ -112,6 +136,9 @@ public class ModelToFlowRenderer {
             case TRANSFER -> {
                 ports.add(createPort("success", "Transferred"));
                 ports.add(createPort("fail", "Failed"));
+                if (node.getTransfer() != null && node.getTransfer().getDestination() != null) {
+                    json.addProperty("transferDestination", node.getTransfer().getDestination());
+                }
             }
             case QUEUE -> {
                 ports.add(createPort("answered", "Answered"));
@@ -194,6 +221,8 @@ public class ModelToFlowRenderer {
         start.addProperty("type", "start");
         start.addProperty("title", "Start");
         start.addProperty("subtitle", "Entry Point");
+        start.addProperty("x", 100);
+        start.addProperty("y", 100);
         JsonArray startPorts = new JsonArray();
         startPorts.add(createPort("out", "Continue"));
         start.add("ports", startPorts);
@@ -204,6 +233,8 @@ public class ModelToFlowRenderer {
         end.addProperty("type", "end");
         end.addProperty("title", "End Call");
         end.addProperty("subtitle", "Hang up");
+        end.addProperty("x", 300);
+        end.addProperty("y", 100);
         JsonArray endPorts = new JsonArray();
         end.add("ports", endPorts);
         nodes.add(end);

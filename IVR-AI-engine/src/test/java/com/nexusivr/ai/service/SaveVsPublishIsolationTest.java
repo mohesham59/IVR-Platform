@@ -74,7 +74,8 @@ class SaveVsPublishIsolationTest {
             String draftPath = draftService.saveDraft(tenantId, flowId, flowName, flowJson);
             assertNotNull(draftPath);
             assertTrue(draftPath.startsWith(tempDraftsDir.toAbsolutePath().toString()), "Draft must be written to IVR_ENGINE_DRAFTS_DIR");
-            assertTrue(draftPath.endsWith("tenant_test_customer_support_flow_draft_v" + i + ".vxml"),
+            String expectedEnd = FlowDraftService.buildDraftFilename(tenantId, flowId, flowName, i);
+            assertTrue(draftPath.endsWith(expectedEnd),
                     "Draft file must include version v" + i + ", got: " + draftPath);
         }
 
@@ -85,14 +86,14 @@ class SaveVsPublishIsolationTest {
         }
 
         // Assert: IVR_ENGINE_DRAFTS_DIR contains all 4 saved draft VXML files
-        try (var stream = Files.list(tempDraftsDir)) {
+        try (var stream = Files.list(tempDraftsDir.resolve(tenantId))) {
             List<Path> draftFiles = stream.toList();
             assertEquals(4, draftFiles.size(), "IVR_ENGINE_DRAFTS_DIR should contain 4 saved draft version files");
             
-            Path v4File = tempDraftsDir.resolve("tenant_test_customer_support_flow_draft_v4.vxml");
+            Path v4File = tempDraftsDir.resolve(tenantId).resolve(FlowDraftService.buildDraftFilename(tenantId, flowId, flowName, 4));
             assertTrue(Files.exists(v4File));
             String content = Files.readString(v4File);
-            assertTrue(content.contains("<vxml"), "Draft file must contain VXML content");
+            assertTrue(content.contains("nodes"), "Draft file must contain JSON nodes");
             assertTrue(content.contains("Welcome to NexusIVR service"), "Draft file must contain node prompts");
         }
     }
@@ -120,13 +121,13 @@ class SaveVsPublishIsolationTest {
         FlowPublishService.FlowPublishResult result = publishService.publishFlow(tenantId, flowId, "102", flowName, vxml);
         assertTrue(result.isSuccess());
 
-        // Assert scenarios directory contains exactly 1 VXML file after Publish
+        // Assert scenarios directory contains exactly 1 VXML file after Publish (published flat into the root)
         try (var stream = Files.list(tempScenariosDir)) {
             long count = stream.filter(p -> p.getFileName().toString().endsWith(".vxml")).count();
             assertEquals(1, count, "IVR_ENGINE_SCENARIOS_DIR must contain exactly 1 VXML file after explicit Publish");
         }
 
-        Path publishedFile = tempScenariosDir.resolve("tenant_test_billing_flow.vxml");
+        Path publishedFile = tempScenariosDir.resolve("billing_flow.vxml");
         assertTrue(Files.exists(publishedFile), "Published file must be in IVR_ENGINE_SCENARIOS_DIR == " + publishedFile);
         String content = Files.readString(publishedFile);
         assertTrue(content.contains("<vxml"), "Published scenario file must contain valid VXML markup");
@@ -157,7 +158,7 @@ class SaveVsPublishIsolationTest {
         assertNotNull(created);
         verify(mockFlowDao, times(1)).create(any(Flow.class));
 
-        Path draftV1 = tempDraftsDir.resolve(FlowDraftService.buildDraftFilename(tenantId.toString(), flowId.toString(), "Skyways Airlines", 1));
+        Path draftV1 = tempDraftsDir.resolve(tenantId.toString()).resolve(FlowDraftService.buildDraftFilename(tenantId.toString(), flowId.toString(), "Skyways Airlines", 1));
         assertTrue(Files.exists(draftV1), "Draft v1 file should exist after createFlow at: " + draftV1);
 
         // 2. Update Flow -> DB updated and draft v2 file created
@@ -165,7 +166,7 @@ class SaveVsPublishIsolationTest {
         assertNotNull(updated);
         verify(mockFlowDao, times(1)).update(eq(flowId), eq(tenantId), any(Flow.class));
 
-        Path draftV2 = tempDraftsDir.resolve(FlowDraftService.buildDraftFilename(tenantId.toString(), flowId.toString(), "Skyways Airlines", 2));
+        Path draftV2 = tempDraftsDir.resolve(tenantId.toString()).resolve(FlowDraftService.buildDraftFilename(tenantId.toString(), flowId.toString(), "Skyways Airlines", 2));
         assertTrue(Files.exists(draftV2), "Draft v2 file should exist after updateFlow at: " + draftV2);
 
         // 3. Graceful failure test: draft directory write fails, but DB update STILL succeeds

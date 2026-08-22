@@ -150,6 +150,16 @@ public class CircuitBreaker {
         this.openCount++;
         logger.warn("[CircuitBreaker] State transition: CLOSED/HALF_OPEN → OPEN. Reason: '{}'. Cooldown: {}ms (openCount: {})",
                 reason, computedCooldownMs, openCount);
+
+        try {
+            com.nexusivr.ai.controller.ServiceRegistry.getNotificationService().notify(
+                    null, null, "CIRCUIT_BREAKER_OPEN",
+                    "AI Provider circuit breaker opened platform-wide: " + reason,
+                    "/super-admin/system-health"
+            );
+        } catch (Exception e) {
+            logger.error("Failed to send circuit breaker open notification", e);
+        }
     }
 
     void forceHalfOpenForTesting() {

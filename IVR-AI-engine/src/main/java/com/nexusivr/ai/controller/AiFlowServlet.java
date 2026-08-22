@@ -28,7 +28,12 @@ import java.util.stream.Collectors;
     "/api/v1/ai/flow/generate",
     "/api/v1/ai/flow/improve",
     "/api/v1/ai/flow/validate",
-    "/api/v1/ai/flow/suggestions"
+    "/api/v1/ai/flow/suggestions",
+    "/api/v1/ai/flow/publish",
+    "/api/v1/ai/flow/parse",
+    "/api/v1/ai/flow/draft",
+    "/api/v1/ai/flow/export",
+    "/api/v1/ai/generation/*"
 })
 public class AiFlowServlet extends BaseAiServlet {
 
@@ -66,6 +71,16 @@ public class AiFlowServlet extends BaseAiServlet {
                 handleValidateFlow(req, resp, provider);
             } else if (path.contains("/suggestions")) {
                 handleGetSuggestions(req, resp, provider);
+            } else if (path.contains("/publish")) {
+                handlePublishFlow(req, resp);
+            } else if (path.contains("/parse")) {
+                handleParseVxml(req, resp);
+            } else if (path.contains("/draft")) {
+                handleSaveDraft(req, resp, tenantId);
+            } else if (path.contains("/export")) {
+                handleExportFlow(req, resp);
+            } else if (path.contains("/cancel")) {
+                handleCancelGeneration(req, resp);
             } else {
                 sendJsonResponse(resp, HttpServletResponse.SC_NOT_FOUND, "Endpoint not found: " + path);
             }
@@ -85,13 +100,18 @@ public class AiFlowServlet extends BaseAiServlet {
         double temp = extractTemperature(req);
         int timeout = extractTimeout(req);
         UUID sessionId = extractSessionId(req);
+        
+        String finalDescription = request.getDescription();
+        if (request.getLanguage() != null && !request.getLanguage().isBlank() && !"en".equalsIgnoreCase(request.getLanguage())) {
+            finalDescription += ". MUST USE LANGUAGE: " + request.getLanguage() + " for all prompts, texts, and user-facing messages.";
+        }
 
         Flow flow;
         if (flowService != null) {
-            flow = flowService.generateAndSaveFlow(tenantId, "Generated IVR Flow", request.getDescription());
+            flow = flowService.generateAndSaveFlow(tenantId, "Generated IVR Flow", finalDescription);
         } else {
             flow = (Flow) ServiceRegistry.getAiOperationRouter().route(
-                    com.nexusivr.ai.service.AiOperation.GENERATE_FLOW, sessionId, tenantId, request.getDescription(), null,
+                    com.nexusivr.ai.service.AiOperation.GENERATE_FLOW, sessionId, tenantId, finalDescription, null,
                     null, provider, model, temp, timeout
             );
         }
@@ -280,5 +300,256 @@ public class AiFlowServlet extends BaseAiServlet {
         response.put("count", suggestions.size());
 
         sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
+    }
+
+    private void handlePublishFlow(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.info("[AiFlowServlet] Intent detected: PUBLISH_FLOW");
+
+        req.setCharacterEncoding("UTF-8");
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader reader = req.getReader()) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+        }
+        String body = sb.toString();
+
+        String flowId = null;
+        String flowName = null;
+        String flowJson = null;
+        String extension = null;
+
+        if (body != null && !body.isBlank()) {
+            try {
+                com.google.gson.JsonObject requestJson = com.google.gson.JsonParser.parseString(body).getAsJsonObject();
+                if (requestJson.has("flowId")) flowId = requestJson.get("flowId").getAsString();
+                if (requestJson.has("flowName")) flowName = requestJson.get("flowName").getAsString();
+                if (requestJson.has("extension")) extension = requestJson.get("extension").getAsString();
+                if (requestJson.has("flowJson")) {
+                    com.google.gson.JsonElement el = requestJson.get("flowJson");
+                    flowJson = el.isJsonPrimitive() ? el.getAsString() : el.toString();
+                } else if (requestJson.has("flow")) {
+                    com.google.gson.JsonElement el = requestJson.get("flow");
+                    flowJson = el.isJsonPrimitive() ? el.getAsString() : el.toString();
+                }
+            } catch (Exception e) {
+                logger.error("[AiFlowServlet] Error parsing raw publish request JSON: {}", e.getMessage());
+            }
+        }
+
+        UUID tenantId = extractTenantId(req);
+
+        try {
+            com.nexusivr.ai.service.FlowPublishService.FlowPublishResult result = 
+                ServiceRegistry.getFlowPublishService().publishFlow(tenantId.toString(), flowId, extension, flowName, flowJson);
+
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("success", result.isSuccess());
+            response.put("filename", result.getFilename());
+            response.put("status", "published");
+            response.put("extensionRegistered", result.isExtensionRegistered());
+            response.put("extensionMessage", result.getExtensionMessage());
+            response.put("filePath", result.getFilePath());
+            response.put("validationScore", result.getValidationScore());
+            if (result.getWarning() != null) response.put("warning", result.getWarning());
+
+            sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
+        } catch (Exception e) {
+            logger.error("[AiFlowServlet] Publish failed: {}", e.getMessage());
+            Map<String, Object> error = new LinkedHashMap<>();
+            error.put("errorCode", "PUBLISH_ERROR");
+            error.put("message", e.getMessage());
+            sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST, error);
+        }
+    }
+
+    private void handleParseVxml(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.info("[AiFlowServlet] Intent detected: PARSE_VXML");
+
+        req.setCharacterEncoding("UTF-8");
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader reader = req.getReader()) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+        }
+        String body = sb.toString();
+
+        String vxml = "";
+        if (body != null && !body.isBlank()) {
+            try {
+                com.google.gson.JsonObject requestJson = com.google.gson.JsonParser.parseString(body).getAsJsonObject();
+                if (requestJson.has("vxml")) {
+                    vxml = requestJson.get("vxml").getAsString();
+                }
+            } catch (Exception e) {
+                logger.error("[AiFlowServlet] Error parsing raw parse request JSON: {}", e.getMessage());
+            }
+        }
+
+        if (vxml == null || vxml.isBlank()) {
+            throw new ValidationException("VoiceXML content is required for parsing");
+        }
+
+        try {
+            com.nexusivr.ai.model.flow.FlowModel model = com.nexusivr.ai.service.FlowContextService.convertVxmlToModel(vxml);
+            if (model == null) {
+                throw new ValidationException("Failed to parse VoiceXML into flow model");
+            }
+            String renderedFlowJson = new com.nexusivr.ai.service.ModelToFlowRenderer().render(model);
+            sendJsonResponse(resp, HttpServletResponse.SC_OK, renderedFlowJson);
+        } catch (Exception e) {
+            logger.error("[AiFlowServlet] VXML parse failed: {}", e.getMessage());
+            Map<String, Object> error = new LinkedHashMap<>();
+            error.put("errorCode", "PARSE_ERROR");
+            error.put("message", e.getMessage());
+            sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST, error);
+        }
+    }
+
+    private void handleSaveDraft(HttpServletRequest req, HttpServletResponse resp, UUID tenantId) throws IOException {
+        logger.info("[AiFlowServlet] Intent detected: SAVE_DRAFT");
+
+        req.setCharacterEncoding("UTF-8");
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader reader = req.getReader()) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+        }
+        String body = sb.toString();
+
+        String flowId = null;
+        String flowName = null;
+        String flowJson = null;
+
+        if (body != null && !body.isBlank()) {
+            try {
+                com.google.gson.JsonObject requestJson = com.google.gson.JsonParser.parseString(body).getAsJsonObject();
+                if (requestJson.has("flowId")) flowId = requestJson.get("flowId").getAsString();
+                if (requestJson.has("flowName")) flowName = requestJson.get("flowName").getAsString();
+                if (requestJson.has("flowJson")) {
+                    com.google.gson.JsonElement el = requestJson.get("flowJson");
+                    flowJson = el.isJsonPrimitive() ? el.getAsString() : el.toString();
+                } else if (requestJson.has("flow")) {
+                    com.google.gson.JsonElement el = requestJson.get("flow");
+                    flowJson = el.isJsonPrimitive() ? el.getAsString() : el.toString();
+                }
+            } catch (Exception e) {
+                logger.error("[AiFlowServlet] Error parsing raw save draft request JSON: {}", e.getMessage());
+            }
+        }
+
+        try {
+            String absoluteFilePath = ServiceRegistry.getFlowDraftService().saveDraft(tenantId.toString(), flowId, flowName, flowJson);
+            
+            // Extract filename from absolute path
+            String filename = java.nio.file.Paths.get(absoluteFilePath).getFileName().toString();
+            
+            // Parse version from filename if possible, otherwise default to 1
+            int version = 1;
+            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("_draft_v(\\d+)\\.json").matcher(filename);
+            if (matcher.find()) {
+                version = Integer.parseInt(matcher.group(1));
+            }
+
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("success", true);
+            response.put("filename", filename);
+            response.put("version", version);
+            response.put("filePath", absoluteFilePath);
+
+            sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
+        } catch (Exception e) {
+            logger.error("[AiFlowServlet] Save draft failed: {}", e.getMessage());
+            Map<String, Object> error = new LinkedHashMap<>();
+            error.put("errorCode", "SAVE_DRAFT_ERROR");
+            error.put("message", e.getMessage());
+            sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST, error);
+        }
+    }
+
+    private void handleExportFlow(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.info("[AiFlowServlet] Intent detected: EXPORT_FLOW");
+        req.setCharacterEncoding("UTF-8");
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader reader = req.getReader()) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+        }
+        String body = sb.toString();
+
+        String flowJson = null;
+        if (body != null && !body.isBlank()) {
+            try {
+                com.google.gson.JsonObject requestJson = com.google.gson.JsonParser.parseString(body).getAsJsonObject();
+                if (requestJson.has("flowJson")) {
+                    com.google.gson.JsonElement el = requestJson.get("flowJson");
+                    flowJson = el.isJsonPrimitive() ? el.getAsString() : el.toString();
+                } else if (requestJson.has("flow")) {
+                    com.google.gson.JsonElement el = requestJson.get("flow");
+                    flowJson = el.isJsonPrimitive() ? el.getAsString() : el.toString();
+                }
+            } catch (Exception e) {
+                logger.error("[AiFlowServlet] Error parsing raw export request JSON: {}", e.getMessage());
+            }
+        }
+
+        if (flowJson == null || flowJson.isBlank()) {
+            throw new ValidationException("Flow JSON content is required for VXML export");
+        }
+
+        try {
+            com.nexusivr.ai.model.flow.FlowModel model = com.nexusivr.ai.service.FlowContextService.convertJsonToModel(flowJson);
+            if (model == null) {
+                throw new ValidationException("Failed to convert flow JSON to FlowModel");
+            }
+            String vxml = new com.nexusivr.ai.service.ModelToVxmlExporter().export(model);
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("vxml", vxml);
+            sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
+        } catch (Exception e) {
+            logger.error("[AiFlowServlet] VXML export failed: {}", e.getMessage());
+            Map<String, Object> error = new LinkedHashMap<>();
+            error.put("errorCode", "EXPORT_ERROR");
+            error.put("message", e.getMessage());
+            sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST, error);
+        }
+    }
+
+    private void handleCancelGeneration(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String path = req.getRequestURI();
+        String sessionIdStr = null;
+        int genIdx = path.indexOf("/generation/");
+        int cancelIdx = path.indexOf("/cancel");
+        if (genIdx != -1 && cancelIdx != -1) {
+            sessionIdStr = path.substring(genIdx + "/generation/".length(), cancelIdx);
+        }
+
+        logger.info("[AiFlowServlet] Cancel request received for session: {}", sessionIdStr);
+
+        if (sessionIdStr != null && !sessionIdStr.isBlank()) {
+            try {
+                com.nexusivr.ai.service.GenerationCancellationRegistry.cancel(sessionIdStr);
+                
+                Map<String, Object> response = new LinkedHashMap<>();
+                response.put("success", true);
+                response.put("sessionId", sessionIdStr);
+                sendJsonResponse(resp, HttpServletResponse.SC_OK, response);
+                return;
+            } catch (Exception e) {
+                logger.error("[AiFlowServlet] Error cancelling generation: {}", e.getMessage());
+            }
+        }
+        
+        Map<String, Object> error = new LinkedHashMap<>();
+        error.put("errorCode", "CANCEL_ERROR");
+        error.put("message", "Invalid or missing session ID for cancellation");
+        sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST, error);
     }
 }

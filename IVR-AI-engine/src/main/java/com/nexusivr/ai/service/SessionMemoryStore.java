@@ -42,7 +42,32 @@ public class SessionMemoryStore {
     // ----------------------------------------------------------------
     private static final Map<UUID, SessionMemory> store = new ConcurrentHashMap<>();
 
+    /** Upper bound on concurrently cached sessions; oldest entries are evicted past this. */
+    private static final int MAX_SESSIONS = 2000;
+
     private SessionMemoryStore() {}
+
+    private static SessionMemory getOrCreate(UUID sessionId) {
+        SessionMemory memory = store.computeIfAbsent(sessionId, SessionMemory::new);
+        if (store.size() > MAX_SESSIONS) {
+            evictOldest();
+        }
+        return memory;
+    }
+
+    private static void evictOldest() {
+        Map.Entry<UUID, SessionMemory> oldest = null;
+        for (Map.Entry<UUID, SessionMemory> entry : store.entrySet()) {
+            if (oldest == null || entry.getValue().getCreatedAt().isBefore(oldest.getValue().getCreatedAt())) {
+                oldest = entry;
+            }
+        }
+        if (oldest != null) {
+            store.remove(oldest.getKey(), oldest.getValue());
+            logger.info("SessionMemoryStore: Evicted oldest session {} (store exceeded {} sessions)",
+                    oldest.getKey(), MAX_SESSIONS);
+        }
+    }
 
     /**
      * Sets the {@link ModelToFlowRenderer} used to render stored FlowModels
@@ -68,7 +93,7 @@ public class SessionMemoryStore {
         if (sessionId == null || flowModel == null) {
             return;
         }
-        SessionMemory memory = store.computeIfAbsent(sessionId, id -> new SessionMemory(id));
+        SessionMemory memory = getOrCreate(sessionId);
         memory.setFlowModel(flowModel);
         logger.debug("SessionMemoryStore: Saved FlowModel for session {}. Nodes={}, Connections={}",
                 sessionId, flowModel.getNodes().size(), flowModel.getConnections().size());
@@ -82,8 +107,7 @@ public class SessionMemoryStore {
      */
     public static void setProvider(UUID sessionId, String providerName) {
         if (sessionId == null || providerName == null) return;
-        store.computeIfAbsent(sessionId, id -> new SessionMemory(id))
-             .setProvider(providerName);
+        getOrCreate(sessionId).setProvider(providerName);
     }
 
     /**
@@ -91,8 +115,7 @@ public class SessionMemoryStore {
      */
     public static void setDomain(UUID sessionId, String domain) {
         if (sessionId == null || domain == null || domain.isBlank()) return;
-        store.computeIfAbsent(sessionId, id -> new SessionMemory(id))
-             .setDomain(domain);
+        getOrCreate(sessionId).setDomain(domain);
     }
 
     /**
@@ -111,8 +134,7 @@ public class SessionMemoryStore {
      */
     public static void addSummary(UUID sessionId, String summary) {
         if (sessionId == null || summary == null || summary.isBlank()) return;
-        store.computeIfAbsent(sessionId, id -> new SessionMemory(id))
-             .addSummary(summary);
+        getOrCreate(sessionId).addSummary(summary);
     }
 
     /**

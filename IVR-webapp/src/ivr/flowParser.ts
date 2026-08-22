@@ -162,7 +162,7 @@ export function safeNodeType(raw: string | undefined): NodeType {
 }
 
 function makeNode(id: string, type: NodeType, x: number, y: number, title: string, subtitle: string): FlowNode {
-  const def = NODE_DEFS[type]
+  const def = NODE_DEFS[type] || { label: type, description: '', outputPorts: [] }
   return {
     id,
     type,
@@ -173,7 +173,7 @@ function makeNode(id: string, type: NodeType, x: number, y: number, title: strin
     status: 'valid',
     collapsed: false,
     disabled: false,
-    ports: def.outputPorts.map(p => ({ ...p, type: 'output' as const })),
+    ports: (def.outputPorts || []).map(p => ({ ...p, type: 'output' as const })),
   }
 }
 
@@ -307,7 +307,25 @@ export function buildFlowFromResponse(response: {
       const type = safeNodeType(raw.type)
       const title = raw.title ?? raw.label ?? raw.name ?? NODE_DEFS[type].label
       const subtitle = raw.description ?? raw.subtitle ?? raw.prompt ?? NODE_DEFS[type].description
-      nodes.push(makeNode(nodeId, type, 0, 0, title, subtitle))
+      const node = makeNode(nodeId, type, 0, 0, title, subtitle)
+      if (raw.prompt) node.prompt = raw.prompt
+      if (raw.promptEn) node.promptEn = raw.promptEn
+      if (raw.promptAr) node.promptAr = raw.promptAr
+      if (raw.audioEn) node.audioEn = raw.audioEn
+      if (raw.audioAr) node.audioAr = raw.audioAr
+      if (raw.variableName) node.variableName = raw.variableName
+      if (raw.variableValue) node.variableValue = raw.variableValue
+      if (raw.ports && Array.isArray(raw.ports) && raw.ports.length > 0) {
+        node.ports = raw.ports.map((p: any) => ({
+          ...p,
+          type: 'output' as const,
+          color: p.color || '#8B5CF6'
+        }))
+        if (type === 'dtmf_menu') {
+          node.menuOptionsCount = raw.ports.filter((p: any) => p.id !== 'timeout').length
+        }
+      }
+      nodes.push(node)
     })
 
     if (rawEdges && rawEdges.length > 0) {

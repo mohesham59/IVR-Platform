@@ -10,6 +10,7 @@ import com.nexusivr.ai.dao.KnowledgeDocumentDao;
 import com.nexusivr.ai.dao.MessageDao;
 import com.nexusivr.ai.service.AiService;
 import com.nexusivr.ai.service.AnalyticsService;
+import com.nexusivr.ai.service.CdrService;
 import com.nexusivr.ai.service.ChatService;
 import com.nexusivr.ai.service.FlowService;
 import com.nexusivr.ai.service.KnowledgeService;
@@ -25,6 +26,7 @@ public class ServiceRegistry {
     private static volatile MessageDao messageDao;
     private static volatile FlowDao flowDao;
     private static volatile KnowledgeDocumentDao knowledgeDao;
+    private static volatile com.nexusivr.ai.dao.CallAnalyticsDao callAnalyticsDao;
 
     private static volatile PromptBuilder promptBuilder;
     private static volatile FunctionExecutor functionExecutor;
@@ -33,6 +35,7 @@ public class ServiceRegistry {
     private static volatile ChatService chatService;
     private static volatile FlowService flowService;
     private static volatile AnalyticsService analyticsService;
+    private static volatile CdrService cdrService;
     private static volatile KnowledgeService knowledgeService;
     private static volatile com.nexusivr.ai.service.FlowContextService flowContextService;
 
@@ -62,6 +65,11 @@ public class ServiceRegistry {
     public static synchronized KnowledgeDocumentDao getKnowledgeDao() {
         if (knowledgeDao == null) knowledgeDao = new KnowledgeDocumentDao();
         return knowledgeDao;
+    }
+
+    public static synchronized com.nexusivr.ai.dao.CallAnalyticsDao getCallAnalyticsDao() {
+        if (callAnalyticsDao == null) callAnalyticsDao = new com.nexusivr.ai.dao.CallAnalyticsDao();
+        return callAnalyticsDao;
     }
 
     public static synchronized PromptBuilder getPromptBuilder() {
@@ -120,6 +128,11 @@ public class ServiceRegistry {
         return analyticsService;
     }
 
+    public static synchronized CdrService getCdrService() {
+        if (cdrService == null) cdrService = new CdrService();
+        return cdrService;
+    }
+
     public static synchronized KnowledgeService getKnowledgeService() {
         if (knowledgeService == null) knowledgeService = new KnowledgeService(getKnowledgeDao());
         return knowledgeService;
@@ -165,5 +178,202 @@ public class ServiceRegistry {
             flowSnapshotService = new com.nexusivr.ai.service.FlowSnapshotService();
         }
         return flowSnapshotService;
+    }
+
+    private static volatile com.nexusivr.ai.service.FlowPublishService flowPublishService;
+
+    public static synchronized com.nexusivr.ai.service.FlowPublishService getFlowPublishService() {
+        if (flowPublishService == null) {
+            flowPublishService = new com.nexusivr.ai.service.FlowPublishService();
+        }
+        return flowPublishService;
+    }
+
+    private static volatile com.nexusivr.ai.service.FlowDraftService flowDraftService;
+
+    public static synchronized com.nexusivr.ai.service.FlowDraftService getFlowDraftService() {
+        if (flowDraftService == null) {
+            flowDraftService = new com.nexusivr.ai.service.FlowDraftService();
+        }
+        return flowDraftService;
+    }
+
+    private static volatile com.nexusivr.ai.dao.PhoneNumberDao phoneNumberDao;
+
+    public static synchronized com.nexusivr.ai.dao.PhoneNumberDao getPhoneNumberDao() {
+        if (phoneNumberDao == null) {
+            phoneNumberDao = new com.nexusivr.ai.dao.PhoneNumberDao();
+        }
+        return phoneNumberDao;
+    }
+
+    private static volatile com.nexusivr.ai.service.PhoneNumberService phoneNumberService;
+
+    public static synchronized com.nexusivr.ai.service.PhoneNumberService getPhoneNumberService() {
+        if (phoneNumberService == null) {
+            phoneNumberService = new com.nexusivr.ai.service.PhoneNumberService(getPhoneNumberDao(), getFlowPublishService());
+        }
+        return phoneNumberService;
+    }
+
+    private static volatile com.nexusivr.ai.dao.SipExtensionDao sipExtensionDao;
+
+    public static synchronized com.nexusivr.ai.dao.SipExtensionDao getSipExtensionDao() {
+        if (sipExtensionDao == null) {
+            sipExtensionDao = new com.nexusivr.ai.dao.SipExtensionDao();
+        }
+        return sipExtensionDao;
+    }
+
+    private static volatile com.nexusivr.ai.service.SipExtensionService sipExtensionService;
+
+    public static synchronized com.nexusivr.ai.service.SipExtensionService getSipExtensionService() {
+        if (sipExtensionService == null) {
+            sipExtensionService = new com.nexusivr.ai.service.SipExtensionService(getSipExtensionDao());
+        }
+        return sipExtensionService;
+    }
+
+    private static volatile com.nexusivr.ai.dao.QueueDao queueDao;
+
+    public static synchronized com.nexusivr.ai.dao.QueueDao getQueueDao() {
+        if (queueDao == null) {
+            queueDao = new com.nexusivr.ai.dao.QueueDao();
+        }
+        return queueDao;
+    }
+
+    private static volatile com.nexusivr.ai.dao.AgentStateDao agentStateDao;
+
+    public static synchronized com.nexusivr.ai.dao.AgentStateDao getAgentStateDao() {
+        if (agentStateDao == null) {
+            agentStateDao = new com.nexusivr.ai.dao.AgentStateDao();
+        }
+        return agentStateDao;
+    }
+
+    private static volatile com.nexusivr.ai.service.QueueService queueService;
+
+    public static synchronized com.nexusivr.ai.service.QueueService getQueueService() {
+        if (queueService == null) {
+            queueService = new com.nexusivr.ai.service.QueueService(getQueueDao(), getAgentStateDao(), com.nexusivr.ai.service.AsteriskAmiClient.getInstance());
+        }
+        return queueService;
+    }
+
+    private static volatile com.nexusivr.ai.dao.DashboardDao dashboardDao;
+
+    public static synchronized com.nexusivr.ai.dao.DashboardDao getDashboardDao() {
+        if (dashboardDao == null) {
+            dashboardDao = new com.nexusivr.ai.dao.DashboardDao();
+        }
+        return dashboardDao;
+    }
+
+    private static volatile com.nexusivr.ai.dao.VoicePromptDao voicePromptDao;
+
+    public static synchronized com.nexusivr.ai.dao.VoicePromptDao getVoicePromptDao() {
+        if (voicePromptDao == null) {
+            voicePromptDao = new com.nexusivr.ai.dao.VoicePromptDao();
+        }
+        return voicePromptDao;
+    }
+
+    private static volatile com.nexusivr.ai.dao.NotificationDao notificationDao;
+
+    public static synchronized com.nexusivr.ai.dao.NotificationDao getNotificationDao() {
+        if (notificationDao == null) {
+            notificationDao = new com.nexusivr.ai.dao.NotificationDao();
+        }
+        return notificationDao;
+    }
+
+    private static volatile com.nexusivr.ai.service.DashboardService dashboardService;
+
+    public static synchronized com.nexusivr.ai.service.DashboardService getDashboardService() {
+        if (dashboardService == null) {
+            dashboardService = new com.nexusivr.ai.service.DashboardService(
+                    getDashboardDao(), getVoicePromptDao(), getQueueDao(),
+                    getPhoneNumberService(), com.nexusivr.ai.service.AsteriskAmiClient.getInstance()
+            );
+        }
+        return dashboardService;
+    }
+
+    private static volatile com.nexusivr.ai.service.NotificationService notificationService;
+
+    public static synchronized com.nexusivr.ai.service.NotificationService getNotificationService() {
+        if (notificationService == null) {
+            notificationService = new com.nexusivr.ai.service.NotificationService(getNotificationDao());
+        }
+        return notificationService;
+    }
+
+    private static volatile com.nexusivr.ai.dao.SuperAdminDashboardDao superAdminDashboardDao;
+
+    public static synchronized com.nexusivr.ai.dao.SuperAdminDashboardDao getSuperAdminDashboardDao() {
+        if (superAdminDashboardDao == null) {
+            superAdminDashboardDao = new com.nexusivr.ai.dao.SuperAdminDashboardDao();
+        }
+        return superAdminDashboardDao;
+    }
+
+    private static volatile com.nexusivr.ai.service.SuperAdminDashboardService superAdminDashboardService;
+
+    public static synchronized com.nexusivr.ai.service.SuperAdminDashboardService getSuperAdminDashboardService() {
+        if (superAdminDashboardService == null) {
+            superAdminDashboardService = new com.nexusivr.ai.service.SuperAdminDashboardService(
+                    getSuperAdminDashboardDao(), getQueueDao(), com.nexusivr.ai.service.AsteriskAmiClient.getInstance()
+            );
+        }
+        return superAdminDashboardService;
+    }
+
+    private static volatile com.nexusivr.ai.service.SystemHealthService systemHealthService;
+
+    public static synchronized com.nexusivr.ai.service.SystemHealthService getSystemHealthService() {
+        if (systemHealthService == null) {
+            systemHealthService = new com.nexusivr.ai.service.SystemHealthService(
+                    new com.nexusivr.ai.ai.ProviderManager(),
+                    com.nexusivr.ai.service.AsteriskAmiClient.getInstance()
+            );
+        }
+        return systemHealthService;
+    }
+
+    private static volatile com.nexusivr.ai.dao.AuditLogDao auditLogDao;
+
+    public static synchronized com.nexusivr.ai.dao.AuditLogDao getAuditLogDao() {
+        if (auditLogDao == null) {
+            auditLogDao = new com.nexusivr.ai.dao.AuditLogDao();
+        }
+        return auditLogDao;
+    }
+
+    private static volatile com.nexusivr.ai.service.AuditLogService auditLogService;
+
+    public static synchronized com.nexusivr.ai.service.AuditLogService getAuditLogService() {
+        if (auditLogService == null) {
+            auditLogService = new com.nexusivr.ai.service.AuditLogService(getAuditLogDao());
+        }
+        return auditLogService;
+    }
+
+    private static volatile com.nexusivr.ai.dao.ReportsDao reportsDao;
+
+    public static synchronized com.nexusivr.ai.dao.ReportsDao getReportsDao() {
+        if (reportsDao == null) {
+            reportsDao = new com.nexusivr.ai.dao.ReportsDao();
+        }
+        return reportsDao;
+    }
+
+    private static volatile com.nexusivr.ai.service.ReportsService reportsService;
+
+    public static synchronized com.nexusivr.ai.service.ReportsService getReportsService() {
+        if (reportsService == null) {
+            reportsService = new com.nexusivr.ai.service.ReportsService(getReportsDao());
+        }
+        return reportsService;
     }
 }

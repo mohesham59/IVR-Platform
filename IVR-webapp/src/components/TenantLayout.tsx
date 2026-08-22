@@ -1,24 +1,25 @@
-import { useState, type ReactNode } from 'react'
+import { useState, useEffect, type ReactNode, useRef } from 'react'
 import { NavLink } from 'react-router-dom'
+import { backendUrl } from '../api/backendUrl'
+import NotificationBell from './NotificationBell'
+import AccountMenu from './AccountMenu'
 import {
-  LayoutDashboard, Users, Phone, Server, List, Volume2, GitBranch,
-  Bot, Radio, History, BarChart3, Settings, Bell, Search,
-  ChevronDown, LogOut, ChevronLeft, ChevronRight, Layers, Moon,
+  LayoutDashboard, Building2, Phone, Server, List, Volume2, GitBranch,
+  Bot, History, Settings,
+  ChevronDown, LogOut, ChevronLeft, ChevronRight, Layers, Moon, CreditCard, User as UserIcon
 } from 'lucide-react'
 
 const navItems = [
   { icon: <LayoutDashboard className="w-4 h-4" />, label: 'Dashboard', path: '/tenant/dashboard' },
-  { icon: <Users className="w-4 h-4" />, label: 'Users', path: '/tenant/users' },
-  { icon: <Phone className="w-4 h-4" />, label: 'Phone Numbers', path: '/tenant/phone-numbers' },
+  { icon: <Building2 className="w-4 h-4" />, label: 'Companies', path: '/tenant/companies' },
   { icon: <Server className="w-4 h-4" />, label: 'SIP Extensions', path: '/tenant/sip-extensions' },
   { icon: <List className="w-4 h-4" />, label: 'Queues', path: '/tenant/queues' },
   { icon: <Volume2 className="w-4 h-4" />, label: 'Voice Prompts', path: '/tenant/voice-prompts' },
   { icon: <GitBranch className="w-4 h-4" />, label: 'IVR Builder', path: '/tenant/ivr-builder' },
   { icon: <Bot className="w-4 h-4" />, label: 'AI Assistant', path: '/tenant/ai-assistant' },
-  { icon: <Radio className="w-4 h-4" />, label: 'Call Monitoring', path: '/tenant/call-monitoring' },
-  { icon: <History className="w-4 h-4" />, label: 'Call History', path: '/tenant/call-history' },
-  { icon: <BarChart3 className="w-4 h-4" />, label: 'Reports', path: '/tenant/reports' },
+  { icon: <History className="w-4 h-4" />, label: 'Call Analytics', path: '/tenant/call-analytics' },
   { icon: <Settings className="w-4 h-4" />, label: 'Settings', path: '/tenant/settings' },
+  { icon: <CreditCard className="w-4 h-4" />, label: 'Billing', path: '/tenant/billing' },
 ]
 
 interface TenantLayoutProps {
@@ -28,7 +29,6 @@ interface TenantLayoutProps {
   pageTitle: string
   pageSubtitle?: string
   headerActions?: ReactNode
-  liveCount?: number
 }
 
 export default function TenantLayout({
@@ -38,10 +38,79 @@ export default function TenantLayout({
   pageTitle,
   pageSubtitle,
   headerActions,
-  liveCount = 18,
 }: TenantLayoutProps) {
   const [collapsed, setCollapsed] = useState(false)
-  const [darkMode, setDarkMode] = useState(false)
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark')
+  const [activeWorkspaceName, setActiveWorkspaceName] = useState<string>('Loading...')
+  const [liveCallsCount, setLiveCallsCount] = useState<number>(0)
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
+  }, [darkMode])
+
+  // Fetch active calls count
+  useEffect(() => {
+    const fetchActiveCalls = async () => {
+      try {
+        const tenantId = localStorage.getItem('tenant_id') || '11111111-1111-1111-1111-111111111111'
+        const res = await fetch('/api/v1/calls/active-count', {
+          headers: { 'X-Tenant-ID': tenantId }
+        })
+        if (res.ok) {
+          const data = await res.json()
+          if (data.success && typeof data.activeCalls === 'number') {
+            setLiveCallsCount(data.activeCalls)
+          }
+        }
+      } catch (e) {
+        console.error('Failed to fetch active calls count', e)
+      }
+    }
+
+    fetchActiveCalls()
+    const interval = setInterval(fetchActiveCalls, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
+  useEffect(() => {
+    const fetchActiveWorkspace = async () => {
+      try {
+        const token = localStorage.getItem('nexus_jwt_token')
+        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
+        let res = await fetch('/api/v1/tenant/companies', { headers }).catch(() => null)
+        if (!res || !res.ok) {
+          res = await fetch(backendUrl('/api/v1/tenant/companies'), { headers })
+        }
+        const data = await res.json()
+        if (data.success && Array.isArray(data.tenants)) {
+          const active = data.tenants.find((t: any) => t.isActive)
+          setActiveWorkspaceName(active ? active.displayName : 'No Active Workspace')
+        } else {
+          setActiveWorkspaceName('Unknown Workspace')
+        }
+      } catch (e) {
+        console.error('Failed to fetch workspace name', e)
+        setActiveWorkspaceName('Unknown Workspace')
+      }
+    }
+    const handleWorkspaceUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail && customEvent.detail.name) {
+        setActiveWorkspaceName(customEvent.detail.name)
+      } else {
+        fetchActiveWorkspace()
+      }
+    }
+
+    window.addEventListener('workspace-updated', handleWorkspaceUpdate)
+    return () => window.removeEventListener('workspace-updated', handleWorkspaceUpdate)
+  }, [])
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
@@ -55,7 +124,7 @@ export default function TenantLayout({
           {!collapsed && (
             <div>
               <div className="text-[#1F2937] font-bold text-sm leading-tight">NexusIVR</div>
-              <div className="text-[#9CA3AF] text-[10px]">Meridian Health</div>
+              <div className="text-[#9CA3AF] text-[10px]">{activeWorkspaceName}</div>
             </div>
           )}
         </div>
@@ -68,7 +137,7 @@ export default function TenantLayout({
                 <Layers className="w-3 h-3 text-white" />
               </div>
               <div className="min-w-0">
-                <p className="text-[#2563EB] text-[10px] font-bold truncate">Meridian Health</p>
+                <p className="text-[#2563EB] text-[10px] font-bold truncate">{activeWorkspaceName}</p>
                 <p className="text-[#93C5FD] text-[9px]">Enterprise Plan</p>
               </div>
             </div>
@@ -114,18 +183,11 @@ export default function TenantLayout({
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
         <header className="h-16 bg-white border-b border-[#E5E7EB] flex items-center px-6 gap-4 flex-shrink-0 z-20">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
-            <input
-              placeholder="Search…"
-              className="w-full h-9 pl-9 pr-4 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] text-[#1F2937] text-sm placeholder-[#9CA3AF] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition-all"
-            />
-          </div>
-
           <div className="flex items-center gap-2 ml-auto">
+            {/* Live active calls badge */}
             <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#F0FDF4] border border-[#BBF7D0] rounded-lg">
               <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse" />
-              <span className="text-[#15803D] text-xs font-semibold">{liveCount} Active Calls</span>
+              <span className="text-[#15803D] text-xs font-semibold">{liveCallsCount} Active Calls</span>
             </div>
 
             <button
@@ -135,28 +197,11 @@ export default function TenantLayout({
               <Moon className="w-4 h-4" />
             </button>
 
-            <button className="relative w-8 h-8 rounded-lg flex items-center justify-center text-[#6B7280] hover:bg-[#F3F4F6] transition-colors">
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#EF4444]" />
-            </button>
+            {/* Notification Bell Dropdown */}
+            <NotificationBell />
 
-            <button className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-lg hover:bg-[#F3F4F6] transition-colors">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#2563EB] to-[#7C3AED] flex items-center justify-center text-white text-xs font-bold">
-                MW
-              </div>
-              <div className="text-left hidden sm:block">
-                <div className="text-[#1F2937] text-xs font-semibold leading-tight">Marcus Webb</div>
-                <div className="text-[#9CA3AF] text-[10px]">Tenant Admin</div>
-              </div>
-              <ChevronDown className="w-3 h-3 text-[#9CA3AF]" />
-            </button>
-
-            <button
-              onClick={onLogout}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-[#9CA3AF] hover:text-[#EF4444] hover:bg-[#FEF2F2] transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+            {/* User Account Dropdown Menu */}
+            <AccountMenu role="tenant_admin" onLogout={onLogout} />
           </div>
         </header>
 

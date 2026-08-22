@@ -25,6 +25,7 @@ public enum FlowNodeType {
     VOICEMAIL("voicemail", "Voicemail collection"),
     WEBHOOK("webhook", "Webhook trigger"),
     AI("ai", "AI bot agent"),
+    VARIABLE("variable", "Set flow variable"),
     END("end", "Terminate call"),
     DISCONNECT("disconnect", "Hang up");
 
@@ -51,7 +52,7 @@ public enum FlowNodeType {
             case "prompt", "playback", "tts" -> PROMPT;
             case "menu", "dtmf_menu" -> MENU;
             case "input", "field", "dtmf_input" -> INPUT;
-            case "transfer" -> TRANSFER;
+            case "transfer", "extension" -> TRANSFER;
             case "queue" -> QUEUE;
             case "condition", "if" -> CONDITION;
             case "business_hours", "hours" -> BUSINESS_HOURS;
@@ -62,6 +63,7 @@ public enum FlowNodeType {
             case "voicemail" -> VOICEMAIL;
             case "webhook" -> WEBHOOK;
             case "ai" -> AI;
+            case "variable" -> VARIABLE;
             case "end", "hangup", "disconnect" -> END;
             default -> null;
         };

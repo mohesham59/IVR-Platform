@@ -62,11 +62,12 @@ class FlowPublishServiceTest {
         FlowPublishService.FlowPublishResult result = publishService.publishFlow(tenantId, flowId, extension, "Clinic Flow", vxmlInput);
 
         assertTrue(result.isSuccess());
-        // Filename is derived from resolvedBusinessName (tenant_100_clinic_flow)
-        assertEquals("tenant_100_clinic_flow.vxml", result.getFilename());
+        // Filename is derived from resolvedBusinessName (clinic_flow)
+        assertEquals("clinic_flow.vxml", result.getFilename());
 
-        Path expectedFile = tempScenariosDir.resolve("tenant_100_clinic_flow.vxml");
-        assertTrue(Files.exists(expectedFile), "Published .vxml file must exist in scenarios directory");
+        // Flows publish flat into the scenarios root (the engine only loads scenarios/<name>.vxml)
+        Path expectedFile = tempScenariosDir.resolve("clinic_flow.vxml");
+        assertTrue(Files.exists(expectedFile), "Published .vxml file must exist in the scenarios root");
 
         String fileContent = Files.readString(expectedFile);
         assertNotNull(fileContent);
@@ -83,7 +84,7 @@ class FlowPublishServiceTest {
         String flowId = "flow_clinic_01";
 
         publishService.publishFlow(tenantId, flowId, null, "Clinic Flow", vxml1);
-        Path targetPath = tempScenariosDir.resolve("tenant_100_clinic_flow.vxml");
+        Path targetPath = tempScenariosDir.resolve("clinic_flow.vxml");
         assertTrue(Files.exists(targetPath));
 
         // Create updated model
@@ -338,7 +339,7 @@ class FlowPublishServiceTest {
 
         // 1. Verify the VXML output filename base matches resolved business name
         String expectedBaseName = FlowPublishService.resolveBusinessName(tenantId, flowId, flowName);
-        assertEquals("tenant_100_clinic_flow", expectedBaseName);
+        assertEquals("clinic_flow", expectedBaseName);
         assertEquals(expectedBaseName + ".vxml", result.getFilename());
 
         // 2. Verify scenario VXML and JSON files exist on disk with exact base name
@@ -349,4 +350,22 @@ class FlowPublishServiceTest {
         assertTrue(result.getExtensionMessage().contains("REGISTERED_BUSINESS=" + expectedBaseName),
                 "add_extension.sh business argument must equal scenario filename base byte-for-byte! Got: " + result.getExtensionMessage());
     }
+
+    @Test
+    void testUuidFreeDefaultFilenameFromFlowWithDescriptiveBusinessTitle() {
+        String tenantId = "00000000-0000-0000-0000-000000000001";
+        String flowId = "99999999-9999-9999-9999-999999999999";
+        String flowName = "Pensions Authority IVR";
+        
+        String businessName = FlowPublishService.resolveBusinessName(tenantId, flowId, flowName);
+        
+        // Assert no UUID prefix is present
+        assertFalse(businessName.contains(tenantId), "Resolved business name should not contain tenant UUID: " + businessName);
+        assertFalse(businessName.contains(flowId), "Resolved business name should not contain flow ID: " + businessName);
+        assertEquals("pensions_authority_ivr", businessName);
+        
+        String filename = FlowPublishService.buildFilename(tenantId, flowId, "123", flowName);
+        assertEquals("pensions_authority_ivr.vxml", filename, "Default VXML filename must be a clean slug of the business title");
+    }
 }
+

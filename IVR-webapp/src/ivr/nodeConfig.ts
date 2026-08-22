@@ -52,40 +52,10 @@ export const NODE_DEFS: Record<NodeType, NodeDef> = {
       { id: 'timeout', label: 'Timeout', color: '#F59E0B' },
     ],
   },
-  queue: {
-    type: 'queue', label: 'Queue', description: 'Route to call queue',
-    category: 'Routing', color: '#F59E0B', bg: '#FFFBEB', textColor: '#B45309', iconBg: '#FEF3C7',
-    outputPorts: [
-      { id: 'answered', label: 'Answered', color: '#22C55E' },
-      { id: 'abandoned', label: 'Abandoned', color: '#EF4444' },
-      { id: 'overflow', label: 'Overflow', color: '#F59E0B' },
-    ],
-  },
-  transfer: {
-    type: 'transfer', label: 'Agent Transfer', description: 'Transfer to live agent',
-    category: 'Routing', color: '#6366F1', bg: '#EEF2FF', textColor: '#4338CA', iconBg: '#E0E7FF',
-    outputPorts: [
-      { id: 'success', label: 'Transferred', color: '#6366F1' },
-      { id: 'fail', label: 'Failed', color: '#EF4444' },
-    ],
-  },
-  extension: {
-    type: 'extension', label: 'Extension', description: 'Dial a SIP extension',
-    category: 'Routing', color: '#6366F1', bg: '#EEF2FF', textColor: '#4338CA', iconBg: '#E0E7FF',
-    outputPorts: [
-      { id: 'answered', label: 'Answered', color: '#22C55E' },
-      { id: 'noanswer', label: 'No Answer', color: '#EF4444' },
-    ],
-  },
   voicemail: {
     type: 'voicemail', label: 'Voicemail', description: 'Record a voicemail',
     category: 'Audio', color: '#EC4899', bg: '#FDF2F8', textColor: '#BE185D', iconBg: '#FCE7F3',
     outputPorts: [{ id: 'done', label: 'Recorded', color: '#EC4899' }],
-  },
-  record: {
-    type: 'record', label: 'Record Call', description: 'Record the conversation',
-    category: 'Audio', color: '#EF4444', bg: '#FEF2F2', textColor: '#B91C1C', iconBg: '#FEE2E2',
-    outputPorts: [{ id: 'out', label: 'Done', color: '#EF4444' }],
   },
   api: {
     type: 'api', label: 'API Request', description: 'Call external REST API',
@@ -95,50 +65,10 @@ export const NODE_DEFS: Record<NodeType, NodeDef> = {
       { id: 'error', label: 'Error', color: '#EF4444' },
     ],
   },
-  database: {
-    type: 'database', label: 'Database Lookup', description: 'Query internal database',
-    category: 'Integration', color: '#6B7280', bg: '#F9FAFB', textColor: '#374151', iconBg: '#F3F4F6',
-    outputPorts: [
-      { id: 'found', label: 'Found', color: '#22C55E' },
-      { id: 'notfound', label: 'Not Found', color: '#9CA3AF' },
-    ],
-  },
-  hours: {
-    type: 'hours', label: 'Business Hours', description: 'Check operating hours',
-    category: 'Logic', color: '#F59E0B', bg: '#FFFBEB', textColor: '#B45309', iconBg: '#FEF3C7',
-    outputPorts: [
-      { id: 'open', label: 'Open', color: '#22C55E' },
-      { id: 'closed', label: 'Closed', color: '#EF4444' },
-    ],
-  },
-  holiday: {
-    type: 'holiday', label: 'Holiday Check', description: 'Check holiday calendar',
-    category: 'Logic', color: '#EC4899', bg: '#FDF2F8', textColor: '#BE185D', iconBg: '#FCE7F3',
-    outputPorts: [
-      { id: 'holiday', label: 'Holiday', color: '#EC4899' },
-      { id: 'normal', label: 'Normal Day', color: '#22C55E' },
-    ],
-  },
-  condition: {
-    type: 'condition', label: 'Condition', description: 'Branch on expression',
-    category: 'Logic', color: '#8B5CF6', bg: '#F5F3FF', textColor: '#6D28D9', iconBg: '#EDE9FE',
-    outputPorts: [
-      { id: 'true', label: 'True', color: '#22C55E' },
-      { id: 'false', label: 'False', color: '#EF4444' },
-    ],
-  },
   variable: {
     type: 'variable', label: 'Set Variable', description: 'Set a flow variable',
     category: 'Logic', color: '#6B7280', bg: '#F9FAFB', textColor: '#374151', iconBg: '#F3F4F6',
     outputPorts: [{ id: 'out', label: 'Next', color: '#6B7280' }],
-  },
-  webhook: {
-    type: 'webhook', label: 'Webhook', description: 'Trigger outbound webhook',
-    category: 'Integration', color: '#0891B2', bg: '#ECFEFF', textColor: '#0E7490', iconBg: '#CFFAFE',
-    outputPorts: [
-      { id: 'success', label: 'Sent', color: '#22C55E' },
-      { id: 'error', label: 'Failed', color: '#EF4444' },
-    ],
   },
   ai: {
     type: 'ai', label: 'AI Assistant', description: 'NLP-powered conversation',
@@ -153,9 +83,72 @@ export const NODE_DEFS: Record<NodeType, NodeDef> = {
     category: 'Flow', color: '#EF4444', bg: '#FEF2F2', textColor: '#B91C1C', iconBg: '#FEE2E2',
     outputPorts: [],
   },
+  queue: {
+    type: 'queue', label: 'Queue', description: 'Hold the caller in a wait queue',
+    category: 'Flow', color: '#F59E0B', bg: '#FFFBEB', textColor: '#B45309', iconBg: '#FEF3C7',
+    outputPorts: [{ id: 'out', label: 'Next', color: '#F59E0B' }],
+  },
+  transfer: {
+    type: 'transfer', label: 'Transfer', description: 'Transfer the call to an agent or number',
+    category: 'Flow', color: '#F97316', bg: '#FFF7ED', textColor: '#C2410C', iconBg: '#FFEDD5',
+    outputPorts: [
+      { id: 'success', label: 'Connected', color: '#22C55E' },
+      { id: 'failed', label: 'Failed', color: '#EF4444' },
+    ],
+  },
+  extension: {
+    type: 'extension', label: 'Extension', description: 'Dial an internal extension',
+    category: 'Flow', color: '#14B8A6', bg: '#F0FDFA', textColor: '#0F766E', iconBg: '#CCFBF1',
+    outputPorts: [{ id: 'out', label: 'Next', color: '#14B8A6' }],
+  },
+  record: {
+    type: 'record', label: 'Record', description: 'Record a message from the caller',
+    category: 'Audio', color: '#EC4899', bg: '#FDF2F8', textColor: '#BE185D', iconBg: '#FCE7F3',
+    outputPorts: [{ id: 'done', label: 'Recorded', color: '#EC4899' }],
+  },
+  hours: {
+    type: 'hours', label: 'Business Hours', description: 'Branch based on current business hours',
+    category: 'Logic', color: '#8B5CF6', bg: '#F5F3FF', textColor: '#6D28D9', iconBg: '#EDE9FE',
+    outputPorts: [
+      { id: 'open', label: 'Open', color: '#22C55E' },
+      { id: 'closed', label: 'Closed', color: '#EF4444' },
+    ],
+  },
+  holiday: {
+    type: 'holiday', label: 'Holiday Check', description: 'Branch based on holiday calendar',
+    category: 'Logic', color: '#8B5CF6', bg: '#F5F3FF', textColor: '#6D28D9', iconBg: '#EDE9FE',
+    outputPorts: [
+      { id: 'open', label: 'Open', color: '#22C55E' },
+      { id: 'closed', label: 'Closed', color: '#EF4444' },
+    ],
+  },
+  condition: {
+    type: 'condition', label: 'Condition', description: 'Branch based on a flow condition',
+    category: 'Logic', color: '#6B7280', bg: '#F9FAFB', textColor: '#374151', iconBg: '#F3F4F6',
+    outputPorts: [
+      { id: 'true', label: 'True', color: '#22C55E' },
+      { id: 'false', label: 'False', color: '#EF4444' },
+    ],
+  },
+  database: {
+    type: 'database', label: 'Database', description: 'Look up data from the database',
+    category: 'Integration', color: '#06B6D4', bg: '#ECFEFF', textColor: '#0E7490', iconBg: '#CFFAFE',
+    outputPorts: [
+      { id: 'found', label: 'Found', color: '#22C55E' },
+      { id: 'notfound', label: 'Not Found', color: '#EF4444' },
+    ],
+  },
+  webhook: {
+    type: 'webhook', label: 'Webhook', description: 'Call an external webhook',
+    category: 'Integration', color: '#06B6D4', bg: '#ECFEFF', textColor: '#0E7490', iconBg: '#CFFAFE',
+    outputPorts: [
+      { id: 'success', label: 'Success', color: '#22C55E' },
+      { id: 'error', label: 'Error', color: '#EF4444' },
+    ],
+  },
 }
 
-export const CATEGORIES = ['Flow', 'Audio', 'Input', 'Routing', 'Logic', 'Integration', 'AI']
+export const CATEGORIES = ['Flow', 'Audio', 'Input', 'Logic', 'Integration', 'AI']
 
 export const NODE_ICONS: Record<NodeType, string> = {
   start: '▶',
@@ -164,18 +157,18 @@ export const NODE_ICONS: Record<NodeType, string> = {
   tts: '💬',
   dtmf_menu: '☎',
   dtmf_input: '🔢',
+  voicemail: '📩',
+  api: '⚡',
+  variable: '📦',
+  ai: '🤖',
+  end: '⛔',
   queue: '⏳',
   transfer: '↗',
   extension: '📞',
-  voicemail: '📩',
-  record: '⏺',
-  api: '⚡',
-  database: '🗄',
+  record: '⏺️',
   hours: '🕒',
-  holiday: '🏖',
-  condition: '⚖',
-  variable: '📦',
-  webhook: '🔗',
-  ai: '🤖',
-  end: '⛔',
+  holiday: '🎉',
+  condition: '🔀',
+  database: '🗄️',
+  webhook: '🪝',
 }

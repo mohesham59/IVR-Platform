@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+
+  <!-- E2E AI-branch test: <ai> records speech, runs ASR + LLM, jumps to a form. -->
+
+  <form id="start">
+    <block>
+      <prompt>AI assistant demo.</prompt>
+      <goto next="#ai_menu"/>
+    </block>
+  </form>
+
+  <menu id="ai_menu" dtmf="true">
+    <prompt>Press 1 for the AI assistant.</prompt>
+    <choice dtmf="1" next="#assist"/>
+  </menu>
+
+  <form id="assist">
+    <ai role="You are an IVR voice assistant."
+        options="balance:balance; loan:loan; operator:agent">
+      <prompt>Say balance, loan, or operator.</prompt>
+    </ai>
+  </form>
+
+  <form id="balance">
+    <block>
+      <prompt>You chose balance inquiry.</prompt>
+    </block>
+  </form>
+
+  <form id="loan">
+    <block>
+      <prompt>You chose loan information.</prompt>
+    </block>
+  </form>
+
+  <form id="agent">
+    <block>
+      <prompt>Transferring you to an agent.</prompt>
+    </block>
+  </form>
+
+</vxml>

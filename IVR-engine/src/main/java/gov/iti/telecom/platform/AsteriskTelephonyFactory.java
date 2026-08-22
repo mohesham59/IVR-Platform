@@ -25,6 +25,6 @@ public class AsteriskTelephonyFactory implements ResourceFactory<Telephony> {
 
     @Override
     public String getType() {
-        return "dummy";
+        return "asterisk-call-control";
     }
 }

@@ -3,8 +3,8 @@ import { Search, Star, Clock, ChevronDown, ChevronRight } from 'lucide-react'
 import { NODE_DEFS, CATEGORIES, NODE_ICONS } from './nodeConfig'
 import type { NodeType } from './types'
 
-const FAVORITES: NodeType[] = ['dtmf_menu', 'queue', 'greeting', 'ai', 'hours']
-const RECENT: NodeType[] = ['tts', 'condition', 'api', 'transfer']
+const FAVORITES: NodeType[] = ['dtmf_menu', 'greeting', 'ai']
+const RECENT: NodeType[] = ['tts', 'api']
 
 interface Props {
   collapsed: boolean

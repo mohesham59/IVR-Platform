@@ -22,24 +22,36 @@ public class FlowService {
 
     private final FlowDao flowDao;
     private final AiService aiService;
+    private final FlowDraftService flowDraftService;
 
     public FlowService(FlowDao flowDao, AiService aiService) {
+        this(flowDao, aiService, new FlowDraftService());
+    }
+
+    public FlowService(FlowDao flowDao, AiService aiService, FlowDraftService flowDraftService) {
         this.flowDao = Objects.requireNonNull(flowDao, "flowDao must not be null");
         this.aiService = Objects.requireNonNull(aiService, "aiService must not be null");
+        this.flowDraftService = flowDraftService != null ? flowDraftService : new FlowDraftService();
     }
 
     public Flow createFlow(UUID tenantId, Flow flow) {
         validateFlowInput(tenantId, flow);
         flow.setTenantId(tenantId);
+        Flow savedFlow;
         try {
-            return flowDao.create(flow);
+            savedFlow = flowDao.create(flow);
         } catch (Exception e) {
             logger.warn("Database offline during createFlow for tenant {}, returning transient Flow instance", tenantId, e);
             if (flow.getId() == null) {
                 flow.setId(UUID.randomUUID());
             }
-            return flow;
+            savedFlow = flow;
         }
+
+        // Gracefully attempt writing VXML draft file to IVR_ENGINE_DRAFTS_DIR
+        tryWriteDraftFile(tenantId, savedFlow);
+
+        return savedFlow;
     }
 
     public Flow generateAndSaveFlow(UUID tenantId, String flowName, String businessDescription) {
@@ -100,10 +112,29 @@ public class FlowService {
             }
             flow.setId(flowId);
             flow.setTenantId(tenantId);
+
+            // Gracefully attempt writing VXML draft file to IVR_ENGINE_DRAFTS_DIR
+            tryWriteDraftFile(tenantId, flow);
+
             return flow;
         } catch (DataAccessException e) {
             logger.error("Error updating Flow {} for tenant {}", flowId, tenantId, e);
             throw new ServiceException("Error updating Flow", e);
+        }
+    }
+
+    private void tryWriteDraftFile(UUID tenantId, Flow flow) {
+        if (flow == null || flow.getFlowJson() == null || flow.getFlowJson().isBlank()) {
+            return;
+        }
+        try {
+            String tId = tenantId != null ? tenantId.toString() : null;
+            String fId = flow.getId() != null ? flow.getId().toString() : null;
+            flowDraftService.saveDraft(tId, fId, flow.getName(), flow.getFlowJson());
+        } catch (Exception e) {
+            logger.warn("[FlowService] Could not write draft VXML file for flow {} (tenant {}): {}",
+                    flow != null ? flow.getId() : null, tenantId, e.getMessage());
+            // Intentionally swallowed: DB save must succeed even if file write fails!
         }
     }
 

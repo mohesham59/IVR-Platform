@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+  <form id="main">
+    <block>
+      <prompt>
+        <audio src="welcome_test.wav">Hello and welcome to the Nexus IVR test!</audio>
+      </prompt>
+      <goto next="#goodbye"/>
+    </block>
+  </form>
+  <form id="goodbye">
+    <block>
+      <prompt>
+        <audio src="goodbye.wav">Goodbye and have a great day!</audio>
+      </prompt>
+      <exit/>
+    </block>
+  </form>
+</vxml>

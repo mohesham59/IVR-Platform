@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+
+  <!-- E2E test scenario covering all renderer branches:
+       welcome block -> menu -> field/grammar -> assign/var -> if/else ->
+       api -> record -> transfer(filled/catch) -> disconnect -->
+
+  <form id="welcome">
+    <block>
+      <prompt>Welcome to the end to end test.</prompt>
+      <assign name="api_secret" expr="'s3cr3t'"/>
+      <var name="caller" expr="'1001'"/>
+      <goto next="#main_menu"/>
+    </block>
+  </form>
+
+  <menu id="main_menu" dtmf="true">
+    <prompt>
+      Press 1 for booking, 2 for account, 3 for API test, 4 to record a message, 5 to transfer, 0 to hang up.
+    </prompt>
+    <choice dtmf="1" next="#book"/>
+    <choice dtmf="2" next="#account"/>
+    <choice dtmf="3" next="#api_test"/>
+    <choice dtmf="4" next="#record"/>
+    <choice dtmf="5" next="#transfer"/>
+    <choice dtmf="0" next="#end"/>
+  </menu>
+
+  <form id="book">
+    <field name="movie_selection" type="digits">
+      <prompt>Press 1 for Action, 2 for Comedy.</prompt>
+      <grammar>1 2</grammar>
+    </field>
+    <field name="ticket_count" type="digits">
+      <prompt>Enter the number of tickets.</prompt>
+    </field>
+    <filled>
+      <prompt>Booking confirmed. Goodbye.</prompt>
+    </filled>
+  </form>
+
+  <form id="account">
+    <block>
+      <var name="balance" expr="'50'"/>
+      <if cond="'${balance}' >= '100'">
+        <then><prompt>Your balance is high.</prompt></then>
+        <else><prompt>Your balance is low.</prompt></else>
+      </if>
+      <prompt>End of account.</prompt>
+    </block>
+  </form>
+
+  <form id="api_test">
+    <block>
+      <prompt>Calling the weather API.</prompt>
+      <api url="https://api.open-meteo.com/v1/forecast?latitude=52.52&amp;longitude=13.41&amp;current_weather=true"
+           var="movie_selection" saveResultAs="weather_result"/>
+      <prompt>API done.</prompt>
+    </block>
+  </form>
+
+  <form id="record">
+    <block>
+      <prompt>Please record your message after the beep.</prompt>
+      <record name="voice_msg" maxtime="10s" beep="true" dtmfterm="true"/>
+      <prompt>Your message has been saved.</prompt>
+    </block>
+  </form>
+
+  <form id="transfer">
+    <block>
+      <prompt>Transferring you to an agent.</prompt>
+      <transfer dest="6001">
+        <filled><prompt>The agent has answered.</prompt></filled>
+        <catch><prompt>The agent is unavailable.</prompt></catch>
+      </transfer>
+    </block>
+  </form>
+
+  <form id="end">
+    <block>
+      <prompt>Thank you for calling. Goodbye.</prompt>
+      <disconnect/>
+    </block>
+  </form>
+
+</vxml>

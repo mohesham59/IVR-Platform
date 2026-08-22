@@ -47,10 +47,15 @@ public class OpenAiCompatibleClient implements LlmClient {
         this.temperature = temperature >= 0 ? temperature : 0.7;
         int connectTimeoutSec = "ollama".equalsIgnoreCase(this.providerName) ? 3 : Math.min(this.timeoutSeconds, 5);
         this.httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
                 .connectTimeout(Duration.ofSeconds(connectTimeoutSec))
                 .build();
         this.gson = new Gson();
         logger.info("OpenAiCompatibleClient: Initialized for {} using model={}", this.providerName, this.model);
+    }
+
+    public HttpClient getHttpClient() {
+        return httpClient;
     }
 
     @Override
@@ -91,34 +96,48 @@ public class OpenAiCompatibleClient implements LlmClient {
         return executeChat(systemPrompt, userPrompt, history, true);
     }
 
-    private AiResponse executeChat(String systemPrompt, String userPrompt, List<Message> history, boolean jsonMode) {
-        long startTime = System.currentTimeMillis();
+    private JsonArray buildMessagesArray(String systemPrompt, String userPrompt, List<Message> history, boolean foldSystemPrompt) {
+        JsonArray messagesArray = new JsonArray();
 
-        if ("groq".equals(providerName) && apiKey.isBlank()) {
-            logger.warn("OpenAiCompatibleClient [{}]: API key is missing. Returning failure response.", providerName);
-            return new AiResponse(providerName.toUpperCase() + " authentication failed (API key missing).", model, 0, 0, true);
-        }
+        if (foldSystemPrompt) {
+            String systemText = (systemPrompt != null) ? systemPrompt : "";
+            boolean folded = false;
 
-        try {
-            JsonObject requestBody = new JsonObject();
-            requestBody.addProperty("model", model);
-            requestBody.addProperty("temperature", temperature);
-
-            // Handle structured JSON output format
-            if (jsonMode) {
-                if ("ollama".equals(providerName)) {
-                    // Ollama expects format: "json"
-                    requestBody.addProperty("format", "json");
-                } else {
-                    // OpenAI and Groq expect response_format: {type: "json_object"}
-                    JsonObject responseFormat = new JsonObject();
-                    responseFormat.addProperty("type", "json_object");
-                    requestBody.add("response_format", responseFormat);
+            if (history != null) {
+                for (Message msg : history) {
+                    JsonObject msgObj = new JsonObject();
+                    String role = msg.getRole() != null ? msg.getRole().name().toLowerCase() : "user";
+                    msgObj.addProperty("role", role);
+                    
+                    String content = msg.getContent() != null ? msg.getContent() : "";
+                    if (!folded && "user".equals(role) && !systemText.isBlank()) {
+                        content = "System Instructions:\n" + systemText + "\n\nUser Request:\n" + content;
+                        folded = true;
+                    }
+                    msgObj.addProperty("content", content);
+                    messagesArray.add(msgObj);
                 }
             }
 
-            JsonArray messagesArray = new JsonArray();
+            if (userPrompt != null && !userPrompt.isBlank()) {
+                JsonObject userMsg = new JsonObject();
+                userMsg.addProperty("role", "user");
+                String content = userPrompt;
+                if (!folded && !systemText.isBlank()) {
+                    content = "System Instructions:\n" + systemText + "\n\nUser Request:\n" + content;
+                    folded = true;
+                }
+                userMsg.addProperty("content", content);
+                messagesArray.add(userMsg);
+            }
 
+            if (!folded && !systemText.isBlank()) {
+                JsonObject userMsg = new JsonObject();
+                userMsg.addProperty("role", "user");
+                userMsg.addProperty("content", systemText);
+                messagesArray.add(userMsg);
+            }
+        } else {
             if (systemPrompt != null && !systemPrompt.isBlank()) {
                 JsonObject sysMsg = new JsonObject();
                 sysMsg.addProperty("role", "system");
@@ -142,7 +161,59 @@ public class OpenAiCompatibleClient implements LlmClient {
                 userMsg.addProperty("content", userPrompt);
                 messagesArray.add(userMsg);
             }
+        }
 
+        return messagesArray;
+    }
+
+    private AiResponse executeChat(String systemPrompt, String userPrompt, List<Message> history, boolean jsonMode) {
+        long startTime = System.currentTimeMillis();
+
+        if ("groq".equals(providerName) && apiKey.isBlank()) {
+            logger.warn("OpenAiCompatibleClient [{}]: API key is missing. Returning failure response.", providerName);
+            return new AiResponse(providerName.toUpperCase() + " authentication failed (API key missing).", model, 0, 0, true);
+        }
+
+        try {
+            boolean isStudentProxy = baseUrl.contains("/student");
+            boolean isItiApi = baseUrl.contains("apiaccess.iti.net.eg") || isStudentProxy;
+
+            String requestModel = model;
+            if ("openrouter".equalsIgnoreCase(providerName)) {
+                if (isStudentProxy) {
+                    requestModel = com.nexusivr.ai.config.LlmConfig.getOpenrouterModel();
+                } else if ("llama-3.3-70b-versatile".equalsIgnoreCase(model) || "llama-3.3-70b".equalsIgnoreCase(model)) {
+                    requestModel = "meta-llama/llama-3.3-70b-instruct";
+                }
+            }
+
+            int requestMaxTokens = Math.max(com.nexusivr.ai.config.GlobalAiConfig.getInstance().getMaxTokens(), 8192);
+
+            JsonObject requestBody = new JsonObject();
+            if (isStudentProxy) {
+                requestBody.addProperty("model_id", requestModel);
+            } else if (isItiApi) {
+                requestBody.addProperty("model_id", requestModel);
+            } else {
+                requestBody.addProperty("model", requestModel);
+            }
+            requestBody.addProperty("temperature", temperature);
+            requestBody.addProperty("max_tokens", requestMaxTokens);
+
+            // Handle structured JSON output format
+            if (jsonMode && !isStudentProxy) {
+                if ("ollama".equals(providerName)) {
+                    // Ollama expects format: "json"
+                    requestBody.addProperty("format", "json");
+                } else {
+                    // OpenAI and Groq expect response_format: {type: "json_object"}
+                    JsonObject responseFormat = new JsonObject();
+                    responseFormat.addProperty("type", "json_object");
+                    requestBody.add("response_format", responseFormat);
+                }
+            }
+
+            JsonArray messagesArray = buildMessagesArray(systemPrompt, userPrompt, history, false);
             requestBody.add("messages", messagesArray);
 
             // Resolve endpoint URL path
@@ -151,6 +222,8 @@ public class OpenAiCompatibleClient implements LlmClient {
                 endpointUrl += "/api/chat";
                 // Ollama expects stream: false
                 requestBody.addProperty("stream", false);
+            } else if (isItiApi) {
+                // The URL is already the full endpoint, do not append anything
             } else {
                 endpointUrl += "/chat/completions";
             }
@@ -164,20 +237,91 @@ public class OpenAiCompatibleClient implements LlmClient {
                 httpReqBuilder.header("Authorization", "Bearer " + apiKey);
             }
 
+            if ("openrouter".equalsIgnoreCase(providerName) && !isStudentProxy) {
+                httpReqBuilder.header("HTTP-Referer", "https://nexusivr.com");
+                httpReqBuilder.header("X-Title", "NexusIVR");
+            }
+
             HttpRequest httpRequest = httpReqBuilder.timeout(Duration.ofSeconds(timeoutSeconds)).build();
             HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
             long latencyMs = System.currentTimeMillis() - startTime;
 
+            JsonObject responseJson;
             if (response.statusCode() >= 400) {
+                String responseBodyText = response.body();
                 logger.error("OpenAiCompatibleClient [{}]: HTTP {} returned. Latency: {}ms, Body: {}",
-                        providerName, response.statusCode(), latencyMs, response.body());
-                return new AiResponse(providerName.toUpperCase() + " API returned HTTP error status: " + response.statusCode(), model, 0, 0, true, null, null, response.statusCode());
-            }
+                        providerName, response.statusCode(), latencyMs, responseBodyText);
 
-            JsonObject responseJson = JsonParser.parseString(response.body()).getAsJsonObject();
+                boolean isSystemMsgError = responseBodyText != null && 
+                        (responseBodyText.contains("system message") || responseBodyText.contains("ValidationException")) &&
+                        (responseBodyText.contains("support") || responseBodyText.contains("doesn't support"));
+
+                if (isSystemMsgError && systemPrompt != null && !systemPrompt.isBlank()) {
+                    logger.warn("OpenAiCompatibleClient [{}]: Model does not support system messages. Retrying with system prompt folded into user prompt.", providerName);
+
+                    JsonObject retryRequestBody = new JsonObject();
+                    if (isStudentProxy) {
+                        retryRequestBody.addProperty("model_id", requestModel);
+                    } else if (isItiApi) {
+                        retryRequestBody.addProperty("model_id", requestModel);
+                    } else {
+                        retryRequestBody.addProperty("model", requestModel);
+                    }
+                    retryRequestBody.addProperty("temperature", temperature);
+                    retryRequestBody.addProperty("max_tokens", requestMaxTokens);
+                    if (jsonMode && !isStudentProxy) {
+                        if ("ollama".equals(providerName)) {
+                            retryRequestBody.addProperty("format", "json");
+                        } else {
+                            JsonObject responseFormat = new JsonObject();
+                            responseFormat.addProperty("type", "json_object");
+                            retryRequestBody.add("response_format", responseFormat);
+                        }
+                    }
+                    if ("ollama".equals(providerName)) {
+                        retryRequestBody.addProperty("stream", false);
+                    }
+
+                    JsonArray retryMessagesArray = buildMessagesArray(systemPrompt, userPrompt, history, true);
+                    retryRequestBody.add("messages", retryMessagesArray);
+
+                    HttpRequest.Builder retryHttpReqBuilder = HttpRequest.newBuilder()
+                            .uri(URI.create(endpointUrl))
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(retryRequestBody)));
+
+                    if (!apiKey.isBlank()) {
+                        retryHttpReqBuilder.header("Authorization", "Bearer " + apiKey);
+                    }
+
+                    if ("openrouter".equalsIgnoreCase(providerName) && !isStudentProxy) {
+                        retryHttpReqBuilder.header("HTTP-Referer", "https://nexusivr.com");
+                        retryHttpReqBuilder.header("X-Title", "NexusIVR");
+                    }
+
+                    HttpRequest retryHttpRequest = retryHttpReqBuilder.timeout(Duration.ofSeconds(timeoutSeconds)).build();
+                    long retryStartTime = System.currentTimeMillis();
+                    response = httpClient.send(retryHttpRequest, HttpResponse.BodyHandlers.ofString());
+                    latencyMs = System.currentTimeMillis() - retryStartTime;
+
+                    if (response.statusCode() >= 400) {
+                        logger.error("OpenAiCompatibleClient [{}]: Retry HTTP {} returned. Latency: {}ms, Body: {}",
+                                providerName, response.statusCode(), latencyMs, response.body());
+                        return new AiResponse(providerName.toUpperCase() + " API returned HTTP error status on retry: " + response.statusCode(), requestModel, 0, 0, true, null, null, response.statusCode());
+                    }
+
+                    responseJson = JsonParser.parseString(response.body()).getAsJsonObject();
+                } else {
+                    return new AiResponse(providerName.toUpperCase() + " API returned HTTP error status: " + response.statusCode(), requestModel, 0, 0, true, null, null, response.statusCode());
+                }
+            } else {
+                responseJson = JsonParser.parseString(response.body()).getAsJsonObject();
+            }
             String content = "";
 
-            if (responseJson.has("choices")) {
+            if (isItiApi && responseJson.has("output_text")) {
+                content = responseJson.get("output_text").getAsString();
+            } else if (responseJson.has("choices")) {
                 JsonArray choices = responseJson.getAsJsonArray("choices");
                 if (!choices.isEmpty()) {
                     JsonObject firstChoice = choices.get(0).getAsJsonObject();
@@ -197,17 +341,27 @@ public class OpenAiCompatibleClient implements LlmClient {
             int completionTokens = 0;
             if (responseJson.has("usage")) {
                 JsonObject usage = responseJson.getAsJsonObject("usage");
-                promptTokens = usage.has("prompt_tokens") ? usage.get("prompt_tokens").getAsInt() : 0;
-                completionTokens = usage.has("completion_tokens") ? usage.get("completion_tokens").getAsInt() : 0;
+                if (isItiApi) {
+                    promptTokens = usage.has("input_tokens") ? usage.get("input_tokens").getAsInt() : 0;
+                    completionTokens = usage.has("output_tokens") ? usage.get("output_tokens").getAsInt() : 0;
+                } else {
+                    promptTokens = usage.has("prompt_tokens") ? usage.get("prompt_tokens").getAsInt() : 0;
+                    completionTokens = usage.has("completion_tokens") ? usage.get("completion_tokens").getAsInt() : 0;
+                }
             } else if (responseJson.has("prompt_eval_count")) {
                 promptTokens = responseJson.get("prompt_eval_count").getAsInt();
                 completionTokens = responseJson.has("eval_count") ? responseJson.get("eval_count").getAsInt() : 0;
             }
 
             logger.info("[{}] LLM Latency: {}ms. Token Usage: input={}, output={}, total={}. Model: {}.",
-                    providerName, latencyMs, promptTokens, completionTokens, promptTokens + completionTokens, model);
+                    providerName, latencyMs, promptTokens, completionTokens, promptTokens + completionTokens, requestModel);
 
-            return new AiResponse(content, model, promptTokens, completionTokens, false);
+            if ((completionTokens >= requestMaxTokens - 100 || completionTokens >= 4000) && (content == null || content.isBlank())) {
+                logger.warn("[{}] Likely truncated due to max_tokens ceiling (outputTokens={}, maxTokens={}) — consider raising max_tokens for this provider/model",
+                        providerName, completionTokens, requestMaxTokens);
+            }
+
+            return new AiResponse(content, requestModel, promptTokens, completionTokens, false);
 
         } catch (ConnectException e) {
             long latencyMs = System.currentTimeMillis() - startTime;

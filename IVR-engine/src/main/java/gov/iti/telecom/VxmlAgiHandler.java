@@ -14,6 +14,8 @@ import java.util.Map;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.UUID;
+import gov.iti.telecom.dao.CallLogDao;
 
 /**
  * VxmlAgiHandler — intelligent FastAGI handler for dynamic VXML execution.
@@ -80,19 +82,44 @@ public class VxmlAgiHandler extends BaseAgiScript {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(VxmlAgiHandler.class);
 
+    private static final java.net.http.HttpClient API_HTTP_CLIENT =
+            java.net.http.HttpClient.newBuilder()
+                    .connectTimeout(java.time.Duration.ofSeconds(10))
+                    .build();
+
     // Shared VxmlScenarioEngine instance (initialized once)
     private static volatile VxmlScenarioEngine vxmlEngine;
     private static final Object ENGINE_LOCK = new Object();
+
+    // Digit captured via barge-in during a prompt; consumed by the next <field>.
+    private char bargeDigit = 0;
 
     @Override
     public void service(AgiRequest request, AgiChannel channel) throws AgiException {
         String callerId = "unknown";
         String vxmlName = "hello"; // Default VXML
         String sessionId = null;
+        AnalyticsTracker tracker = null;
+        UUID tenantId = null;
+        String rawTenantId = request.getParameter("TENANT_ID");
+        if (rawTenantId == null) {
+            rawTenantId = channel.getVariable("TENANT_ID");
+        }
+        if (rawTenantId != null && !rawTenantId.trim().isEmpty()) {
+            try {
+                tenantId = UUID.fromString(rawTenantId.trim());
+            } catch (IllegalArgumentException e) {
+                System.err.println("[VxmlAgiHandler] Invalid TENANT_ID format: " + rawTenantId);
+            }
+        }
 
         try {
+            bargeDigit = 0;
             // Extract caller information
             callerId = request.getCallerId() != null ? request.getCallerId() : request.getCallerIdName();
+            if (callerId == null || callerId.trim().isEmpty()) {
+                callerId = "unknown";
+            }
             System.out.println("\n[VxmlAgiHandler] *** New Call from: " + callerId + " ***");
 
             // Step 1: Determine which VXML to execute
@@ -103,6 +130,19 @@ public class VxmlAgiHandler extends BaseAgiScript {
             sessionId = createSessionId(callerId, request);
             System.out.println("[VxmlAgiHandler] Session ID: " + sessionId);
 
+            // Initialize tracker and start recording
+            tracker = new AnalyticsTracker(sessionId, callerId);
+            String recordingPath = "/var/lib/asterisk/sounds/records/" + sessionId + ".wav";
+            try {
+                channel.exec("MixMonitor", recordingPath);
+                tracker.setRecordingUrl("/records/" + sessionId + ".wav"); // Storing relative to sounds for frontend access
+            } catch (Exception e) {
+                System.out.println("[VxmlAgiHandler] Could not start MixMonitor: " + e.getMessage());
+            }
+
+            // Log call initialization to Database
+            CallLogDao.saveNewCallLog(sessionId, tenantId, callerId, vxmlName);
+
             // Step 3: Initialize VXML engine if needed
             initializeEngine();
 
@@ -111,7 +151,7 @@ public class VxmlAgiHandler extends BaseAgiScript {
 
             // Step 5: Execute VXML scenario
             System.out.println("[VxmlAgiHandler] Executing VXML: " + vxmlName);
-            VxmlSession vxmlSession = executeVxmlScenario(vxmlName, connInfo, sessionId, channel);
+            VxmlSession vxmlSession = executeVxmlScenario(vxmlName, connInfo, sessionId, channel, tracker);
 
             // Step 6: Set Asterisk variables with results
             setAsteriskVariables(channel, vxmlSession);
@@ -120,10 +160,16 @@ public class VxmlAgiHandler extends BaseAgiScript {
             handlePostExecution(channel, vxmlSession);
 
             System.out.println("[VxmlAgiHandler] Call completed successfully");
+            CallLogDao.updateCallStatus(sessionId, "ANSWERED", null);
 
         } catch (Exception e) {
             logger.error("[VxmlAgiHandler] Exception: " + e.getMessage(), e);
+            CallLogDao.updateCallStatus(sessionId, "FAILED", null);
             handleError(channel, sessionId, e);
+        } finally {
+            if (tracker != null) {
+                tracker.saveToDatabase();
+            }
         }
     }
 
@@ -134,6 +180,8 @@ public class VxmlAgiHandler extends BaseAgiScript {
      * 1. VXML_FILE Asterisk variable (if caller set it)
      * 2. AGI request path (e.g., "/hello" from "agi://127.0.0.1:4573/hello")
      * 3. Default: "hello"
+     *
+     * The resolved name is sanitized to prevent path traversal.
      *
      * @param request AGI request from Asterisk
      * @param channel AGI channel
@@ -147,7 +195,11 @@ public class VxmlAgiHandler extends BaseAgiScript {
             String vxmlFile = channel.getVariable("VXML_FILE");
             if (vxmlFile != null && !vxmlFile.isEmpty() && !vxmlFile.equals("0")) {
                 System.out.println("[VxmlAgiHandler] Using VXML_FILE variable: " + vxmlFile);
-                return vxmlFile;
+                String safe = sanitizeVxmlName(vxmlFile);
+                if (!safe.equals("hello")) {
+                    System.out.println("[VxmlAgiHandler] Sanitized VXML_FILE to: " + safe);
+                }
+                return safe;
             }
         } catch (AgiException e) {
             System.out.println("[VxmlAgiHandler] Could not read VXML_FILE variable: " + e.getMessage());
@@ -162,7 +214,7 @@ public class VxmlAgiHandler extends BaseAgiScript {
                 String pathVxml = requestPath.substring(lastSlash + 1).trim();
                 if (!pathVxml.isEmpty()) {
                     System.out.println("[VxmlAgiHandler] Using path-derived VXML: " + pathVxml);
-                    return pathVxml;
+                    return sanitizeVxmlName(pathVxml);
                 }
             }
         }
@@ -171,12 +223,30 @@ public class VxmlAgiHandler extends BaseAgiScript {
         String script = request.getScript(); // May also contain path info
         if (script != null && !script.isEmpty()) {
             System.out.println("[VxmlAgiHandler] Using script path: " + script);
-            return script;
+            return sanitizeVxmlName(script);
         }
 
         // Default fallback
         System.out.println("[VxmlAgiHandler] Using default VXML: hello");
         return "hello";
+    }
+
+    /**
+     * Restricts a VXML scenario name to a safe identifier so callers cannot
+     * traverse out of the scenarios directory (e.g. "../../etc/passwd").
+     */
+    private String sanitizeVxmlName(String name) {
+        if (name == null) {
+            return "hello";
+        }
+        String trimmed = name.trim();
+        if (trimmed.isEmpty() || trimmed.contains("/") || trimmed.contains("\\") || trimmed.contains("..")) {
+            return "hello";
+        }
+        if (!trimmed.matches("[A-Za-z0-9_-]+")) {
+            return "hello";
+        }
+        return trimmed;
     }
 
     /**
@@ -247,13 +317,15 @@ public class VxmlAgiHandler extends BaseAgiScript {
     private VxmlSession executeVxmlScenario(String vxmlName,
             ConnectionInformation connInfo,
             String sessionId,
-            AgiChannel channel) throws Exception {
+            AgiChannel channel,
+            AnalyticsTracker tracker) throws Exception {
         try {
             System.out.println("[VxmlAgiHandler] Starting VXML execution: " + vxmlName);
             VxmlSession session = vxmlEngine.executeVxml(vxmlName, connInfo);
 
             if (session != null) {
                 session.setVariable("agi_session_id", sessionId);
+                session.setTracker(tracker);
             }
 
             // Render VXML Document prompts & DTMF input interactively
@@ -261,15 +333,27 @@ public class VxmlAgiHandler extends BaseAgiScript {
                 VxmlLoader loader = new VxmlLoader("scenarios/");
                 org.w3c.dom.Document doc = loader.loadVxml(vxmlName);
 
-                org.w3c.dom.NodeList menus = doc.getElementsByTagName("menu");
-                org.w3c.dom.NodeList forms = doc.getElementsByTagName("form");
+                // Find the first <form> or <menu> element under <vxml>
+                org.w3c.dom.Element firstDialog = null;
+                org.w3c.dom.Element vxmlElement = doc.getDocumentElement();
+                org.w3c.dom.NodeList children = vxmlElement.getChildNodes();
+                for (int i = 0; i < children.getLength(); i++) {
+                    org.w3c.dom.Node node = children.item(i);
+                    if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                        String nodeName = node.getNodeName();
+                        if ("form".equals(nodeName) || "menu".equals(nodeName)) {
+                            firstDialog = (org.w3c.dom.Element) node;
+                            break;
+                        }
+                    }
+                }
 
-                if (menus.getLength() > 0) {
-                    org.w3c.dom.Element menu = (org.w3c.dom.Element) menus.item(0);
-                    renderMenuElement(menu, channel, session);
-                } else if (forms.getLength() > 0) {
-                    org.w3c.dom.Element initialForm = (org.w3c.dom.Element) forms.item(0);
-                    renderFormElement(initialForm, channel, session);
+                if (firstDialog != null) {
+                    if ("menu".equals(firstDialog.getNodeName())) {
+                        renderMenuElement(firstDialog, channel, session);
+                    } else if ("form".equals(firstDialog.getNodeName())) {
+                        renderFormElement(firstDialog, channel, session);
+                    }
                 }
             } catch (Exception e) {
                 System.out.println("[VxmlAgiHandler] Note rendering VXML: " + e.getMessage());
@@ -304,10 +388,10 @@ public class VxmlAgiHandler extends BaseAgiScript {
     }
 
     private void renderMenuElement(org.w3c.dom.Element menu, AgiChannel channel, VxmlSession session) throws Exception {
-        org.w3c.dom.NodeList prompts = menu.getElementsByTagName("prompt");
+        java.util.List<org.w3c.dom.Element> prompts = getDirectChildElements(menu, "prompt");
         char choice = 0;
-        for (int p = 0; p < prompts.getLength(); p++) {
-            choice = processPromptElementAndGetDigit((org.w3c.dom.Element) prompts.item(p), channel, session);
+        for (int p = 0; p < prompts.size(); p++) {
+            choice = processPromptElementAndGetDigit(prompts.get(p), channel, session);
             if (choice != 0 && choice != '\0') {
                 break;
             }
@@ -321,6 +405,9 @@ public class VxmlAgiHandler extends BaseAgiScript {
             String choiceStr = String.valueOf(choice);
             if (session != null) {
                 session.setVariable("user_choice", choiceStr);
+                if (session.getTracker() != null) {
+                    session.getTracker().addEvent("MENU_CHOICE", choiceStr);
+                }
             }
             System.out.println("[VxmlAgiHandler] DTMF choice received: " + choiceStr);
 
@@ -338,7 +425,32 @@ public class VxmlAgiHandler extends BaseAgiScript {
             }
 
             if (targetFormId != null) {
+                CallLogDao.logMenuSelection(session != null ? (String) session.getVariable("agi_session_id") : null, targetFormId);
                 renderDialogById(menu.getOwnerDocument(), targetFormId, channel, session);
+            } else {
+                if (session != null && session.getTracker() != null) {
+                    session.getTracker().addEvent("INVALID_INPUT", choiceStr);
+                }
+                org.w3c.dom.Element nomatch = findChildElement(menu, "nomatch");
+                if (nomatch != null) {
+                    renderFormElement(nomatch, channel, session);
+                    if (findChildElement(nomatch, "reprompt") != null) {
+                        renderMenuElement(menu, channel, session);
+                        return;
+                    }
+                }
+            }
+        } else {
+            if (session != null && session.getTracker() != null) {
+                session.getTracker().addEvent("TIMEOUT", null);
+            }
+            org.w3c.dom.Element noinput = findChildElement(menu, "noinput");
+            if (noinput != null) {
+                renderFormElement(noinput, channel, session);
+                if (findChildElement(noinput, "reprompt") != null) {
+                    renderMenuElement(menu, channel, session);
+                    return;
+                }
             }
         }
     }
@@ -358,7 +470,13 @@ public class VxmlAgiHandler extends BaseAgiScript {
                     return true;
                 }
             } else if ("prompt".equals(tagName)) {
-                processPromptElement(child, channel, session);
+                char digit = processPromptElementAndGetDigit(child, channel, session);
+                if (digit != 0 && digit != '\0') {
+                    bargeDigit = digit;
+                    System.out.println("[VxmlAgiHandler] Barge-in digit captured during prompt: " + digit);
+                }
+            } else if ("audio".equals(tagName)) {
+                renderAudioElement(child, channel, session);
             } else if ("goto".equals(tagName)) {
                 String next = child.getAttribute("next");
                 if (next != null && next.startsWith("#")) {
@@ -392,13 +510,18 @@ public class VxmlAgiHandler extends BaseAgiScript {
                         }
                     }
 
+                    // Restrict <api> to http/https to avoid SSRF via arbitrary schemes
+                    if (fullUrl == null || !(fullUrl.startsWith("http://") || fullUrl.startsWith("https://"))) {
+                        throw new IllegalArgumentException("Unsupported <api> URL scheme: " + fullUrl);
+                    }
+
                     System.out.println("[VxmlAgiHandler] <api> Calling URL: " + fullUrl);
-                    java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
                     java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder()
                             .uri(URI.create(fullUrl))
+                            .timeout(java.time.Duration.ofSeconds(15))
                             .GET()
                             .build();
-                    java.net.http.HttpResponse<String> response = client.send(req,
+                    java.net.http.HttpResponse<String> response = API_HTTP_CLIENT.send(req,
                             java.net.http.HttpResponse.BodyHandlers.ofString());
                     String responseBody = response.body();
                     System.out.println("[VxmlAgiHandler] <api> Response: " + responseBody);
@@ -406,10 +529,21 @@ public class VxmlAgiHandler extends BaseAgiScript {
                     String extractedResult = responseBody;
                     if (jsonPath != null && !jsonPath.isEmpty()) {
                         try {
-                            com.google.gson.JsonObject jsonResponse = com.google.gson.JsonParser
-                                    .parseString(responseBody).getAsJsonObject();
-                            if (jsonResponse.has(jsonPath)) {
-                                extractedResult = jsonResponse.get(jsonPath).getAsString();
+                            // Support top-level fields and dot-nested paths,
+                            // e.g. "current_weather.temperature".
+                            com.google.gson.JsonElement element = com.google.gson.JsonParser
+                                    .parseString(responseBody);
+                            boolean found = true;
+                            for (String part : jsonPath.split("\\.")) {
+                                if (element == null || !element.isJsonObject()
+                                        || !element.getAsJsonObject().has(part)) {
+                                    found = false;
+                                    break;
+                                }
+                                element = element.getAsJsonObject().get(part);
+                            }
+                            if (found && element != null && element.isJsonPrimitive()) {
+                                extractedResult = element.getAsString();
                             }
                         } catch (Exception e) {
                             System.err.println("[VxmlAgiHandler] <api> Failed to parse JSON path: " + jsonPath);
@@ -425,29 +559,65 @@ public class VxmlAgiHandler extends BaseAgiScript {
                 }
             } else if ("field".equals(tagName)) {
                 String fieldName = child.getAttribute("name");
-                org.w3c.dom.NodeList fieldPrompts = child.getElementsByTagName("prompt");
+                String fieldType = child.getAttribute("type");
+                java.util.List<org.w3c.dom.Element> fieldPrompts = getDirectChildElements(child, "prompt");
+
+                // Parse <grammar> children for DTMF tokens
+                java.util.List<String> grammarTokens = new java.util.ArrayList<>();
+                org.w3c.dom.NodeList grammars = child.getElementsByTagName("grammar");
+                for (int g = 0; g < grammars.getLength(); g++) {
+                    org.w3c.dom.Element grammarEl = (org.w3c.dom.Element) grammars.item(g);
+                    org.w3c.dom.NodeList items = grammarEl.getElementsByTagName("item");
+                for (int j = 0; j < items.getLength(); j++) {
+                    grammarTokens.add(items.item(j).getTextContent().trim());
+                }
+                    // Also check for inline text content
+                    if (items.getLength() == 0) {
+                        String grammarText = grammarEl.getTextContent().trim();
+                        if (!grammarText.isEmpty()) {
+                            grammarTokens.add(grammarText);
+                        }
+                    }
+                }
 
                 StringBuilder inputStr = new StringBuilder();
                 char firstDigit = 0;
-                for (int fp = 0; fp < fieldPrompts.getLength(); fp++) {
-                    firstDigit = processPromptElementAndGetDigit((org.w3c.dom.Element) fieldPrompts.item(fp), channel, session);
-                    if (firstDigit != 0 && firstDigit != '\0') {
-                        if (firstDigit != '#')
-                            inputStr.append(firstDigit);
-                        break;
+
+                int maxLen = -1;
+                String maxLenAttr = child.getAttribute("maxlen");
+                if (maxLenAttr != null && !maxLenAttr.trim().isEmpty()) {
+                    try {
+                        maxLen = Integer.parseInt(maxLenAttr.trim());
+                    } catch (NumberFormatException e) {
+                        maxLen = -1;
+                    }
+                }
+
+                if (bargeDigit != 0 && bargeDigit != '\0') {
+                    firstDigit = bargeDigit;
+                    bargeDigit = 0;
+                    System.out.println("[VxmlAgiHandler] Field " + fieldName + " consumed barge-in digit: " + firstDigit);
+                }
+
+                if (firstDigit == 0 || firstDigit == '\0') {
+                    for (int fp = 0; fp < fieldPrompts.size(); fp++) {
+                        firstDigit = processPromptElementAndGetDigit(fieldPrompts.get(fp), channel, session);
+                        if (firstDigit != 0 && firstDigit != '\0') {
+                            break;
+                        }
                     }
                 }
 
                 if (firstDigit == 0 || firstDigit == '\0') {
                     firstDigit = channel.waitForDigit(10000);
-                    if (firstDigit != 0 && firstDigit != '\0' && firstDigit != '#') {
-                        inputStr.append(firstDigit);
-                    }
                 }
 
-                if (inputStr.length() > 0 || firstDigit == '#') {
-                    while (true) {
-                        char nextDigit = channel.waitForDigit(5000); // 5 seconds timeout between digits
+                if (firstDigit != 0 && firstDigit != '\0') {
+                    if (firstDigit != '#') {
+                        inputStr.append(firstDigit);
+                    }
+                    while (maxLen < 0 || inputStr.length() < maxLen) {
+                        char nextDigit = channel.waitForDigit(5000); // 5s timeout between digits
                         if (nextDigit == 0 || nextDigit == '\0' || nextDigit == '#') {
                             break;
                         }
@@ -459,15 +629,31 @@ public class VxmlAgiHandler extends BaseAgiScript {
                     String varKey = (fieldName != null && !fieldName.isEmpty()) ? fieldName : "user_input";
                     if (session != null) {
                         session.setVariable(varKey, inputStr.toString());
+                        if (session.getTracker() != null) {
+                            session.getTracker().addEvent("FIELD_INPUT", inputStr.toString());
+                        }
                     }
                     System.out.println("[VxmlAgiHandler] Field " + varKey + " input: " + inputStr.toString());
+
+                    // Run the field's <filled> branch (e.g. confirmation prompt or <goto>)
+                    org.w3c.dom.Element followUp = findChildElement(child, "filled");
+                    if (followUp != null) {
+                        renderFormElement(followUp, channel, session);
+                        return true;
+                    }
                 }
             } else if ("ai".equals(tagName)) {
                 String role = child.getAttribute("role");
                 String options = child.getAttribute("options");
 
+                String callerLang = resolveSessionLanguage(session);
+                String callerLangName = (callerLang != null && callerLang.startsWith("ar")) ? "Arabic" : "English";
+
                 String systemPrompt = role + " You must help the user choose one of these options: " + options + ". " +
                         "If the user's choice is clear, make a final decision immediately without asking for additional confirmation. If their choice is unclear, ask them to clarify. "
+                        +
+                        "The caller's spoken language is " + callerLangName + ". Always answer the caller in " + callerLangName
+                        + ", never in any other language. Keep your reply extremely short and simple. "
                         +
                         "Respond ONLY in valid JSON format: {\"status\": \"CONFIRMING\" or \"FINAL\", \"reply\": \"What you say to user\", \"action\": \"The exact destination ID (the part after the colon) if FINAL\"}";
 
@@ -485,43 +671,86 @@ public class VxmlAgiHandler extends BaseAgiScript {
                     }
                 }
 
+                int silentAttempts = 0;
+                int maxAiSilentAttempts = 3;
                 while (!isFinal) {
+                    // Flush DTMF buffer before beep and recording
+                    char flushDigit;
+                    do {
+                        flushDigit = channel.waitForDigit(10);
+                    } while (flushDigit != 0 && flushDigit != '\0');
+
                     // Beep before recording
                     channel.streamFile("beep");
 
                     // Record audio in /dev/shm to bypass systemd PrivateTmp isolation
-                    String recordPath = "/dev/shm/ai_audio_" + System.currentTimeMillis();
-                    channel.recordFile(recordPath, "wav", "#", 5000, 0, false, 2000);
+                    String recordPath = "/dev/shm/ai_audio_" + System.currentTimeMillis() + "_"
+                            + (int) (Math.random() * 100000);
+                    try {
+                        // Use 2 seconds for maxSilence so the recording stops shortly after the caller finishes speaking
+                        channel.recordFile(recordPath, "wav", "#", 5000, 0, false, 2);
 
-                    // Convert to text
-                    String lang = resolveSessionLanguage(session);
-                    String text = convertAudioToText(recordPath + ".wav", lang);
-                    System.out.println("[VxmlAgiHandler] <ai> User said: " + text);
+                        // Convert to text
+                        String lang = resolveSessionLanguage(session);
+                        String text = convertAudioToText(recordPath + ".wav", lang);
+                        System.out.println("[VxmlAgiHandler] <ai> User said: " + text);
 
-                    if (text == null || text.trim().isEmpty()) {
-                        speakPrompt(channel, "I didn't hear anything. Let's try again.", session);
-                        continue;
-                    }
+                        if (text == null || text.trim().isEmpty()) {
+                            silentAttempts++;
+                            if (silentAttempts >= maxAiSilentAttempts) {
+                                speakLocalized(channel, session, "I couldn't hear you. Let's move on.",
+                                        "لم أتمكن من سماعك. لننتقل إلى أمر آخر.");
+                                break;
+                            }
+                            speakLocalized(channel, session, "I didn't hear anything. Please try again.",
+                                    "لم أسمع شيئاً. يرجى المحاولة مرة أخرى.");
+                            continue;
+                        }
+                        silentAttempts = 0;
 
-                    conversationHistory += "User: " + text + "\n";
+                        conversationHistory += "User: " + text + "\n";
 
-                    // Get decision from Ollama
-                    com.google.gson.JsonObject llmResponse = OllamaAgent.chatJson(systemPrompt, conversationHistory);
-                    String status = llmResponse.has("status") ? llmResponse.get("status").getAsString() : "CONFIRMING";
-                    String reply = llmResponse.has("reply") ? llmResponse.get("reply").getAsString() : "I am not sure.";
+                        // Get decision from Ollama
+                        com.google.gson.JsonObject llmResponse = OllamaAgent.chatJson(systemPrompt, conversationHistory);
+                        String status = llmResponse.has("status") ? llmResponse.get("status").getAsString() : "CONFIRMING";
+                        String reply = llmResponse.has("reply") ? llmResponse.get("reply").getAsString()
+                                : (callerLangName.equals("Arabic") ? "أنا غير متأكد." : "I am not sure.");
 
-                    System.out.println("[VxmlAgiHandler] <ai> LLM Response: " + llmResponse.toString());
+                        System.out.println("[VxmlAgiHandler] <ai> LLM Response: " + llmResponse.toString());
 
-                    speakPrompt(channel, reply, session);
-                    conversationHistory += "AI: " + reply + "\n";
+                        if ("FINAL".equalsIgnoreCase(status)) {
+                            isFinal = true;
+                            finalAction = llmResponse.has("action") ? llmResponse.get("action").getAsString() : null;
+                            // Override the LLM's reply for FINAL status to prevent hallucinations
+                            // and ensure a smooth, professional transition to the requested form.
+                            reply = callerLangName.equals("Arabic") ? "حسناً، لحظة من فضلك." : "Okay, one moment please.";
+                        }
 
-                    if ("FINAL".equalsIgnoreCase(status)) {
-                        isFinal = true;
-                        finalAction = llmResponse.has("action") ? llmResponse.get("action").getAsString() : null;
+                        speakPrompt(channel, reply, session);
+                        conversationHistory += "AI: " + reply + "\n";
+                    } catch (Exception e) {
+                        System.err.println("[VxmlAgiHandler] <ai> interaction failed: " + e.getMessage());
+                        speakLocalized(channel, session, "Sorry, I could not understand that. Let's move on.",
+                                "عذراً، لم أستطع فهم ذلك. لننتقل إلى أمر آخر.");
+                        break;
+                    } finally {
+                        try {
+                            Files.deleteIfExists(Paths.get(recordPath + ".wav"));
+                        } catch (Exception ignored) {
+                        }
                     }
                 }
 
                 if (finalAction != null && !finalAction.trim().isEmpty()) {
+                    if (options != null) {
+                        for (String opt : options.split(";")) {
+                            String[] parts = opt.split(":");
+                            if (parts.length == 2 && parts[0].trim().equalsIgnoreCase(finalAction)) {
+                                finalAction = parts[1].trim();
+                                break;
+                            }
+                        }
+                    }
                     if (finalAction.contains(":")) {
                         finalAction = finalAction.split(":")[1].trim();
                     }
@@ -532,9 +761,188 @@ public class VxmlAgiHandler extends BaseAgiScript {
                     System.out.println("[VxmlAgiHandler] <ai> No final action, ending session.");
                     // You could optionally jump to a default form here.
                 }
+            } else if ("record".equals(tagName)) {
+                String recordName = child.getAttribute("name");
+                String maxTime = child.getAttribute("maxtime");
+                String beep = child.getAttribute("beep");
+                String dtmfterm = child.getAttribute("dtmfterm");
+                String dest = child.getAttribute("dest");
+
+                System.out.println("[VxmlAgiHandler] <record> Recording started: name=" + recordName
+                        + " maxtime=" + maxTime + " beep=" + beep + " dtmfterm=" + dtmfterm);
+
+                String recordPath = "/dev/shm/voicemail_" + System.currentTimeMillis() + "_"
+                        + (int) (Math.random() * 100000);
+                boolean doBeep = (beep != null && beep.equalsIgnoreCase("true"));
+
+                // Flush DTMF buffer before recording so leftover '#' doesn't instantly abort it
+                char flushDigit;
+                do {
+                    flushDigit = channel.waitForDigit(10);
+                } while (flushDigit != 0 && flushDigit != '\0');
+
+                int maxTimeMs = 120000;
+                if (maxTime != null && !maxTime.isEmpty()) {
+                    try {
+                        maxTimeMs = Integer.parseInt(maxTime.replaceAll("[^0-9]", "")) * 1000;
+                    } catch (NumberFormatException nfe) {
+                        System.err.println("[VxmlAgiHandler] <record> invalid maxtime '" + maxTime
+                                + "', defaulting to 120s.");
+                    }
+                }
+
+                // Use 3 seconds for voicemail maxSilence
+                channel.recordFile(recordPath, "wav", "#", maxTimeMs, 0, doBeep, 3);
+
+                String recordedWav = recordPath + ".wav";
+                String playableWav = convertToPlayableWav(recordedWav);
+
+                if (session != null && recordName != null && !recordName.isEmpty()) {
+                    session.setVariable(recordName, playableWav != null ? playableWav : recordedWav);
+                }
+
+                if (dest != null && !dest.isEmpty()) {
+                    System.out.println("[VxmlAgiHandler] <record> Saving voicemail to: " + dest);
+                }
+            } else if ("var".equals(tagName)) {
+                String varName = child.getAttribute("name");
+                String expr = child.getAttribute("expr");
+                if (varName != null && !varName.isEmpty() && expr != null && session != null) {
+                    String value = expr;
+                    if (value.startsWith("'") && value.endsWith("'")) {
+                        value = value.substring(1, value.length() - 1);
+                    }
+                    session.setVariable(varName, value);
+                    System.out.println("[VxmlAgiHandler] <var> " + varName + " = " + value);
+                }
+            } else if ("transfer".equals(tagName)) {
+                String dest = child.getAttribute("dest");
+                if (dest == null || dest.isEmpty()) {
+                    dest = child.getAttribute("destexpr");
+                }
+                dest = substituteVariables(dest != null ? dest : "", session).trim();
+                System.out.println("[VxmlAgiHandler] <transfer> to: " + dest);
+
+                if (dest.isEmpty()) {
+                    System.out.println("[VxmlAgiHandler] <transfer> has no destination, skipping.");
+                    continue;
+                }
+
+                String dialTarget = dest;
+                if (dialTarget.startsWith("sip:")) {
+                    dialTarget = dialTarget.substring(4);
+                }
+                if (!dialTarget.contains("/") && !dialTarget.contains("@")) {
+                    dialTarget = "PJSIP/" + dialTarget;
+                }
+
+                boolean answered = false;
+                try {
+                    channel.exec("Dial", dialTarget, "30000");
+                    String dialStatus = channel.getVariable("DIALSTATUS");
+                    answered = "ANSWER".equalsIgnoreCase(dialStatus);
+                    System.out.println("[VxmlAgiHandler] <transfer> DIALSTATUS: " + dialStatus);
+                } catch (Exception e) {
+                    System.err.println("[VxmlAgiHandler] <transfer> dial failed: " + e.getMessage());
+                }
+
+                org.w3c.dom.Element followUp = null;
+                if (answered) {
+                    followUp = findChildElement(child, "filled");
+                } else {
+                    followUp = findChildElement(child, "catch");
+                }
+                if (followUp != null) {
+                    renderFormElement(followUp, channel, session);
+                }
+                return true;
+            } else if ("disconnect".equals(tagName)) {
+                System.out.println("[VxmlAgiHandler] <disconnect> hanging up call.");
+                channel.hangup();
+                return true;
+            } else if ("filled".equals(tagName) || "catch".equals(tagName)) {
+                renderFormElement(child, channel, session);
+            } else if ("if".equals(tagName)) {
+                String cond = child.getAttribute("cond");
+                boolean result = evaluateCondition(cond, session);
+                System.out.println("[VxmlAgiHandler] <if> cond=\"" + cond + "\" => " + result);
+                org.w3c.dom.Element branch = findChildElement(child, result ? "then" : "else");
+                if (branch != null) {
+                    renderFormElement(branch, channel, session);
+                }
+            } else if ("noinput".equals(tagName) || "nomatch".equals(tagName)) {
+                renderFormElement(child, channel, session);
             }
         }
         return false;
+    }
+
+    private org.w3c.dom.Element findChildElement(org.w3c.dom.Element parent, String tagName) {
+        org.w3c.dom.NodeList children = parent.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            org.w3c.dom.Node node = children.item(i);
+            if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE
+                    && tagName.equals(((org.w3c.dom.Element) node).getTagName())) {
+                return (org.w3c.dom.Element) node;
+            }
+        }
+        return null;
+    }
+
+    private java.util.List<org.w3c.dom.Element> getDirectChildElements(org.w3c.dom.Element parent, String tagName) {
+        java.util.List<org.w3c.dom.Element> result = new java.util.ArrayList<>();
+        org.w3c.dom.NodeList children = parent.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            org.w3c.dom.Node node = children.item(i);
+            if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE
+                    && tagName.equals(((org.w3c.dom.Element) node).getTagName())) {
+                result.add((org.w3c.dom.Element) node);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Evaluates a simple VXML {@code cond} expression such as
+     * {@code ${var} == 'value'} or {@code ${var} != ''}. Complex ECMAScript
+     * expressions are not supported and evaluate to false.
+     */
+    private boolean evaluateCondition(String cond, VxmlSession session) {
+        if (cond == null || cond.isEmpty()) {
+            return false;
+        }
+        String expr = cond.trim();
+        if (expr.contains("${") && session != null) {
+            expr = substituteVariables(expr, session);
+        }
+        expr = expr.replaceAll("^['\"]|['\"]$", "").trim();
+        int opIdx = -1;
+        String operator = null;
+        for (String op : new String[]{"==", "!=", ">=", "<=", ">", "<"}) {
+            int idx = expr.indexOf(op);
+            if (idx >= 0 && (opIdx < 0 || idx < opIdx)) {
+                opIdx = idx;
+                operator = op;
+            }
+        }
+        if (operator == null) {
+            return !expr.isEmpty() && !"false".equalsIgnoreCase(expr);
+        }
+        String left = expr.substring(0, opIdx).trim().replaceAll("^['\"]|['\"]$", "");
+        String right = expr.substring(opIdx + operator.length()).trim().replaceAll("^['\"]|['\"]$", "");
+        try {
+            switch (operator) {
+                case "==": return left.equals(right);
+                case "!=": return !left.equals(right);
+                case ">": return Double.parseDouble(left) > Double.parseDouble(right);
+                case "<": return Double.parseDouble(left) < Double.parseDouble(right);
+                case ">=": return Double.parseDouble(left) >= Double.parseDouble(right);
+                case "<=": return Double.parseDouble(left) <= Double.parseDouble(right);
+                default: return false;
+            }
+        } catch (NumberFormatException e) {
+            return left.equals(right);
+        }
     }
 
     private String convertAudioToText(String wavFilePath, String langCode) throws Exception {
@@ -545,41 +953,56 @@ public class VxmlAgiHandler extends BaseAgiScript {
             googleLang = langCode;
         }
 
+        // Language code is passed as a process argument (no shell/string interpolation)
         String pythonScript = "import speech_recognition as sr\n" +
                 "import sys\n" +
                 "r = sr.Recognizer()\n" +
                 "with sr.AudioFile(sys.argv[1]) as source:\n" +
                 "    audio = r.record(source)\n" +
                 "try:\n" +
-                "    print(r.recognize_google(audio, language='" + googleLang + "'))\n" +
+                "    print(r.recognize_google(audio, language=sys.argv[2]))\n" +
                 "except Exception as e:\n" +
                 "    import traceback\n" +
                 "    traceback.print_exc(file=sys.stderr)\n" +
                 "    sys.exit(1)\n";
 
-        Path scriptPath = Paths.get("/dev/shm/asr.py");
-        Files.writeString(scriptPath, pythonScript);
+        Path scriptPath = Paths.get("/dev/shm/asr_" + System.currentTimeMillis() + "_" + (int) (Math.random() * 100000) + ".py");
+        try {
+            Files.writeString(scriptPath, pythonScript);
 
-        ProcessBuilder pb = new ProcessBuilder("python3", "/dev/shm/asr.py", wavFilePath);
-        pb.redirectErrorStream(true); // capture stderr with stdout
-        Process p = pb.start();
+            ProcessBuilder pb = new ProcessBuilder("python3", scriptPath.toString(), wavFilePath, googleLang);
+            pb.redirectErrorStream(true); // capture stderr with stdout
+            Process p = pb.start();
 
-        java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream()));
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = br.readLine()) != null) {
-            sb.append(line).append("\n");
+            String output;
+            try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream()))) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line).append("\n");
+                }
+                output = sb.toString();
+            }
+            boolean finished = p.waitFor(60, java.util.concurrent.TimeUnit.SECONDS);
+            if (!finished) {
+                p.destroyForcibly();
+            }
+            int exitCode = p.exitValue();
+            String trimmed = output.trim();
+
+            if (exitCode != 0) {
+                System.err
+                        .println("[VxmlAgiHandler] Python ASR failed with exit code " + exitCode + ". Output:\n" + trimmed);
+                return "";
+            }
+
+            return trimmed;
+        } finally {
+            try {
+                Files.deleteIfExists(scriptPath);
+            } catch (Exception ignored) {
+            }
         }
-        int exitCode = p.waitFor();
-        String output = sb.toString().trim();
-
-        if (exitCode != 0) {
-            System.err
-                    .println("[VxmlAgiHandler] Python ASR failed with exit code " + exitCode + ". Output:\n" + output);
-            return "";
-        }
-
-        return output;
     }
 
     private String substituteVariables(String text, VxmlSession session) {
@@ -602,6 +1025,92 @@ public class VxmlAgiHandler extends BaseAgiScript {
             }
         }
         return VxmlConfig.loadFromClasspath().getTtsLanguage();
+    }
+
+    /**
+     * Converts a recorded WAV (often 16kHz from G.722 channels) to an 8kHz
+     * mono PCM WAV that Asterisk's format_wav can play back natively.
+     *
+     * @param sourceWav full path to the recorded file
+     * @return the 8kHz WAV path, or the original path if conversion fails
+     */
+    private String convertToPlayableWav(String sourceWav) {
+        try {
+            if (sourceWav == null || !Files.exists(Paths.get(sourceWav))) {
+                return sourceWav;
+            }
+            String targetWav = sourceWav.replaceFirst("\\.wav$", "_8k.wav");
+            ProcessBuilder pb = new ProcessBuilder("ffmpeg", "-y", "-loglevel", "error",
+                    "-i", sourceWav, "-ac", "1", "-ar", "8000", "-c:a", "pcm_s16le", targetWav);
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
+            try (java.io.BufferedReader br = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(p.getInputStream()))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    System.out.println("[VxmlAgiHandler] ffmpeg: " + line);
+                }
+            }
+            boolean finished = p.waitFor(60, java.util.concurrent.TimeUnit.SECONDS);
+            if (!finished) {
+                p.destroyForcibly();
+                return sourceWav;
+            }
+            if (p.exitValue() == 0 && Files.exists(Paths.get(targetWav))) {
+                System.out.println("[VxmlAgiHandler] Recording converted for playback: " + targetWav);
+                return targetWav;
+            }
+            System.err.println("[VxmlAgiHandler] ffmpeg conversion failed (rc=" + p.exitValue() + ") for "
+                    + sourceWav + ", keeping original.");
+        } catch (Exception e) {
+            System.err.println("[VxmlAgiHandler] ffmpeg conversion error for " + sourceWav + ": " + e.getMessage());
+        }
+        return sourceWav;
+    }
+
+    private boolean isLanguageFilterActive(VxmlSession session) {
+        if (session == null) {
+            return false;
+        }
+        Object lang = session.getVariable("language");
+        return lang != null && !lang.toString().trim().isEmpty();
+    }
+
+    private boolean langMatches(String xmlLang, String sessionLang) {
+        if (xmlLang == null || xmlLang.trim().isEmpty()) {
+            return true;
+        }
+        if (sessionLang == null || sessionLang.trim().isEmpty()) {
+            return true;
+        }
+        String a = xmlLang.trim().toLowerCase();
+        String b = sessionLang.trim().toLowerCase();
+        if (a.startsWith("ar") && b.startsWith("ar")) {
+            return true;
+        }
+        if (a.startsWith("ar") || b.startsWith("ar")) {
+            return false;
+        }
+        return a.startsWith("en") && b.startsWith("en") || a.equals(b);
+    }
+
+    private boolean promptShouldSpeak(org.w3c.dom.Element promptElement, String promptLang, VxmlSession session) {
+        String xmlLang = promptElement.getAttribute("xml:lang");
+        if (xmlLang != null && !xmlLang.trim().isEmpty() && isLanguageFilterActive(session)) {
+            if (!langMatches(xmlLang, resolveSessionLanguage(session))) {
+                System.out.println("[VxmlAgiHandler] Skipping prompt (xml:lang=" + xmlLang
+                        + ", session language=" + resolveSessionLanguage(session) + ")");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean audioShouldSpeak(String audioLang, VxmlSession session) {
+        if (audioLang == null || audioLang.trim().isEmpty() || !isLanguageFilterActive(session)) {
+            return true;
+        }
+        return langMatches(audioLang, resolveSessionLanguage(session));
     }
 
     private char speakPromptAndGetDigit(AgiChannel channel, String text, VxmlSession session) {
@@ -647,6 +1156,15 @@ public class VxmlAgiHandler extends BaseAgiScript {
     }
 
     /**
+     * Speaks a bilingual message choosing EN/AR text based on the session language.
+     */
+    private void speakLocalized(AgiChannel channel, VxmlSession session, String enText, String arText) {
+        String lang = resolveSessionLanguage(session);
+        boolean arabic = lang != null && lang.startsWith("ar");
+        speakPrompt(channel, arabic ? arText : enText, session, arabic ? lang : null);
+    }
+
+    /**
      * Processes a {@code <prompt>} element, handling both plain text and {@code <audio>} tags.
      *
      * <p>VXML usage:</p>
@@ -669,6 +1187,10 @@ public class VxmlAgiHandler extends BaseAgiScript {
         String promptLang = promptElement.getAttribute("xml:lang");
         if (promptLang == null || promptLang.trim().isEmpty()) {
             promptLang = resolveSessionLanguage(session);
+        }
+
+        if (!promptShouldSpeak(promptElement, promptLang, session)) {
+            return;
         }
 
         org.w3c.dom.NodeList children = promptElement.getChildNodes();
@@ -694,7 +1216,15 @@ public class VxmlAgiHandler extends BaseAgiScript {
                     audioLang = promptLang;
                 }
 
+                if (!audioShouldSpeak(audioLang, session)) {
+                    System.out.println("[VxmlAgiHandler] Skipping audio element (xml:lang=" + audioLang + ")");
+                    continue;
+                }
+
                 String src = audioEl.getAttribute("src");
+                if (src != null && session != null) {
+                    src = substituteVariables(src, session);
+                }
                 String streamPath = TtsEngine.resolveAudioSrc(src);
 
                 if (streamPath != null) {
@@ -742,6 +1272,10 @@ public class VxmlAgiHandler extends BaseAgiScript {
             promptLang = resolveSessionLanguage(session);
         }
 
+        if (!promptShouldSpeak(promptElement, promptLang, session)) {
+            return 0;
+        }
+
         org.w3c.dom.NodeList children = promptElement.getChildNodes();
         StringBuilder textBuffer = new StringBuilder();
 
@@ -766,7 +1300,15 @@ public class VxmlAgiHandler extends BaseAgiScript {
                     audioLang = promptLang;
                 }
 
+                if (!audioShouldSpeak(audioLang, session)) {
+                    System.out.println("[VxmlAgiHandler] Skipping audio element (xml:lang=" + audioLang + ")");
+                    continue;
+                }
+
                 String src = audioEl.getAttribute("src");
+                if (src != null && session != null) {
+                    src = substituteVariables(src, session);
+                }
                 String streamPath = TtsEngine.resolveAudioSrc(src);
 
                 if (streamPath != null) {
@@ -798,6 +1340,47 @@ public class VxmlAgiHandler extends BaseAgiScript {
         }
 
         return 0;
+    }
+
+    /**
+     * Renders a standalone {@code <audio>} element that appears outside a
+     * {@code <prompt>} (e.g. a recorded message replay inside a {@code <then>}).
+     * Supports session-variable substitution in the {@code src} attribute and a
+     * TTS fallback via the element's text content.
+     */
+    private void renderAudioElement(org.w3c.dom.Element audioEl, AgiChannel channel, VxmlSession session) {
+        String audioLang = audioEl.getAttribute("xml:lang");
+        if (audioLang == null || audioLang.trim().isEmpty()) {
+            audioLang = resolveSessionLanguage(session);
+        }
+
+        if (!audioShouldSpeak(audioLang, session)) {
+            System.out.println("[VxmlAgiHandler] Skipping audio element (xml:lang=" + audioLang + ")");
+            return;
+        }
+
+        String src = audioEl.getAttribute("src");
+        if (src != null && session != null) {
+            src = substituteVariables(src, session);
+        }
+
+        String streamPath = TtsEngine.resolveAudioSrc(src);
+        if (streamPath != null) {
+            try {
+                System.out.println("[VxmlAgiHandler] Playing custom audio: " + streamPath);
+                channel.streamFile(streamPath);
+            } catch (Exception e) {
+                System.err.println("[VxmlAgiHandler] Error playing custom audio '" + src + "': " + e.getMessage());
+            }
+        } else {
+            String fallbackText = audioEl.getTextContent().trim();
+            if (!fallbackText.isEmpty()) {
+                System.out.println("[VxmlAgiHandler] Audio file not found, using TTS fallback for: " + src);
+                speakPrompt(channel, fallbackText, session, audioLang);
+            } else {
+                System.err.println("[VxmlAgiHandler] <audio src=\"" + src + "\"> not found and no fallback text");
+            }
+        }
     }
 
     /**

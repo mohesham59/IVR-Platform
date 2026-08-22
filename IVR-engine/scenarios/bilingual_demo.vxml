@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+
+  <!-- ========================================================================
+       bilingual_demo.vxml
+
+       A bilingual (Arabic/English) IVR scenario that exercises every feature
+       the FastAGI renderer supports:
+
+       [menu] + [choice]          language selection + DTMF routing (first menu)
+       [prompt xml:lang=ar|en]    per-prompt TTS language selection
+       [assign] / [var]           session variables (incl. 'language' choice)
+       [if][then][else]           condition evaluation (language-aware menu)
+       [field] + [grammar]        DTMF digit collection, '#' terminates
+       [api]                      external HTTP(S) GET + jsonPath + saveResultAs
+       [record]                   voice message recording
+       [transfer]                 dial a target with [filled]/[catch]
+       [ai]                       record -> ASR -> LLM -> jump to a dialog
+       [audio]                    custom audio file with TTS fallback
+       [goto]                     jump to another dialog
+       [disconnect]               hang up
+       ${var} substitution        variables interpolated into prompts
+
+       Test guide: see BILINGUAL_DEMO.md (repo root).
+       ======================================================================== -->
+
+  <!-- The renderer always starts at the FIRST [menu], so the customer first
+       chooses their preferred language; the rest of the call proceeds in it. -->
+  <menu id="lang_select" dtmf="true">
+    <prompt xml:lang="ar">مرحباً بك في خدمة الرد الآلي التجريبية. للعربية، اضغط 2.</prompt>
+    <prompt xml:lang="en">For English, press 1.</prompt>
+    <choice dtmf="1" next="#lang_en"/>
+    <choice dtmf="2" next="#lang_ar"/>
+  </menu>
+
+  <form id="lang_en">
+    <block>
+      <assign name="language" expr="'en'"/>
+      <goto next="#main_menu"/>
+    </block>
+  </form>
+
+  <form id="lang_ar">
+    <block>
+      <assign name="language" expr="'ar'"/>
+      <goto next="#main_menu"/>
+    </block>
+  </form>
+
+  <!-- Main menu as a form so it can be rendered in the chosen language.
+       The greeting uses the session 'language' variable and the field
+       routes the pressed digit to the matching dialog. -->
+  <form id="main_menu">
+    <block>
+      <if cond="'${language}' == 'ar'">
+        <then>
+          <prompt>مرحباً بك. اضغط 1 للحجز، 2 لرصيد الحساب، 3 لاختبار واجهة برمجية خارجية، 4 لتسجيل رسالة صوتية، 5 للمساعد الذكي، 6 للتحويل إلى موظف، 7 لاختبار الصوت المخصص، أو 0 للإنهاء.</prompt>
+        </then>
+      </if>
+      <if cond="'${language}' != 'ar'">
+        <then>
+          <prompt>Welcome. Press 1 for booking, 2 for account balance, 3 for an external API test, 4 to record a voice message, 5 for the AI assistant, 6 to transfer to an agent, 7 to test custom audio, or 0 to exit.</prompt>
+        </then>
+      </if>
+    </block>
+    <field name="menu_choice" type="digits" maxlen="1">
+      <grammar>1 2 3 4 5 6 7 0</grammar>
+      <filled>
+        <if cond="'${menu_choice}' == '1'"><then><goto next="#book"/></then></if>
+        <if cond="'${menu_choice}' == '2'"><then><goto next="#account"/></then></if>
+        <if cond="'${menu_choice}' == '3'"><then><goto next="#api_test"/></then></if>
+        <if cond="'${menu_choice}' == '4'"><then><goto next="#record_msg"/></then></if>
+        <if cond="'${menu_choice}' == '5'"><then><goto next="#assist"/></then></if>
+        <if cond="'${menu_choice}' == '6'"><then><goto next="#transfer"/></then></if>
+        <if cond="'${menu_choice}' == '7'"><then><goto next="#audio_test"/></then></if>
+        <if cond="'${menu_choice}' == '0'"><then><goto next="#end"/></then></if>
+      </filled>
+    </field>
+  </form>
+
+  <!-- ====================================================================
+       Option 1: [field] + [grammar] DTMF input collection.
+       Field prompts are DTMF-aware; '#' finishes the digit sequence.
+       ==================================================================== -->
+  <form id="book">
+    <block>
+      <prompt xml:lang="en">Booking. Press 1 for action movies or 2 for comedy.</prompt>
+      <prompt xml:lang="ar">الحجز. اضغط 1 لأفلام الأكشن أو 2 للكوميديا.</prompt>
+    </block>
+    <field name="movie_selection" type="digits">
+      <prompt xml:lang="en">Press 1 or 2, then press the hash key.</prompt>
+      <prompt xml:lang="ar">اضغط 1 أو 2 ثم اضغط علامة الشباك.</prompt>
+      <grammar>1 2</grammar>
+    </field>
+    <filled>
+      <prompt xml:lang="en">You selected option ${movie_selection}. Booking confirmed. Goodbye.</prompt>
+      <prompt xml:lang="ar">اخترت الخيار ${movie_selection}. تم تأكيد الحجز. مع السلامة.</prompt>
+    </filled>
+  </form>
+
+  <!-- ====================================================================
+       Option 2: [assign]/[var], session language switching,
+       [if]/[then]/[else], and ${var} substitution.
+       ==================================================================== -->
+  <form id="account">
+    <block>
+      <assign name="balance" expr="'50'"/>
+      <var name="status" expr="'active'"/>
+
+      <!-- Switch the session language to Arabic: subsequent prompts without
+           xml:lang are synthesized in Arabic, and [ai] ASR uses ar-EG. -->
+      <assign name="language" expr="'ar'"/>
+      <prompt>تغيير اللغة إلى العربية. رصيدك الحالي هو ${balance} جنيه.</prompt>
+
+      <if cond="'${balance}' >= '100'">
+        <then>
+          <prompt xml:lang="ar">رصيدك مرتفع.</prompt>
+          <prompt xml:lang="en">Your balance is high.</prompt>
+        </then>
+        <else>
+          <prompt xml:lang="ar">رصيدك منخفض.</prompt>
+          <prompt xml:lang="en">Your balance is low.</prompt>
+        </else>
+      </if>
+
+      <if cond="${status} == 'active'">
+        <then><prompt>الحساب نشط.</prompt></then>
+        <else><prompt>الحساب غير نشط.</prompt></else>
+      </if>
+
+      <!-- Switch back to English. -->
+      <assign name="language" expr="'en'"/>
+      <prompt>Switching back to English. The account demo is complete.</prompt>
+    </block>
+  </form>
+
+  <!-- ====================================================================
+       Option 3: [api] external HTTP(S) GET.
+       url         : http/https endpoint (other schemes are blocked)
+       var         : optional; appends ?var=<session var> to the URL
+       jsonPath    : optional; extracts a top-level or dot-nested JSON field
+       saveResultAs: stores the result in a session variable
+       Live Cairo forecast (open-meteo): speaks temperature + weather-code
+       description, then offers to return to the main menu so the call
+       does not end.
+       ==================================================================== -->
+  <form id="api_test">
+    <block>
+      <prompt xml:lang="en">Testing the live weather forecast for Cairo, Egypt. Please wait.</prompt>
+      <prompt xml:lang="ar">اختبار توقعات الطقس الفورية للقاهرة في مصر. أرجو الانتظار.</prompt>
+      <api url="https://api.open-meteo.com/v1/forecast?latitude=30.0444&amp;longitude=31.2357&amp;current_weather=true"
+           saveResultAs="weather_temp" jsonPath="current_weather.temperature"/>
+      <api url="https://api.open-meteo.com/v1/forecast?latitude=30.0444&amp;longitude=31.2357&amp;current_weather=true"
+           saveResultAs="weather_code" jsonPath="current_weather.weathercode"/>
+      <prompt xml:lang="en">The current temperature in Cairo is ${weather_temp} degrees Celsius.</prompt>
+      <prompt xml:lang="ar">درجة الحرارة الآن في القاهرة هي ${weather_temp} درجة مئوية.</prompt>
+      <if cond="'${weather_code}' == '0'">
+        <then>
+          <prompt xml:lang="en">The sky is clear.</prompt>
+          <prompt xml:lang="ar">السماء صافية.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '1'">
+        <then>
+          <prompt xml:lang="en">It is mostly clear.</prompt>
+          <prompt xml:lang="ar">السماء صافية غالباً.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '2'">
+        <then>
+          <prompt xml:lang="en">It is partly cloudy.</prompt>
+          <prompt xml:lang="ar">يوجد بعض الغيوم.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '3'">
+        <then>
+          <prompt xml:lang="en">The sky is overcast.</prompt>
+          <prompt xml:lang="ar">السماء ملبدة بالغيوم.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '45'">
+        <then>
+          <prompt xml:lang="en">There is fog.</prompt>
+          <prompt xml:lang="ar">يوجد ضباب.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '48'">
+        <then>
+          <prompt xml:lang="en">There is fog with rime.</prompt>
+          <prompt xml:lang="ar">يوجد ضباب متجمد.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '61'">
+        <then>
+          <prompt xml:lang="en">There is light rain.</prompt>
+          <prompt xml:lang="ar">هناك أمطار خفيفة.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '63'">
+        <then>
+          <prompt xml:lang="en">There is moderate rain.</prompt>
+          <prompt xml:lang="ar">هناك أمطار متوسطة.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '65'">
+        <then>
+          <prompt xml:lang="en">There is heavy rain.</prompt>
+          <prompt xml:lang="ar">هناك أمطار غزيرة.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '80'">
+        <then>
+          <prompt xml:lang="en">There are light rain showers.</prompt>
+          <prompt xml:lang="ar">هناك زخات مطر خفيفة.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '81'">
+        <then>
+          <prompt xml:lang="en">There are moderate rain showers.</prompt>
+          <prompt xml:lang="ar">هناك زخات مطر متوسطة.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '82'">
+        <then>
+          <prompt xml:lang="en">There are violent rain showers.</prompt>
+          <prompt xml:lang="ar">هناك زخات مطر عنيفة.</prompt>
+        </then>
+      </if>
+      <if cond="'${weather_code}' == '95'">
+        <then>
+          <prompt xml:lang="en">There is a thunderstorm.</prompt>
+          <prompt xml:lang="ar">توجد عاصفة رعدية.</prompt>
+        </then>
+      </if>
+      <prompt xml:lang="en">Press 0 to return to the main menu.</prompt>
+      <prompt xml:lang="ar">اضغط 0 للعودة إلى القائمة الرئيسية.</prompt>
+    </block>
+    <field name="api_return" type="digits" maxlen="1">
+      <grammar>0</grammar>
+      <filled>
+        <goto next="#main_menu"/>
+      </filled>
+    </field>
+  </form>
+
+  <!-- ====================================================================
+       Option 4: [record] voice message recording (beep, '#' to finish).
+       ==================================================================== -->
+  <form id="record_msg">
+    <block>
+      <prompt xml:lang="en">Please record your message after the beep. Press hash when you are finished.</prompt>
+      <prompt xml:lang="ar">يرجى تسجيل رسالتك بعد التنبيه. اضغط شباك عندما تنتهي.</prompt>
+      <record name="voice_msg" maxtime="30s" beep="true" dtmfterm="true"/>
+      <prompt xml:lang="ar">تم تسجيل رسالتك بنجاح.</prompt>
+      <prompt xml:lang="en">Your message has been recorded.</prompt>
+    </block>
+    <field name="record_choice" type="digits" maxlen="1">
+      <grammar>1 0</grammar>
+      <prompt xml:lang="en">Press 1 to listen to your message, or press 0 to return to the main menu.</prompt>
+      <prompt xml:lang="ar">اضغط 1 للاستماع إلى رسالتك، أو اضغط 0 للعودة إلى القائمة الرئيسية.</prompt>
+      <filled>
+        <if cond="'${record_choice}' == '1'">
+          <then>
+            <prompt xml:lang="en">Here is your message.</prompt>
+            <prompt xml:lang="ar">هذه رسالتك.</prompt>
+            <audio src="${voice_msg}">Your message could not be played back.</audio>
+            <goto next="#main_menu"/>
+          </then>
+        </if>
+        <if cond="'${record_choice}' == '0'">
+          <then>
+            <goto next="#main_menu"/>
+          </then>
+        </if>
+      </filled>
+    </field>
+  </form>
+
+  <!-- ====================================================================
+       Option 5: [ai] speech assistant.
+       Records speech -> Google ASR (language from session 'language') ->
+       Ollama decision ({"status":"FINAL","action":"<id>"}) -> jump.
+       ==================================================================== -->
+  <form id="assist">
+    <block>
+      <ai role="You are a bilingual IVR voice assistant."
+          options="balance:balance_info; hours:hours_info; operator:operator_info">
+        <prompt xml:lang="en">Say balance, business hours, or operator.</prompt>
+        <prompt xml:lang="ar">قل: الرصيد، أو ساعات العمل، أو موظف.</prompt>
+      </ai>
+    </block>
+  </form>
+
+  <form id="balance_info">
+    <block>
+      <prompt xml:lang="en">Your current balance is five thousand pounds.</prompt>
+      <prompt xml:lang="ar">رصيدك الحالي هو خمسة آلاف جنيه.</prompt>
+    </block>
+  </form>
+
+  <form id="hours_info">
+    <block>
+      <prompt xml:lang="en">We are open every day from nine in the morning until five in the afternoon.</prompt>
+      <prompt xml:lang="ar">نعمل يومياً من التاسعة صباحاً حتى الخامسة مساءً.</prompt>
+    </block>
+  </form>
+
+  <form id="operator_info">
+    <block>
+      <prompt xml:lang="en">Transferring you to the operator.</prompt>
+      <prompt xml:lang="ar">جاري تحويلك إلى الموظف.</prompt>
+    </block>
+  </form>
+
+  <!-- ====================================================================
+       Option 6: [transfer] to an extension with [filled]/[catch].
+       ==================================================================== -->
+  <form id="transfer">
+    <block>
+      <prompt xml:lang="en">Transferring you to an agent.</prompt>
+      <prompt xml:lang="ar">جاري تحويلك إلى موظف.</prompt>
+      <transfer dest="6001">
+        <filled>
+          <prompt xml:lang="en">The agent has answered.</prompt>
+          <prompt xml:lang="ar">الموظف متصل الآن.</prompt>
+        </filled>
+        <catch>
+          <prompt xml:lang="en">The agent is unavailable. Goodbye.</prompt>
+          <prompt xml:lang="ar">الموظف غير متوفر حالياً. مع السلامة.</prompt>
+        </catch>
+      </transfer>
+    </block>
+  </form>
+
+  <!-- ====================================================================
+       Option 7: [audio] custom audio file.
+       Files resolve from /var/lib/asterisk/sounds/ivr-custom/.
+       Since the file does not exist here, the inner text is used as TTS
+       fallback (per xml:lang of the [audio] element).
+       ==================================================================== -->
+  <form id="audio_test">
+    <block>
+      <prompt>
+        <audio xml:lang="en" src="welcome_custom.wav">
+          The custom audio file was not found, so this fallback text is being read instead.
+        </audio>
+        <audio xml:lang="ar" src="welcome_custom_ar.wav">
+          لم يتم العثور على الملف الصوتي المخصص، لذلك يتم قراءة هذا النص البديل.
+        </audio>
+      </prompt>
+    </block>
+  </form>
+
+  <!-- ====================================================================
+       Option 0: [disconnect] hang up.
+       ==================================================================== -->
+  <form id="end">
+    <block>
+      <prompt xml:lang="en">Thank you for calling. Goodbye.</prompt>
+      <prompt xml:lang="ar">شكراً لاتصالك. مع السلامة.</prompt>
+      <disconnect/>
+    </block>
+  </form>
+
+</vxml>

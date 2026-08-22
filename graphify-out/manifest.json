@@ -1,0 +1,2092 @@
+{
+  "Database/AI-database/000_full_mvp_schema_combined.sql": {
+    "mtime": 1785519718.360977,
+    "ast_hash": "4d9c09a2ee7aec6ea5d29bc3c050211c",
+    "semantic_hash": "4d9c09a2ee7aec6ea5d29bc3c050211c"
+  },
+  "Database/AI-database/001_Extensions & shared helper.sql": {
+    "mtime": 1785519718.361029,
+    "ast_hash": "ea0f8d397840e081acba01eb6c4ccb89",
+    "semantic_hash": "ea0f8d397840e081acba01eb6c4ccb89"
+  },
+  "Database/AI-database/002_ai_sessions.sql": {
+    "mtime": 1785519718.361029,
+    "ast_hash": "a823c054245a69caa1d8ff40db49fc6e",
+    "semantic_hash": "a823c054245a69caa1d8ff40db49fc6e"
+  },
+  "Database/AI-database/003_ai_messages.sql": {
+    "mtime": 1785519718.361029,
+    "ast_hash": "d44483d7a0468eab710ae0ee8c949d7b",
+    "semantic_hash": "d44483d7a0468eab710ae0ee8c949d7b"
+  },
+  "Database/AI-database/004_conversation_history.sql": {
+    "mtime": 1785519718.361029,
+    "ast_hash": "63dca04467745f15ba1ce5fcc0b6b91d",
+    "semantic_hash": "63dca04467745f15ba1ce5fcc0b6b91d"
+  },
+  "Database/AI-database/005_knowledge_documents.sql": {
+    "mtime": 1785519718.361029,
+    "ast_hash": "36a5be8a5bc899cb86e6178c627cfcd9",
+    "semantic_hash": "36a5be8a5bc899cb86e6178c627cfcd9"
+  },
+  "Database/AI-database/006_knowledge_chunks.sql": {
+    "mtime": 1785519718.361029,
+    "ast_hash": "a1dd73639c35bbaae941cf51db30e419",
+    "semantic_hash": "a1dd73639c35bbaae941cf51db30e419"
+  },
+  "Database/AI-database/007_embeddings.sql": {
+    "mtime": 1785519718.361029,
+    "ast_hash": "cc548fdd8c54029af37396bc8f8ecb1a",
+    "semantic_hash": "cc548fdd8c54029af37396bc8f8ecb1a"
+  },
+  "Database/AI-database/008_prompt_templates.sql": {
+    "mtime": 1785519718.361029,
+    "ast_hash": "ba156b1fce26f05034a90d2f4dd5c45e",
+    "semantic_hash": "ba156b1fce26f05034a90d2f4dd5c45e"
+  },
+  "Database/AI-database/009_users_and_tenants.sql": {
+    "mtime": 1786124667.1989536,
+    "ast_hash": "478748ee948ac689bc18f2d9ba1bd5a0",
+    "semantic_hash": "478748ee948ac689bc18f2d9ba1bd5a0"
+  },
+  "Database/voice_prompts.sql": {
+    "mtime": 1785959711.7029262,
+    "ast_hash": "8740225fffd4bfda2f33dceaa3ea2f73",
+    "semantic_hash": "8740225fffd4bfda2f33dceaa3ea2f73"
+  },
+  "IVR-AI-engine/pom.xml": {
+    "mtime": 1786129680.0620275,
+    "ast_hash": "5513526d9173d8506d1b1ee1ffd4786f",
+    "semantic_hash": "5513526d9173d8506d1b1ee1ffd4786f"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/AiException.java": {
+    "mtime": 1785519718.361325,
+    "ast_hash": "926b92a44c7acd7703806ccd2ffadd29",
+    "semantic_hash": "926b92a44c7acd7703806ccd2ffadd29"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/AiProvider.java": {
+    "mtime": 1785519718.3613684,
+    "ast_hash": "84fc81b7fe91b1713e3626a8040cbecc",
+    "semantic_hash": "84fc81b7fe91b1713e3626a8040cbecc"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/AiProviderFactory.java": {
+    "mtime": 1785519718.3613684,
+    "ast_hash": "67a42b63cde2465cada1163613745763",
+    "semantic_hash": "67a42b63cde2465cada1163613745763"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/AiResponse.java": {
+    "mtime": 1786117091.6005683,
+    "ast_hash": "d477f2a9177f69c76dde71f1e1f2d5ef",
+    "semantic_hash": "d477f2a9177f69c76dde71f1e1f2d5ef"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/CircuitBreaker.java": {
+    "mtime": 1785941041.916073,
+    "ast_hash": "af5e6f9c8145bccabf836f1fe9d3522e",
+    "semantic_hash": "af5e6f9c8145bccabf836f1fe9d3522e"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/FunctionExecutor.java": {
+    "mtime": 1785519718.3613684,
+    "ast_hash": "94f3bce5ae940dfb40b3bb7010186905",
+    "semantic_hash": "94f3bce5ae940dfb40b3bb7010186905"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/GeminiClient.java": {
+    "mtime": 1785941041.916073,
+    "ast_hash": "979a70e5dc524628527f7ef4201e2e22",
+    "semantic_hash": "979a70e5dc524628527f7ef4201e2e22"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/GroqAiProvider.java": {
+    "mtime": 1785519718.361641,
+    "ast_hash": "7e4239f90f126ef3ab984662e5867052",
+    "semantic_hash": "7e4239f90f126ef3ab984662e5867052"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/GroqClient.java": {
+    "mtime": 1785941041.916073,
+    "ast_hash": "27cd4063ad58f98cd39c330bc70b34a5",
+    "semantic_hash": "27cd4063ad58f98cd39c330bc70b34a5"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/LlmClient.java": {
+    "mtime": 1785519718.361641,
+    "ast_hash": "3de81fa11f66856856c8f8539ae148b5",
+    "semantic_hash": "3de81fa11f66856856c8f8539ae148b5"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/LlmProviderFactory.java": {
+    "mtime": 1785519718.361641,
+    "ast_hash": "184dde04c96dee993464c5da326156ee",
+    "semantic_hash": "184dde04c96dee993464c5da326156ee"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/MockLlmClient.java": {
+    "mtime": 1785519718.361641,
+    "ast_hash": "34eb861b343a2602e7252557469e7e30",
+    "semantic_hash": "34eb861b343a2602e7252557469e7e30"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/OllamaAiProvider.java": {
+    "mtime": 1785519718.361641,
+    "ast_hash": "d0a66c64f690c8582dbbcb7a29f8e701",
+    "semantic_hash": "d0a66c64f690c8582dbbcb7a29f8e701"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/OllamaClient.java": {
+    "mtime": 1785519718.361641,
+    "ast_hash": "97d48c25fcc53392e4c2d5ed9d61c18e",
+    "semantic_hash": "97d48c25fcc53392e4c2d5ed9d61c18e"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/OpenAiCompatibleClient.java": {
+    "mtime": 1786117091.6005683,
+    "ast_hash": "8bc12ac8f05bea86ba41347cfed6afb6",
+    "semantic_hash": "8bc12ac8f05bea86ba41347cfed6afb6"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/PromptBuilder.java": {
+    "mtime": 1786214562.0455925,
+    "ast_hash": "c986a8bd7f4476ce44a45dd50a855b93",
+    "semantic_hash": "c986a8bd7f4476ce44a45dd50a855b93"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/ProviderHealth.java": {
+    "mtime": 1785519718.361641,
+    "ast_hash": "e95647d75889510898887d6534e8f5b7",
+    "semantic_hash": "e95647d75889510898887d6534e8f5b7"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/ProviderManager.java": {
+    "mtime": 1786117091.6005683,
+    "ast_hash": "c54820578da9233fecb721fad655b019",
+    "semantic_hash": "c54820578da9233fecb721fad655b019"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/RetryPolicy.java": {
+    "mtime": 1785941041.916073,
+    "ast_hash": "5d2e82c57ea4a11a69b37ad3fb3fbfb4",
+    "semantic_hash": "5d2e82c57ea4a11a69b37ad3fb3fbfb4"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/TemplateGenerator.java": {
+    "mtime": 1785519718.361641,
+    "ast_hash": "b0ead36d430e5d30598ca41153889521",
+    "semantic_hash": "b0ead36d430e5d30598ca41153889521"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/agents/BaseSpecializedAgent.java": {
+    "mtime": 1785519718.361641,
+    "ast_hash": "c2226903b3335000a7c9dbe1143fd2cc",
+    "semantic_hash": "c2226903b3335000a7c9dbe1143fd2cc"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/agents/BusinessPlannerAgent.java": {
+    "mtime": 1785519718.362785,
+    "ast_hash": "47491e1adb10468dc66136b045958765",
+    "semantic_hash": "47491e1adb10468dc66136b045958765"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/agents/ConversationDesignerAgent.java": {
+    "mtime": 1785519718.362785,
+    "ast_hash": "1335155bd5ddc6acadb86ef540c52952",
+    "semantic_hash": "1335155bd5ddc6acadb86ef540c52952"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/agents/OptimizationAdvisorAgent.java": {
+    "mtime": 1785519718.362785,
+    "ast_hash": "42d69f8403ccad3826f8d320bfdfa51e",
+    "semantic_hash": "42d69f8403ccad3826f8d320bfdfa51e"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/agents/RoutingExpertAgent.java": {
+    "mtime": 1785519718.362785,
+    "ast_hash": "b5213c00f06b827370924bfb826128f8",
+    "semantic_hash": "b5213c00f06b827370924bfb826128f8"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/agents/SpecializedAgent.java": {
+    "mtime": 1785519718.362785,
+    "ast_hash": "188b451a7e0a54c64ac55233c3c0c22e",
+    "semantic_hash": "188b451a7e0a54c64ac55233c3c0c22e"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/agents/SpecializedAgentRegistry.java": {
+    "mtime": 1785941041.916073,
+    "ast_hash": "89b551e2fe659e070c571ea12209c3d1",
+    "semantic_hash": "89b551e2fe659e070c571ea12209c3d1"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/agents/SpecializedAgentService.java": {
+    "mtime": 1785519718.362785,
+    "ast_hash": "29fd51130c98a3e276827033f9df70c3",
+    "semantic_hash": "29fd51130c98a3e276827033f9df70c3"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/agents/ValidatorAssistantAgent.java": {
+    "mtime": 1785519718.362785,
+    "ast_hash": "2e79cd639557b8064e5491e828b2a6f9",
+    "semantic_hash": "2e79cd639557b8064e5491e828b2a6f9"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/agents/VoicePromptWriterAgent.java": {
+    "mtime": 1785519718.362785,
+    "ast_hash": "e63317fd5425e90d8ac876d022725f98",
+    "semantic_hash": "e63317fd5425e90d8ac876d022725f98"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/optimization/ConversationMemory.java": {
+    "mtime": 1785519718.362785,
+    "ast_hash": "a6b74e9699b1e008ef89936678a3963b",
+    "semantic_hash": "a6b74e9699b1e008ef89936678a3963b"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/optimization/FlowSummaryBuilder.java": {
+    "mtime": 1785519718.3635867,
+    "ast_hash": "7b383470cda3ee9bd051a4d479d47c26",
+    "semantic_hash": "7b383470cda3ee9bd051a4d479d47c26"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/optimization/PromptMinimizer.java": {
+    "mtime": 1785519718.3635867,
+    "ast_hash": "46943caf7eaa4748cfac49efd6addf98",
+    "semantic_hash": "46943caf7eaa4748cfac49efd6addf98"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/optimization/ProviderCostCatalog.java": {
+    "mtime": 1785519718.3635867,
+    "ast_hash": "e5088bc20578c3647fd02340b2440f7a",
+    "semantic_hash": "e5088bc20578c3647fd02340b2440f7a"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/optimization/QuotaAwareRouter.java": {
+    "mtime": 1785519718.3635867,
+    "ast_hash": "a01ff30f5e6b7b21d74bd59328c7c9e3",
+    "semantic_hash": "a01ff30f5e6b7b21d74bd59328c7c9e3"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/optimization/SemanticCache.java": {
+    "mtime": 1785941041.916073,
+    "ast_hash": "f6e107f4deb0d8ed89fcb1e9ef3d0979",
+    "semantic_hash": "f6e107f4deb0d8ed89fcb1e9ef3d0979"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/ai/optimization/TokenUsageTracker.java": {
+    "mtime": 1785519718.3635867,
+    "ast_hash": "5002ec9cde842ff97152f365bd547bdb",
+    "semantic_hash": "5002ec9cde842ff97152f365bd547bdb"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/config/AppServletContextListener.java": {
+    "mtime": 1786129846.4863365,
+    "ast_hash": "d008c2f6fa0b5a2590fe105b6c358ae3",
+    "semantic_hash": "d008c2f6fa0b5a2590fe105b6c358ae3"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/config/CorsFilter.java": {
+    "mtime": 1785519718.3637564,
+    "ast_hash": "d1eeaf3adadc598b147cbb0d53469780",
+    "semantic_hash": "d1eeaf3adadc598b147cbb0d53469780"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/config/GlobalAiConfig.java": {
+    "mtime": 1786117091.6005683,
+    "ast_hash": "cdef3102ed930a4de53f808b5d0b2667",
+    "semantic_hash": "cdef3102ed930a4de53f808b5d0b2667"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/config/LlmConfig.java": {
+    "mtime": 1786117091.6005683,
+    "ast_hash": "7654ea05d7ceda0207a19657386ce90f",
+    "semantic_hash": "7654ea05d7ceda0207a19657386ce90f"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/AiAgentServlet.java": {
+    "mtime": 1785519718.3637564,
+    "ast_hash": "4d7c01f1f88239102c463824467ee3c7",
+    "semantic_hash": "4d7c01f1f88239102c463824467ee3c7"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/AiAnalyticsServlet.java": {
+    "mtime": 1785519718.3638647,
+    "ast_hash": "b12aeb5705a60f85b4b4d20bdd75a5e7",
+    "semantic_hash": "b12aeb5705a60f85b4b4d20bdd75a5e7"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/AiChatServlet.java": {
+    "mtime": 1786117091.6005683,
+    "ast_hash": "69cc8af62f44448c9df320789c7cd48e",
+    "semantic_hash": "69cc8af62f44448c9df320789c7cd48e"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/AiConversationHistoryServlet.java": {
+    "mtime": 1785941041.916073,
+    "ast_hash": "31eb595a82b06f3366acee6b6a8876f6",
+    "semantic_hash": "31eb595a82b06f3366acee6b6a8876f6"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/AiFlowServlet.java": {
+    "mtime": 1786117091.6005683,
+    "ast_hash": "4e42c2b39874ada501e5645a64227200",
+    "semantic_hash": "4e42c2b39874ada501e5645a64227200"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/AiFunctionCallServlet.java": {
+    "mtime": 1785519718.3638647,
+    "ast_hash": "c3158bd83f6222a54b22241be96d97d1",
+    "semantic_hash": "c3158bd83f6222a54b22241be96d97d1"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/AiPromptsServlet.java": {
+    "mtime": 1785519718.3638647,
+    "ast_hash": "0ba741a649ec326541bb5436f9e7b5ec",
+    "semantic_hash": "0ba741a649ec326541bb5436f9e7b5ec"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/AiProviderListServlet.java": {
+    "mtime": 1785941041.916073,
+    "ast_hash": "1196f3214c749f6f11fb01fb4e73aba6",
+    "semantic_hash": "1196f3214c749f6f11fb01fb4e73aba6"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/AiProviderServlet.java": {
+    "mtime": 1785519718.3638647,
+    "ast_hash": "0e01da367ccc6dd693a14828b04f723d",
+    "semantic_hash": "0e01da367ccc6dd693a14828b04f723d"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/AiSentimentServlet.java": {
+    "mtime": 1785519718.3638647,
+    "ast_hash": "e1361cb564685470a9318510ac4b6792",
+    "semantic_hash": "e1361cb564685470a9318510ac4b6792"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/AiSummarizeServlet.java": {
+    "mtime": 1785519718.3638647,
+    "ast_hash": "1842d5b257759e8b39a56cd08563b852",
+    "semantic_hash": "1842d5b257759e8b39a56cd08563b852"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/AuthServlet.java": {
+    "mtime": 1786117091.6005683,
+    "ast_hash": "8e6fb269ac7467348a2324e97ae8c384",
+    "semantic_hash": "8e6fb269ac7467348a2324e97ae8c384"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/BaseAiServlet.java": {
+    "mtime": 1786117091.6015682,
+    "ast_hash": "147147dfcdfdd1ba459c549f9d02b86b",
+    "semantic_hash": "147147dfcdfdd1ba459c549f9d02b86b"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/CallAnalyticsServlet.java": {
+    "mtime": 1786226043.9270437,
+    "ast_hash": "18e6a3a18930a64a711cb1fe3130104e",
+    "semantic_hash": "18e6a3a18930a64a711cb1fe3130104e"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/CdrServlet.java": {
+    "mtime": 1786152774.8756933,
+    "ast_hash": "b71ca7a9a3abb620afbb0507801ccb64",
+    "semantic_hash": "b71ca7a9a3abb620afbb0507801ccb64"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/ServiceRegistry.java": {
+    "mtime": 1786226077.8466828,
+    "ast_hash": "a04ab7fa529542e70fddcac6b6bc7dc7",
+    "semantic_hash": "a04ab7fa529542e70fddcac6b6bc7dc7"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/SuperAdminTenantsServlet.java": {
+    "mtime": 1786124667.1989536,
+    "ast_hash": "f0648cd63cd202f4bed5894cd7d8623f",
+    "semantic_hash": "f0648cd63cd202f4bed5894cd7d8623f"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/SuperAdminUsersServlet.java": {
+    "mtime": 1786117091.6015682,
+    "ast_hash": "e008f0d2e4ebfa5f7764fb20cc6fb35a",
+    "semantic_hash": "e008f0d2e4ebfa5f7764fb20cc6fb35a"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/TenantCompaniesServlet.java": {
+    "mtime": 1786124667.1989536,
+    "ast_hash": "ed35d69d1e3a236b7ef85f30fe2b6e2d",
+    "semantic_hash": "ed35d69d1e3a236b7ef85f30fe2b6e2d"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/VoicePromptsGenerateServlet.java": {
+    "mtime": 1786129855.5385246,
+    "ast_hash": "463823aa02ff75c7be70d434cfc72a68",
+    "semantic_hash": "463823aa02ff75c7be70d434cfc72a68"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/VoicePromptsStreamServlet.java": {
+    "mtime": 1786129856.3855422,
+    "ast_hash": "5785ada6f451dabd6fa2f7282b0acfd8",
+    "semantic_hash": "5785ada6f451dabd6fa2f7282b0acfd8"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/controller/VoicePromptsUploadServlet.java": {
+    "mtime": 1786129854.789509,
+    "ast_hash": "d4ae80e787ce64d8369b4317d02a6dc4",
+    "semantic_hash": "d4ae80e787ce64d8369b4317d02a6dc4"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dao/AiSessionDao.java": {
+    "mtime": 1785519718.3638647,
+    "ast_hash": "0349899722c1a0ada5974b3b733fc9c3",
+    "semantic_hash": "0349899722c1a0ada5974b3b733fc9c3"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dao/CallAnalyticsDao.java": {
+    "mtime": 1786226078.0066857,
+    "ast_hash": "8389f95305cd8297a7059a1969f0b8bd",
+    "semantic_hash": "8389f95305cd8297a7059a1969f0b8bd"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dao/DatabaseManager.java": {
+    "mtime": 1785959711.703625,
+    "ast_hash": "13688b9a2f4792e9aea8a19f790fae5d",
+    "semantic_hash": "13688b9a2f4792e9aea8a19f790fae5d"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dao/FlowDao.java": {
+    "mtime": 1785519718.3642256,
+    "ast_hash": "2d8ff6a76023d354dec345243ae42d09",
+    "semantic_hash": "2d8ff6a76023d354dec345243ae42d09"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dao/KnowledgeDocumentDao.java": {
+    "mtime": 1785519718.3642256,
+    "ast_hash": "4caa3cd88af8bb7b0a06a99917e2def7",
+    "semantic_hash": "4caa3cd88af8bb7b0a06a99917e2def7"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dao/MessageDao.java": {
+    "mtime": 1785519718.3642256,
+    "ast_hash": "0affc52fe3fab98f00a67ebe08c411fe",
+    "semantic_hash": "0affc52fe3fab98f00a67ebe08c411fe"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dao/TenantDao.java": {
+    "mtime": 1786124667.1999536,
+    "ast_hash": "6944471a4e23e55100f22297edbc4cf7",
+    "semantic_hash": "6944471a4e23e55100f22297edbc4cf7"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dao/UserDao.java": {
+    "mtime": 1786124667.1999536,
+    "ast_hash": "a5d88d6a84eae88f101e777ccf9a7c35",
+    "semantic_hash": "a5d88d6a84eae88f101e777ccf9a7c35"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dao/VoicePromptDao.java": {
+    "mtime": 1785959711.703625,
+    "ast_hash": "9e02011d57864924bffeef1489d9b431",
+    "semantic_hash": "9e02011d57864924bffeef1489d9b431"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/AnalyticsResponse.java": {
+    "mtime": 1785519718.3642256,
+    "ast_hash": "869dbd19a82648d32953bcfba2aa2ffa",
+    "semantic_hash": "869dbd19a82648d32953bcfba2aa2ffa"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/CdrRecord.java": {
+    "mtime": 1786152740.9947546,
+    "ast_hash": "ede647e6cf1e54b189115d7de366538a",
+    "semantic_hash": "ede647e6cf1e54b189115d7de366538a"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/CdrSummary.java": {
+    "mtime": 1786152748.055955,
+    "ast_hash": "c4442f6851f21755988f2a38be3dd305",
+    "semantic_hash": "c4442f6851f21755988f2a38be3dd305"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/ChatRequest.java": {
+    "mtime": 1786117091.6015682,
+    "ast_hash": "ddec477d0bf6ef16568aa1c69cf7cc3f",
+    "semantic_hash": "ddec477d0bf6ef16568aa1c69cf7cc3f"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/ChatResponse.java": {
+    "mtime": 1785519718.3643267,
+    "ast_hash": "c5dda65570dee37b2e0a114c9fd92b7d",
+    "semantic_hash": "c5dda65570dee37b2e0a114c9fd92b7d"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/ConversationResponse.java": {
+    "mtime": 1785519718.3643267,
+    "ast_hash": "91280722bbe19818765b5e7c73325670",
+    "semantic_hash": "91280722bbe19818765b5e7c73325670"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/FlowResponse.java": {
+    "mtime": 1785519718.3643267,
+    "ast_hash": "71836dda50f6cdaf85652aa4fc752b41",
+    "semantic_hash": "71836dda50f6cdaf85652aa4fc752b41"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/common/AnalysisScope.java": {
+    "mtime": 1785519718.3643267,
+    "ast_hash": "d95b0e7c1cd03c13d76f33548add62aa",
+    "semantic_hash": "d95b0e7c1cd03c13d76f33548add62aa"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/common/AnalyticsMetricDto.java": {
+    "mtime": 1785519718.3644314,
+    "ast_hash": "b6345a01e692972cd0c6d4a44a20fc70",
+    "semantic_hash": "b6345a01e692972cd0c6d4a44a20fc70"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/common/ConversationHistoryEntryDto.java": {
+    "mtime": 1785519718.3644314,
+    "ast_hash": "6646c60338265184773bae56d8b9b807",
+    "semantic_hash": "6646c60338265184773bae56d8b9b807"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/common/ErrorResponse.java": {
+    "mtime": 1786117091.6025681,
+    "ast_hash": "eed0685d9e46cbd52f36a5bfadd325a7",
+    "semantic_hash": "eed0685d9e46cbd52f36a5bfadd325a7"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/common/FlowDto.java": {
+    "mtime": 1785519718.3644314,
+    "ast_hash": "7bfca70cb80268e8fc5df80f5fc82062",
+    "semantic_hash": "7bfca70cb80268e8fc5df80f5fc82062"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/common/FlowEdgeDto.java": {
+    "mtime": 1785519718.3644314,
+    "ast_hash": "7fbef1b1f99ea555e4b3a6a4b31e3251",
+    "semantic_hash": "7fbef1b1f99ea555e4b3a6a4b31e3251"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/common/FlowNodeDto.java": {
+    "mtime": 1785519718.3644314,
+    "ast_hash": "3c661e179dbd3d0037b1ac549c1199f4",
+    "semantic_hash": "3c661e179dbd3d0037b1ac549c1199f4"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/common/FlowNodeType.java": {
+    "mtime": 1785519718.3644314,
+    "ast_hash": "0e6ef36eba463bd0a58d31803302cbe1",
+    "semantic_hash": "0e6ef36eba463bd0a58d31803302cbe1"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/common/FunctionCallDto.java": {
+    "mtime": 1785519718.3644314,
+    "ast_hash": "8354da06c8b044230670dd7edb855ade",
+    "semantic_hash": "8354da06c8b044230670dd7edb855ade"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/common/FunctionDefinitionDto.java": {
+    "mtime": 1785519718.3644314,
+    "ast_hash": "d925061b3806b553849dda32d0a96cd9",
+    "semantic_hash": "d925061b3806b553849dda32d0a96cd9"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/common/MessageDto.java": {
+    "mtime": 1785519718.3644314,
+    "ast_hash": "d201df40470626ef22d06b47fc9cdcd4",
+    "semantic_hash": "d201df40470626ef22d06b47fc9cdcd4"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/common/PageRequest.java": {
+    "mtime": 1785519718.3644314,
+    "ast_hash": "ef14b6b8d74a5ca1a0c8b777c2e2fa80",
+    "semantic_hash": "ef14b6b8d74a5ca1a0c8b777c2e2fa80"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/common/PageResponse.java": {
+    "mtime": 1785519718.3644314,
+    "ast_hash": "5698468b203d331bfefedf157d5c5596",
+    "semantic_hash": "5698468b203d331bfefedf157d5c5596"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/common/ProviderAttemptDto.java": {
+    "mtime": 1785519718.3644314,
+    "ast_hash": "350799670e34ed2cb4397c210753b093",
+    "semantic_hash": "350799670e34ed2cb4397c210753b093"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/common/SentimentLabel.java": {
+    "mtime": 1785519718.3644314,
+    "ast_hash": "17f60efb2439a564b2f0e511db36537f",
+    "semantic_hash": "17f60efb2439a564b2f0e511db36537f"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/common/SentimentScoreDto.java": {
+    "mtime": 1785519718.3644314,
+    "ast_hash": "0b9d5e26c83c9d5c99de34d2d30b7a75",
+    "semantic_hash": "0b9d5e26c83c9d5c99de34d2d30b7a75"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/common/SummaryType.java": {
+    "mtime": 1785519718.3644314,
+    "ast_hash": "3858369ff75ceea5b4acc29192dad16c",
+    "semantic_hash": "3858369ff75ceea5b4acc29192dad16c"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/common/TokenUsageDto.java": {
+    "mtime": 1785519718.3644314,
+    "ast_hash": "b6caf554a3391003592c0658f19b6f13",
+    "semantic_hash": "b6caf554a3391003592c0658f19b6f13"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/common/ValidationIssueDto.java": {
+    "mtime": 1785519718.3644314,
+    "ast_hash": "c7a4751bf769043f3476bd5d3bbeab2d",
+    "semantic_hash": "c7a4751bf769043f3476bd5d3bbeab2d"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/common/ValidationSeverity.java": {
+    "mtime": 1785519718.3644314,
+    "ast_hash": "5e62c956c910868d5751ce291ed2cb8c",
+    "semantic_hash": "5e62c956c910868d5751ce291ed2cb8c"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/patch/AddEdgePatch.java": {
+    "mtime": 1785519718.3644314,
+    "ast_hash": "284da88c572dce377f595ff22f747c76",
+    "semantic_hash": "284da88c572dce377f595ff22f747c76"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/patch/AddNodePatch.java": {
+    "mtime": 1785519718.3648064,
+    "ast_hash": "5740d837177b3cec41ad3559e865211f",
+    "semantic_hash": "5740d837177b3cec41ad3559e865211f"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/patch/ChangeMenuOptionPatch.java": {
+    "mtime": 1785519718.3648064,
+    "ast_hash": "9568275d5085ddae650e702843751cc2",
+    "semantic_hash": "9568275d5085ddae650e702843751cc2"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/patch/DeleteEdgePatch.java": {
+    "mtime": 1785519718.3648064,
+    "ast_hash": "9c290856f4f08e304a47ff3b09f16ae2",
+    "semantic_hash": "9c290856f4f08e304a47ff3b09f16ae2"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/patch/DeleteNodePatch.java": {
+    "mtime": 1785519718.3648064,
+    "ast_hash": "5496b00d2dccdc6a1bc9ca1809712aea",
+    "semantic_hash": "5496b00d2dccdc6a1bc9ca1809712aea"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/patch/FlowPatchOperation.java": {
+    "mtime": 1785519718.3648064,
+    "ast_hash": "c432d6d459946578362b4f751bd72305",
+    "semantic_hash": "c432d6d459946578362b4f751bd72305"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/patch/FlowPatchResponse.java": {
+    "mtime": 1785519718.3648064,
+    "ast_hash": "477441bb27a361f0277438d7ccf0b2c3",
+    "semantic_hash": "477441bb27a361f0277438d7ccf0b2c3"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/patch/MoveSubtreePatch.java": {
+    "mtime": 1785519718.3648064,
+    "ast_hash": "ec292b0404e76b7714e820d212a4b39f",
+    "semantic_hash": "ec292b0404e76b7714e820d212a4b39f"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/patch/RenameNodePatch.java": {
+    "mtime": 1785519718.3648064,
+    "ast_hash": "db768454e322d17e763bbcdafabc3084",
+    "semantic_hash": "db768454e322d17e763bbcdafabc3084"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/patch/UpdatePromptPatch.java": {
+    "mtime": 1785519718.3648064,
+    "ast_hash": "dc442f1269ae1b8c71859f0621ba2af8",
+    "semantic_hash": "dc442f1269ae1b8c71859f0621ba2af8"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/request/AnalyticsQueryRequest.java": {
+    "mtime": 1785519718.3648064,
+    "ast_hash": "d7ab7b221d1fa5f7a7c60ec3b55e994f",
+    "semantic_hash": "d7ab7b221d1fa5f7a7c60ec3b55e994f"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/request/ChatRequest.java": {
+    "mtime": 1785519718.3649766,
+    "ast_hash": "9f7e5629ebf5a5575488bafb370ba3bd",
+    "semantic_hash": "9f7e5629ebf5a5575488bafb370ba3bd"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/request/ConversationHistoryRequest.java": {
+    "mtime": 1785519718.3649766,
+    "ast_hash": "6cbdade5802b69a68f06577966c65a40",
+    "semantic_hash": "6cbdade5802b69a68f06577966c65a40"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/request/FlowGenerationRequest.java": {
+    "mtime": 1785519718.3649766,
+    "ast_hash": "6fb7f2f6a7bd9ed9da754fad8ce611b3",
+    "semantic_hash": "6fb7f2f6a7bd9ed9da754fad8ce611b3"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/request/FlowImprovementRequest.java": {
+    "mtime": 1785519718.3649766,
+    "ast_hash": "6c813f4d0768ad0668a4b2d613818893",
+    "semantic_hash": "6c813f4d0768ad0668a4b2d613818893"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/request/FlowValidationRequest.java": {
+    "mtime": 1785519718.3649766,
+    "ast_hash": "cca0c515a0ac077789f1122c87b0ba40",
+    "semantic_hash": "cca0c515a0ac077789f1122c87b0ba40"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/request/FunctionCallRequest.java": {
+    "mtime": 1785519718.3649766,
+    "ast_hash": "42e520316c9c0c8328169494ed8965d8",
+    "semantic_hash": "42e520316c9c0c8328169494ed8965d8"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/request/RouterRequest.java": {
+    "mtime": 1785519718.3649766,
+    "ast_hash": "61e46f0985ec15d8010c12a25f235b9d",
+    "semantic_hash": "61e46f0985ec15d8010c12a25f235b9d"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/request/SentimentAnalysisRequest.java": {
+    "mtime": 1785519718.3649766,
+    "ast_hash": "c1c71219df900fdc5b257b017c04f8ff",
+    "semantic_hash": "c1c71219df900fdc5b257b017c04f8ff"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/request/SummarizationRequest.java": {
+    "mtime": 1785519718.3649766,
+    "ast_hash": "6524cc2c08033ba72985b4e8bd9f878f",
+    "semantic_hash": "6524cc2c08033ba72985b4e8bd9f878f"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/response/AiSuggestionDto.java": {
+    "mtime": 1785519718.3649766,
+    "ast_hash": "5878843891d6965076f3c27a11aaa39d",
+    "semantic_hash": "5878843891d6965076f3c27a11aaa39d"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/response/AnalyticsResponse.java": {
+    "mtime": 1785519718.3656607,
+    "ast_hash": "c0bbedeb3cfdd6eb4e9262ccc707ac70",
+    "semantic_hash": "c0bbedeb3cfdd6eb4e9262ccc707ac70"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/response/ChatResponse.java": {
+    "mtime": 1785519718.3656607,
+    "ast_hash": "7403b599765671dee799539203580c53",
+    "semantic_hash": "7403b599765671dee799539203580c53"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/response/ConversationHistoryResponse.java": {
+    "mtime": 1785519718.3656607,
+    "ast_hash": "c6c240e6f40b8a10e6b3102a3f613414",
+    "semantic_hash": "c6c240e6f40b8a10e6b3102a3f613414"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/response/FlowGenerationResponse.java": {
+    "mtime": 1785519718.3656607,
+    "ast_hash": "a883e0234c4c3cbfc78a20455d285c0c",
+    "semantic_hash": "a883e0234c4c3cbfc78a20455d285c0c"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/response/FlowImprovementResponse.java": {
+    "mtime": 1785519718.3656607,
+    "ast_hash": "da8e4b334ff42dd69cdde2089eeca3eb",
+    "semantic_hash": "da8e4b334ff42dd69cdde2089eeca3eb"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/response/FlowValidationResponse.java": {
+    "mtime": 1785519718.3656607,
+    "ast_hash": "20ad8c225fd4e641a7633fdad7fa106e",
+    "semantic_hash": "20ad8c225fd4e641a7633fdad7fa106e"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/response/FunctionCallResponse.java": {
+    "mtime": 1785519718.3656607,
+    "ast_hash": "7817f97c35a470acdd812a06e0f21535",
+    "semantic_hash": "7817f97c35a470acdd812a06e0f21535"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/response/QuotaWarning.java": {
+    "mtime": 1785519718.3656607,
+    "ast_hash": "8949a6db8227d50e036b76c1ee77f432",
+    "semantic_hash": "8949a6db8227d50e036b76c1ee77f432"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/response/RouterResponse.java": {
+    "mtime": 1785519718.3656607,
+    "ast_hash": "24f4d480636081d53457f25d77c19852",
+    "semantic_hash": "24f4d480636081d53457f25d77c19852"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/response/SentimentAnalysisResponse.java": {
+    "mtime": 1785519718.3656607,
+    "ast_hash": "3ae10e5dd4dd38c367b3edfe27e5f037",
+    "semantic_hash": "3ae10e5dd4dd38c367b3edfe27e5f037"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/dto/response/SummarizationResponse.java": {
+    "mtime": 1785519718.3656607,
+    "ast_hash": "16fb64103fcc48fd6b80c00262accab5",
+    "semantic_hash": "16fb64103fcc48fd6b80c00262accab5"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/exception/DataAccessException.java": {
+    "mtime": 1785519718.3656607,
+    "ast_hash": "1deef5abaf87abe7a5512a989534e8bd",
+    "semantic_hash": "1deef5abaf87abe7a5512a989534e8bd"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/exception/ResourceNotFoundException.java": {
+    "mtime": 1785519718.3659031,
+    "ast_hash": "85967322e7fe4fd62bb7e41e2f3cfc05",
+    "semantic_hash": "85967322e7fe4fd62bb7e41e2f3cfc05"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/exception/ServiceException.java": {
+    "mtime": 1785519718.3659031,
+    "ast_hash": "5010693331b9b1e4941c072ec51a0acc",
+    "semantic_hash": "5010693331b9b1e4941c072ec51a0acc"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/exception/ValidationException.java": {
+    "mtime": 1785519718.3659031,
+    "ast_hash": "321bb8a0491fac6f73919deea01f0e61",
+    "semantic_hash": "321bb8a0491fac6f73919deea01f0e61"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/AiAgent.java": {
+    "mtime": 1785519718.3659031,
+    "ast_hash": "677ae7d6a3854b7eac803c93a8bde7d4",
+    "semantic_hash": "677ae7d6a3854b7eac803c93a8bde7d4"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/AiMessage.java": {
+    "mtime": 1785519718.3659706,
+    "ast_hash": "6322e35c91cbe659f92a4bc7aca7d011",
+    "semantic_hash": "6322e35c91cbe659f92a4bc7aca7d011"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/AiSession.java": {
+    "mtime": 1785519718.3659706,
+    "ast_hash": "ea7529e338537efcc63edfd1e08ceeea",
+    "semantic_hash": "ea7529e338537efcc63edfd1e08ceeea"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/CallAnalyticsRecord.java": {
+    "mtime": 1786226022.3936372,
+    "ast_hash": "baf6dd2d3034cef88c5e7ba8828f05a8",
+    "semantic_hash": "baf6dd2d3034cef88c5e7ba8828f05a8"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/Channel.java": {
+    "mtime": 1785519718.3659706,
+    "ast_hash": "fa6106d7286dcefa56b7530122bea26f",
+    "semantic_hash": "fa6106d7286dcefa56b7530122bea26f"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/ConversationHistory.java": {
+    "mtime": 1785519718.3659706,
+    "ast_hash": "79d22556f6da9259cfd6fe40638b6e3f",
+    "semantic_hash": "79d22556f6da9259cfd6fe40638b6e3f"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/DocumentStatus.java": {
+    "mtime": 1785519718.3659706,
+    "ast_hash": "cac51d6c0733d6db302283b0c656d76e",
+    "semantic_hash": "cac51d6c0733d6db302283b0c656d76e"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/Embedding.java": {
+    "mtime": 1785519718.3659706,
+    "ast_hash": "5dd730b71951bf0ff573b6fa937aa54a",
+    "semantic_hash": "5dd730b71951bf0ff573b6fa937aa54a"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/Flow.java": {
+    "mtime": 1785941041.9209394,
+    "ast_hash": "f862f7906235926847615dedb32231d8",
+    "semantic_hash": "f862f7906235926847615dedb32231d8"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/FlowSnapshot.java": {
+    "mtime": 1785519718.3659706,
+    "ast_hash": "d9caee76c067051111c717537a8c579a",
+    "semantic_hash": "d9caee76c067051111c717537a8c579a"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/IvrPlan.java": {
+    "mtime": 1785519718.3659706,
+    "ast_hash": "95b03a02c4fa962f72a2895e46db0373",
+    "semantic_hash": "95b03a02c4fa962f72a2895e46db0373"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/IvrTemplate.java": {
+    "mtime": 1785519718.3659706,
+    "ast_hash": "3a34fe7435d41b4ae62ed428279c467b",
+    "semantic_hash": "3a34fe7435d41b4ae62ed428279c467b"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/KnowledgeChunk.java": {
+    "mtime": 1785519718.3659706,
+    "ast_hash": "306b5bb38ade55ae791188ff7d2d1eb3",
+    "semantic_hash": "306b5bb38ade55ae791188ff7d2d1eb3"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/KnowledgeDocument.java": {
+    "mtime": 1785519718.3659706,
+    "ast_hash": "1714c893ad54ff60257a0651b93bd8ac",
+    "semantic_hash": "1714c893ad54ff60257a0651b93bd8ac"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/Message.java": {
+    "mtime": 1785519718.3659706,
+    "ast_hash": "e9414039cf4a7baf9180db3dcc2f509f",
+    "semantic_hash": "e9414039cf4a7baf9180db3dcc2f509f"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/MessageRole.java": {
+    "mtime": 1785519718.3659706,
+    "ast_hash": "334ef2c91e6189a8503dc7007fc36c79",
+    "semantic_hash": "334ef2c91e6189a8503dc7007fc36c79"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/NodeLibrary.java": {
+    "mtime": 1785519718.3659706,
+    "ast_hash": "bb0a55890a933aac1b893548462ec7a6",
+    "semantic_hash": "bb0a55890a933aac1b893548462ec7a6"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/PromptModule.java": {
+    "mtime": 1785519718.3659706,
+    "ast_hash": "be234ad1c420599d77405bee5d9c44b4",
+    "semantic_hash": "be234ad1c420599d77405bee5d9c44b4"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/PromptTemplate.java": {
+    "mtime": 1785519718.3659706,
+    "ast_hash": "6047162f486001a9a03f2086683918b0",
+    "semantic_hash": "6047162f486001a9a03f2086683918b0"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/SessionStatus.java": {
+    "mtime": 1785519718.3659706,
+    "ast_hash": "b2e034ea860f706a8379ad9639cd5c8c",
+    "semantic_hash": "b2e034ea860f706a8379ad9639cd5c8c"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/SourceType.java": {
+    "mtime": 1785519718.3659706,
+    "ast_hash": "71a0ad3fe8502ffaef8eef694c7e1889",
+    "semantic_hash": "71a0ad3fe8502ffaef8eef694c7e1889"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/User.java": {
+    "mtime": 1786117091.6025681,
+    "ast_hash": "d2f0d1f48871574ea4aa4c1556d1b197",
+    "semantic_hash": "d2f0d1f48871574ea4aa4c1556d1b197"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/flow/FlowAi.java": {
+    "mtime": 1786117091.6025681,
+    "ast_hash": "88d222d8e13905d0f75ff0755c33f140",
+    "semantic_hash": "88d222d8e13905d0f75ff0755c33f140"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/flow/FlowApi.java": {
+    "mtime": 1785519718.3664138,
+    "ast_hash": "5965251812f5172cca9a38442784a876",
+    "semantic_hash": "5965251812f5172cca9a38442784a876"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/flow/FlowBusinessHours.java": {
+    "mtime": 1785519718.3664138,
+    "ast_hash": "7dd13b24be2ba6a87b5c98d8f8be8884",
+    "semantic_hash": "7dd13b24be2ba6a87b5c98d8f8be8884"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/flow/FlowChoice.java": {
+    "mtime": 1785519718.3664138,
+    "ast_hash": "e0e064e766ac010924ea8467892a6622",
+    "semantic_hash": "e0e064e766ac010924ea8467892a6622"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/flow/FlowCondition.java": {
+    "mtime": 1785519718.3664138,
+    "ast_hash": "aab22db4fa2431cb46132768341a190b",
+    "semantic_hash": "aab22db4fa2431cb46132768341a190b"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/flow/FlowConditionBranch.java": {
+    "mtime": 1785519718.3664138,
+    "ast_hash": "f0f0d43e5e787d752ef190e0e98db37d",
+    "semantic_hash": "f0f0d43e5e787d752ef190e0e98db37d"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/flow/FlowConnection.java": {
+    "mtime": 1785519718.3664138,
+    "ast_hash": "241bfb6f872bca0deeeec926189be250",
+    "semantic_hash": "241bfb6f872bca0deeeec926189be250"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/flow/FlowDatabase.java": {
+    "mtime": 1785519718.3664138,
+    "ast_hash": "408d5be7317c250467e3397e6bb007bd",
+    "semantic_hash": "408d5be7317c250467e3397e6bb007bd"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/flow/FlowInput.java": {
+    "mtime": 1785519718.3664138,
+    "ast_hash": "34cd59d07089dbfdd5b8439c381bf179",
+    "semantic_hash": "34cd59d07089dbfdd5b8439c381bf179"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/flow/FlowMenu.java": {
+    "mtime": 1785519718.3664138,
+    "ast_hash": "39944010ea5eb3e821935c6822262fa9",
+    "semantic_hash": "39944010ea5eb3e821935c6822262fa9"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/flow/FlowModel.java": {
+    "mtime": 1786117091.6025681,
+    "ast_hash": "5384b5c53dd169e705c329a2b290a92a",
+    "semantic_hash": "5384b5c53dd169e705c329a2b290a92a"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/flow/FlowNode.java": {
+    "mtime": 1786210417.3384523,
+    "ast_hash": "0d232d83bdab3826067caf8ed496dcf3",
+    "semantic_hash": "0d232d83bdab3826067caf8ed496dcf3"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/flow/FlowNodeType.java": {
+    "mtime": 1786193028.831239,
+    "ast_hash": "98f8771b188fb26182f7f64a9d862b96",
+    "semantic_hash": "98f8771b188fb26182f7f64a9d862b96"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/flow/FlowNodeTypeAdapter.java": {
+    "mtime": 1785941041.9219394,
+    "ast_hash": "df543c2750445655e783b373b68bb7ad",
+    "semantic_hash": "df543c2750445655e783b373b68bb7ad"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/flow/FlowPrompt.java": {
+    "mtime": 1785519718.3664138,
+    "ast_hash": "932fbdaa8a1e1a4f82c9f2f538af5526",
+    "semantic_hash": "932fbdaa8a1e1a4f82c9f2f538af5526"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/flow/FlowQueue.java": {
+    "mtime": 1785519718.3664138,
+    "ast_hash": "ea3ce1cd44d6a082430f8432005a1d9f",
+    "semantic_hash": "ea3ce1cd44d6a082430f8432005a1d9f"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/flow/FlowRecording.java": {
+    "mtime": 1785519718.3664138,
+    "ast_hash": "c32e079b9fe3599b078a8f3b3b70f55e",
+    "semantic_hash": "c32e079b9fe3599b078a8f3b3b70f55e"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/flow/FlowTransfer.java": {
+    "mtime": 1785519718.3664138,
+    "ast_hash": "1cc02475b19e69ca74bd3565935734a9",
+    "semantic_hash": "1cc02475b19e69ca74bd3565935734a9"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/flow/FlowVoicemail.java": {
+    "mtime": 1785519718.3664138,
+    "ast_hash": "dd25c050b6b358c2437c810def740bea",
+    "semantic_hash": "dd25c050b6b358c2437c810def740bea"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/model/flow/FlowWebhook.java": {
+    "mtime": 1785519718.3664138,
+    "ast_hash": "30ca64b542a36df70ab8f8e5e08ddab5",
+    "semantic_hash": "30ca64b542a36df70ab8f8e5e08ddab5"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/security/JwtUtil.java": {
+    "mtime": 1786117091.6025681,
+    "ast_hash": "54615ee6977a4948e7341e4a3b254c8f",
+    "semantic_hash": "54615ee6977a4948e7341e4a3b254c8f"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/security/PasswordUtil.java": {
+    "mtime": 1786117091.603706,
+    "ast_hash": "17f16da9969b9b5b1db97337eae914ec",
+    "semantic_hash": "17f16da9969b9b5b1db97337eae914ec"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/AiAgentRegistry.java": {
+    "mtime": 1785519718.3664138,
+    "ast_hash": "fde93bcbde996f36843635cdb3a00716",
+    "semantic_hash": "fde93bcbde996f36843635cdb3a00716"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/AiOperation.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "74e0eb98b3ee5cfef7459f92fceda4c0",
+    "semantic_hash": "74e0eb98b3ee5cfef7459f92fceda4c0"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/AiOperationRouter.java": {
+    "mtime": 1785941041.9219394,
+    "ast_hash": "b56db7e85a3df0547c68079cf7c24f9f",
+    "semantic_hash": "b56db7e85a3df0547c68079cf7c24f9f"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/AiService.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "c701fffd15fe95028f7bbfbbe66acdd2",
+    "semantic_hash": "c701fffd15fe95028f7bbfbbe66acdd2"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/AnalyticsService.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "37df9d04217cab8adf378df6b51aec9b",
+    "semantic_hash": "37df9d04217cab8adf378df6b51aec9b"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/CdrService.java": {
+    "mtime": 1786152770.2935696,
+    "ast_hash": "435060f3dc4a6b1f38a67e3e9a54cf30",
+    "semantic_hash": "435060f3dc4a6b1f38a67e3e9a54cf30"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/ChatService.java": {
+    "mtime": 1785941041.9219394,
+    "ast_hash": "b68424231b6fd941253dc81200c3dbfe",
+    "semantic_hash": "b68424231b6fd941253dc81200c3dbfe"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/DepartmentExtractor.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "f93eca8df72fd7be361b3c902cfada3c",
+    "semantic_hash": "f93eca8df72fd7be361b3c902cfada3c"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/DomainDetector.java": {
+    "mtime": 1786117091.603706,
+    "ast_hash": "b893fe8f4704d7983bf860d000523769",
+    "semantic_hash": "b893fe8f4704d7983bf860d000523769"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/DomainFlowGenerator.java": {
+    "mtime": 1786117091.6045682,
+    "ast_hash": "ba3d551ca0e6b8a497955356ccfd79b7",
+    "semantic_hash": "ba3d551ca0e6b8a497955356ccfd79b7"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/FlowCache.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "0b5cb817c68a5dca95bbff4e96c5e4fd",
+    "semantic_hash": "0b5cb817c68a5dca95bbff4e96c5e4fd"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/FlowContextService.java": {
+    "mtime": 1786192934.887515,
+    "ast_hash": "1ba45f90c459309dc7e355b9426c7548",
+    "semantic_hash": "1ba45f90c459309dc7e355b9426c7548"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/FlowDraftService.java": {
+    "mtime": 1786117091.6045682,
+    "ast_hash": "8647e0985afd53c9ad221aa937ce6bce",
+    "semantic_hash": "8647e0985afd53c9ad221aa937ce6bce"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/FlowModelAutoRepair.java": {
+    "mtime": 1786117091.6045682,
+    "ast_hash": "139a9c7a5b7c40df9cb66dfd10a376c2",
+    "semantic_hash": "139a9c7a5b7c40df9cb66dfd10a376c2"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/FlowModelValidator.java": {
+    "mtime": 1786129171.332745,
+    "ast_hash": "0c39bb7c3315d44be263d04d747efff7",
+    "semantic_hash": "0c39bb7c3315d44be263d04d747efff7"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/FlowPatchApplier.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "032f3dc098fc76346aaa3f7be307f082",
+    "semantic_hash": "032f3dc098fc76346aaa3f7be307f082"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/FlowPublishService.java": {
+    "mtime": 1786132659.7324772,
+    "ast_hash": "94c30a055019039d78e9399d96756dd0",
+    "semantic_hash": "94c30a055019039d78e9399d96756dd0"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/FlowService.java": {
+    "mtime": 1786117091.6045682,
+    "ast_hash": "ca49aec7b5ad9a23c923857b7445c630",
+    "semantic_hash": "ca49aec7b5ad9a23c923857b7445c630"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/FlowSnapshotService.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "5cc7648f8d72d3b5e9b0cde6098b48d9",
+    "semantic_hash": "5cc7648f8d72d3b5e9b0cde6098b48d9"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/FlowValidationOrchestrator.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "dfa38e03e0f745c0a5227f901b07fbd0",
+    "semantic_hash": "dfa38e03e0f745c0a5227f901b07fbd0"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/GenerationCancellationRegistry.java": {
+    "mtime": 1786117091.6045682,
+    "ast_hash": "d0b532df1f057baf702111e59333d26a",
+    "semantic_hash": "d0b532df1f057baf702111e59333d26a"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/IvrTemplateRegistry.java": {
+    "mtime": 1786117091.6045682,
+    "ast_hash": "01b5118b7674fb07e896588e8c3c8c13",
+    "semantic_hash": "01b5118b7674fb07e896588e8c3c8c13"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/KnowledgeService.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "6f3972ec191dd81206751be1d9ac86d8",
+    "semantic_hash": "6f3972ec191dd81206751be1d9ac86d8"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/LlmResponseNormalizationException.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "9e92bf7bad7b06be7652350d1f0194c0",
+    "semantic_hash": "9e92bf7bad7b06be7652350d1f0194c0"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/LlmResponseNormalizer.java": {
+    "mtime": 1785941041.9219394,
+    "ast_hash": "3080b70e71fa0671d2b191d41ae25e5d",
+    "semantic_hash": "3080b70e71fa0671d2b191d41ae25e5d"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/ModelAutoRepair.java": {
+    "mtime": 1786117091.6045682,
+    "ast_hash": "3e0284104215ba5900bbce795d811429",
+    "semantic_hash": "3e0284104215ba5900bbce795d811429"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/ModelFlowValidator.java": {
+    "mtime": 1786117091.6045682,
+    "ast_hash": "7a3fa32eac5968d96ce582bb35b20d1e",
+    "semantic_hash": "7a3fa32eac5968d96ce582bb35b20d1e"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/ModelToFlowRenderer.java": {
+    "mtime": 1786210365.6115048,
+    "ast_hash": "236f5b3a1320c71635b1c393ca10b7b4",
+    "semantic_hash": "236f5b3a1320c71635b1c393ca10b7b4"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/ModelToVxmlExporter.java": {
+    "mtime": 1786218245.865097,
+    "ast_hash": "707fda993ee0993e0262479a21a7abef",
+    "semantic_hash": "707fda993ee0993e0262479a21a7abef"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/PromptCompletenessChecker.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "d94c09380644def33a9d8b46f45baf99",
+    "semantic_hash": "d94c09380644def33a9d8b46f45baf99"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/PromptRefinerService.java": {
+    "mtime": 1786117091.6055682,
+    "ast_hash": "bea7ed0915235c3761b044731c3c7bfd",
+    "semantic_hash": "bea7ed0915235c3761b044731c3c7bfd"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/RefinedSpecCache.java": {
+    "mtime": 1785941041.9229395,
+    "ast_hash": "80583caf4ff25586e640325cc70e08dc",
+    "semantic_hash": "80583caf4ff25586e640325cc70e08dc"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/SessionMemoryStore.java": {
+    "mtime": 1786129552.7367284,
+    "ast_hash": "9562b8ba6b2a2d19f1e58aeffea7c588",
+    "semantic_hash": "9562b8ba6b2a2d19f1e58aeffea7c588"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/UnifiedAiEngine.java": {
+    "mtime": 1786129184.3128505,
+    "ast_hash": "c271e4e3328b7bc3e6f8fbff6cda0618",
+    "semantic_hash": "c271e4e3328b7bc3e6f8fbff6cda0618"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/VxmlBlock.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "b2f30a2bb7580abcc8a681cabd12088e",
+    "semantic_hash": "b2f30a2bb7580abcc8a681cabd12088e"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/VxmlChoice.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "8a47e5d45d50e4c99c8bf4ca3588e671",
+    "semantic_hash": "8a47e5d45d50e4c99c8bf4ca3588e671"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/VxmlDocument.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "d605c50e6282805fe20d15eb6e362d44",
+    "semantic_hash": "d605c50e6282805fe20d15eb6e362d44"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/VxmlField.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "f5ccd88cc6d298d725476802a109dc08",
+    "semantic_hash": "f5ccd88cc6d298d725476802a109dc08"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/VxmlForm.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "8829cc241e81b8d6a2cf643336d474a8",
+    "semantic_hash": "8829cc241e81b8d6a2cf643336d474a8"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/VxmlGoto.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "3c9a7b9c82ab2a768675df31adc16fbb",
+    "semantic_hash": "3c9a7b9c82ab2a768675df31adc16fbb"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/VxmlGrammar.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "13e609340c35a1398a166a6b3802e462",
+    "semantic_hash": "13e609340c35a1398a166a6b3802e462"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/VxmlIf.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "c7d0ec4a2150c0d0b959b577094805c5",
+    "semantic_hash": "c7d0ec4a2150c0d0b959b577094805c5"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/VxmlMenu.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "f40dd851710e090b0599a533610deace",
+    "semantic_hash": "f40dd851710e090b0599a533610deace"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/VxmlParseException.java": {
+    "mtime": 1785519718.3668387,
+    "ast_hash": "85b573d28efbc2beee88b940f47c5c80",
+    "semantic_hash": "85b573d28efbc2beee88b940f47c5c80"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/VxmlParser.java": {
+    "mtime": 1786129159.4116535,
+    "ast_hash": "5a424e8eb678b21431345725a8752158",
+    "semantic_hash": "5a424e8eb678b21431345725a8752158"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/VxmlPrompt.java": {
+    "mtime": 1785519718.367641,
+    "ast_hash": "35aa3907e212d6620a32ecd2c1a4801c",
+    "semantic_hash": "35aa3907e212d6620a32ecd2c1a4801c"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/VxmlToModelConverter.java": {
+    "mtime": 1786216365.6069903,
+    "ast_hash": "7f94f2c005ea515e86fa613c28afea9d",
+    "semantic_hash": "7f94f2c005ea515e86fa613c28afea9d"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/VxmlTransfer.java": {
+    "mtime": 1785519718.367641,
+    "ast_hash": "6d301b4426509158978f14d9c4493740",
+    "semantic_hash": "6d301b4426509158978f14d9c4493740"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/VxmlValidator.java": {
+    "mtime": 1786129163.5846848,
+    "ast_hash": "bc0e3f219e445ae6b44c86b135938034",
+    "semantic_hash": "bc0e3f219e445ae6b44c86b135938034"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/exception/DataAccessException.java": {
+    "mtime": 1785519718.367641,
+    "ast_hash": "6d5d5b101339a8010f1cc7eab32c94fb",
+    "semantic_hash": "6d5d5b101339a8010f1cc7eab32c94fb"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/exception/GenerationCancelledException.java": {
+    "mtime": 1786117091.6075683,
+    "ast_hash": "ee7907e871af86415f1016c6a4673104",
+    "semantic_hash": "ee7907e871af86415f1016c6a4673104"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/exception/ProviderException.java": {
+    "mtime": 1786117091.6075683,
+    "ast_hash": "00a097c462eae40cd4caf695343da894",
+    "semantic_hash": "00a097c462eae40cd4caf695343da894"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/exception/ResourceNotFoundException.java": {
+    "mtime": 1785519718.3682585,
+    "ast_hash": "e2cdfaa9b79eebe2b19b86c14cdce4d4",
+    "semantic_hash": "e2cdfaa9b79eebe2b19b86c14cdce4d4"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/exception/ServiceException.java": {
+    "mtime": 1785519718.3682585,
+    "ast_hash": "75c2f584217130a9498bbbcdacc95428",
+    "semantic_hash": "75c2f584217130a9498bbbcdacc95428"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/service/exception/ValidationException.java": {
+    "mtime": 1785519718.3682585,
+    "ast_hash": "0a76fc8da013d6729aa3b0f0f516fdf9",
+    "semantic_hash": "0a76fc8da013d6729aa3b0f0f516fdf9"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/util/SecureXmlFactory.java": {
+    "mtime": 1786129155.2584865,
+    "ast_hash": "c2ad205db54057bfcdeb56ca2a6fe524",
+    "semantic_hash": "c2ad205db54057bfcdeb56ca2a6fe524"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/util/SoundDirs.java": {
+    "mtime": 1786129850.9604294,
+    "ast_hash": "e6d0c012d1e4afb0a2ba6adadd09f482",
+    "semantic_hash": "e6d0c012d1e4afb0a2ba6adadd09f482"
+  },
+  "IVR-AI-engine/src/main/java/com/nexusivr/ai/util/XmlLogFormatter.java": {
+    "mtime": 1786129175.6377795,
+    "ast_hash": "50c8acf74ec8f8fd79fd07c952b5af2a",
+    "semantic_hash": "50c8acf74ec8f8fd79fd07c952b5af2a"
+  },
+  "IVR-AI-engine/src/main/resources/config/arabic_keywords.json": {
+    "mtime": 1786117091.6075683,
+    "ast_hash": "22e9b307d62d3bb67ae6ff044007036f",
+    "semantic_hash": "22e9b307d62d3bb67ae6ff044007036f"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/ai/CircuitBreakerBackoffTest.java": {
+    "mtime": 1785519718.3684413,
+    "ast_hash": "99f37309b8688fd82295ba55dfccce4e",
+    "semantic_hash": "99f37309b8688fd82295ba55dfccce4e"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/ai/FunctionExecutorTest.java": {
+    "mtime": 1785519718.3684745,
+    "ast_hash": "91e51afd09f778e561d27acd60a2e431",
+    "semantic_hash": "91e51afd09f778e561d27acd60a2e431"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/ai/OllamaClientTest.java": {
+    "mtime": 1785519718.3684745,
+    "ast_hash": "990a5fbd6161c147fe921d4d9aebfbb8",
+    "semantic_hash": "990a5fbd6161c147fe921d4d9aebfbb8"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/ai/OpenAiCompatibleClientTest.java": {
+    "mtime": 1786117091.6075683,
+    "ast_hash": "2cb303e6c30482ba35ea76c415def9f3",
+    "semantic_hash": "2cb303e6c30482ba35ea76c415def9f3"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/ai/PromptBuilderTest.java": {
+    "mtime": 1786117091.6075683,
+    "ast_hash": "0c5749cd90f67fa0998eb6731ee7b741",
+    "semantic_hash": "0c5749cd90f67fa0998eb6731ee7b741"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/ai/ProviderManagerCancellationTest.java": {
+    "mtime": 1786117091.6075683,
+    "ast_hash": "b4892bd9403dedefbb1c72ffb7a49f43",
+    "semantic_hash": "b4892bd9403dedefbb1c72ffb7a49f43"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/ai/ProviderManagerTest.java": {
+    "mtime": 1786117091.6075683,
+    "ast_hash": "c4f204deee5796cc3256caf55fee24c4",
+    "semantic_hash": "c4f204deee5796cc3256caf55fee24c4"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/ai/RetryPolicyTest.java": {
+    "mtime": 1785519718.3684745,
+    "ast_hash": "39ef102a014805e0877f5e5da7612594",
+    "semantic_hash": "39ef102a014805e0877f5e5da7612594"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/ai/TemplateGeneratorDomainTest.java": {
+    "mtime": 1786117091.6085682,
+    "ast_hash": "c1d0de0ed6adc2e9c3b05445ccda648a",
+    "semantic_hash": "c1d0de0ed6adc2e9c3b05445ccda648a"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/ai/TemplateGeneratorDynamicFallbackTest.java": {
+    "mtime": 1786117091.6085682,
+    "ast_hash": "5f6e5e7830f2267a8cb66adcc07aafde",
+    "semantic_hash": "5f6e5e7830f2267a8cb66adcc07aafde"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/ai/VxmlImportCompatibilityTest.java": {
+    "mtime": 1786117091.6085682,
+    "ast_hash": "5ac8cfaf375a6768a9bca80b577a5b34",
+    "semantic_hash": "5ac8cfaf375a6768a9bca80b577a5b34"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/ai/agents/SpecializedAgentTest.java": {
+    "mtime": 1785941041.9239395,
+    "ast_hash": "aba69d43a460279ba796fcdddfc39d0f",
+    "semantic_hash": "aba69d43a460279ba796fcdddfc39d0f"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/ai/optimization/ConversationMemoryTest.java": {
+    "mtime": 1785519718.3684745,
+    "ast_hash": "60a2780fc1070634e5a60211de9baf21",
+    "semantic_hash": "60a2780fc1070634e5a60211de9baf21"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/ai/optimization/FlowSummaryBuilderTest.java": {
+    "mtime": 1785519718.3687103,
+    "ast_hash": "016d96ed21687d4339dc6dcf341e85fc",
+    "semantic_hash": "016d96ed21687d4339dc6dcf341e85fc"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/ai/optimization/PromptMinimizerTest.java": {
+    "mtime": 1785519718.3687103,
+    "ast_hash": "cbb196b12373c95ae4685d4b538327bc",
+    "semantic_hash": "cbb196b12373c95ae4685d4b538327bc"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/ai/optimization/ProviderCostCatalogTest.java": {
+    "mtime": 1785519718.3687103,
+    "ast_hash": "76601ec50bf5dbf76cb26eb8114c0a07",
+    "semantic_hash": "76601ec50bf5dbf76cb26eb8114c0a07"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/ai/optimization/QuotaAwareRouterTest.java": {
+    "mtime": 1785519718.3687103,
+    "ast_hash": "3fb0529715c1aaed0aa9edbf0e601aa6",
+    "semantic_hash": "3fb0529715c1aaed0aa9edbf0e601aa6"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/ai/optimization/SemanticCacheTest.java": {
+    "mtime": 1785519718.3687103,
+    "ast_hash": "bdc96fbe706b1b7991b268c312ed7dd4",
+    "semantic_hash": "bdc96fbe706b1b7991b268c312ed7dd4"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/ai/optimization/TokenUsageTrackerTest.java": {
+    "mtime": 1785519718.3687103,
+    "ast_hash": "069b0112f58045d915a95cdcfd2a8776",
+    "semantic_hash": "069b0112f58045d915a95cdcfd2a8776"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/config/PortabilityTest.java": {
+    "mtime": 1786117091.6085682,
+    "ast_hash": "d4e4574e2efcdb9eb81af420e82dd52f",
+    "semantic_hash": "d4e4574e2efcdb9eb81af420e82dd52f"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/controller/AiAnalyticsServletTest.java": {
+    "mtime": 1785519718.3687103,
+    "ast_hash": "5b28fc916277ea3ae1a65a0213086322",
+    "semantic_hash": "5b28fc916277ea3ae1a65a0213086322"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/controller/AiChatServletTest.java": {
+    "mtime": 1785941041.9239395,
+    "ast_hash": "5e22f22092c6ac4042925612560cad82",
+    "semantic_hash": "5e22f22092c6ac4042925612560cad82"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/controller/AiFlowServletTest.java": {
+    "mtime": 1786117091.6085682,
+    "ast_hash": "8ccf7e0f14f22d12b956d905ff13a844",
+    "semantic_hash": "8ccf7e0f14f22d12b956d905ff13a844"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/dao/AiSessionDaoTest.java": {
+    "mtime": 1785519718.3688664,
+    "ast_hash": "421a1bf68a111f7cfb0b0edf1915e331",
+    "semantic_hash": "421a1bf68a111f7cfb0b0edf1915e331"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/dao/FlowDaoTest.java": {
+    "mtime": 1785519718.3689106,
+    "ast_hash": "5a75e5edf4a221889067ae58b9c680cb",
+    "semantic_hash": "5a75e5edf4a221889067ae58b9c680cb"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/dao/KnowledgeDocumentDaoTest.java": {
+    "mtime": 1785519718.3689106,
+    "ast_hash": "30108a82b2123506994a48d880a483a0",
+    "semantic_hash": "30108a82b2123506994a48d880a483a0"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/dao/MessageDaoTest.java": {
+    "mtime": 1785519718.3689106,
+    "ast_hash": "8097aba1ab075a6858eb158c78971754",
+    "semantic_hash": "8097aba1ab075a6858eb158c78971754"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/dao/TenantIsolationTest.java": {
+    "mtime": 1785519718.3689106,
+    "ast_hash": "41487dc7d4bd3c0f1335d93dc7b0ae30",
+    "semantic_hash": "41487dc7d4bd3c0f1335d93dc7b0ae30"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/model/NodeLibraryTest.java": {
+    "mtime": 1785519718.3689106,
+    "ast_hash": "ac47d087b13f3f9b3b5a9c5b85a50102",
+    "semantic_hash": "ac47d087b13f3f9b3b5a9c5b85a50102"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/AiOperationRouterTest.java": {
+    "mtime": 1785941041.9239395,
+    "ast_hash": "7f3860e25cfd8d547f69af4fe4852713",
+    "semantic_hash": "7f3860e25cfd8d547f69af4fe4852713"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/AiServiceTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "e2d0a838119f60251a770846e4769b33",
+    "semantic_hash": "e2d0a838119f60251a770846e4769b33"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/AiSuggestionsLlmIntegrationTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "427c35d0c98cd498dda2f790615a5086",
+    "semantic_hash": "427c35d0c98cd498dda2f790615a5086"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/AlreadyConnectedMenuSuggestionTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "445c5e8129619b175b33fedc6d479132",
+    "semantic_hash": "445c5e8129619b175b33fedc6d479132"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/ChatServiceTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "6481ead7878fdf0f754bc6e971d85873",
+    "semantic_hash": "6481ead7878fdf0f754bc6e971d85873"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/CleanFallbackGreetingTest.java": {
+    "mtime": 1785941041.9239395,
+    "ast_hash": "64d883752df405db953b58082b94a805",
+    "semantic_hash": "64d883752df405db953b58082b94a805"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/CycleRepairTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "72a871bda749b25c37086b994b52e583",
+    "semantic_hash": "72a871bda749b25c37086b994b52e583"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/DisconnectedFallbackMenuRepairTest.java": {
+    "mtime": 1785839813.222472,
+    "ast_hash": "d2dd0e779679dcf4033d2c73f8695ada",
+    "semantic_hash": "d2dd0e779679dcf4033d2c73f8695ada"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/DomainDetectorTest.java": {
+    "mtime": 1786117091.6085682,
+    "ast_hash": "8dbd595a9010e4606efce9274d69bd24",
+    "semantic_hash": "8dbd595a9010e4606efce9274d69bd24"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/DomainRegressionTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "f2fdf131a9759e1d50faa760569618ec",
+    "semantic_hash": "f2fdf131a9759e1d50faa760569618ec"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/DomainReproTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "7dfbe15274fcfd4bd61c704d5467ad9a",
+    "semantic_hash": "7dfbe15274fcfd4bd61c704d5467ad9a"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/DuplicateMenuFixTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "2be84fd81d6b4b429039f92dbabbff00",
+    "semantic_hash": "2be84fd81d6b4b429039f92dbabbff00"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/FlowBusinessNameResolutionTest.java": {
+    "mtime": 1786132711.0516057,
+    "ast_hash": "36294559f71af1627a7c2c0d2e88ed10",
+    "semantic_hash": "36294559f71af1627a7c2c0d2e88ed10"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/FlowContextServiceTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "3bb7ddcb7df828e4a8554c9b4d1062cb",
+    "semantic_hash": "3bb7ddcb7df828e4a8554c9b4d1062cb"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/FlowDraftServiceReliabilityTest.java": {
+    "mtime": 1786117091.6085682,
+    "ast_hash": "c9909930fff57971872c7baf3f711a7e",
+    "semantic_hash": "c9909930fff57971872c7baf3f711a7e"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/FlowDuplicateEdgePreventionTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "d71496c4f155abe25718a47cf73f7fe4",
+    "semantic_hash": "d71496c4f155abe25718a47cf73f7fe4"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/FlowModelAutoRepairTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "32b0370780c532c6c67e31eec26a6f0f",
+    "semantic_hash": "32b0370780c532c6c67e31eec26a6f0f"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/FlowModelValidatorTest.java": {
+    "mtime": 1786117091.6085682,
+    "ast_hash": "67620379879eb393d10d3917dfd801b7",
+    "semantic_hash": "67620379879eb393d10d3917dfd801b7"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/FlowOptimizationSummaryTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "bf2b9f7c1e8efba4e975fa1b46fe5347",
+    "semantic_hash": "bf2b9f7c1e8efba4e975fa1b46fe5347"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/FlowPatchApplierTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "677af2b2db050e9fdf5f98e4a1129b81",
+    "semantic_hash": "677af2b2db050e9fdf5f98e4a1129b81"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/FlowPatchImprovementRepairTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "1ccb0b982bd567bd0aa4b30b66718712",
+    "semantic_hash": "1ccb0b982bd567bd0aa4b30b66718712"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/FlowPatchMenuReuseTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "318464a77221a7e6949f271b3db7c1cf",
+    "semantic_hash": "318464a77221a7e6949f271b3db7c1cf"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/FlowPublishServiceTest.java": {
+    "mtime": 1786132682.3919752,
+    "ast_hash": "613038fef73448fec160753d62b46f30",
+    "semantic_hash": "613038fef73448fec160753d62b46f30"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/FlowServiceTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "661f5e8ed2476f07542f138af7febf5d",
+    "semantic_hash": "661f5e8ed2476f07542f138af7febf5d"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/FlowSnapshotServiceTest.java": {
+    "mtime": 1786117091.6085682,
+    "ast_hash": "2621026fdfb7775cdebc8bddc47a870a",
+    "semantic_hash": "2621026fdfb7775cdebc8bddc47a870a"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/FlowValidationOrchestratorTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "1ff170a7ac4dfa53c53a98297cc5c553",
+    "semantic_hash": "1ff170a7ac4dfa53c53a98297cc5c553"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/FlowValidationResponseSemanticsTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "3bc24a490b25f74c5a0367e3ca53da6a",
+    "semantic_hash": "3bc24a490b25f74c5a0367e3ca53da6a"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/IvrTemplateRegistryTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "374fca690fd52d6505d51c4be08a51c4",
+    "semantic_hash": "374fca690fd52d6505d51c4be08a51c4"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/KnowledgeServiceTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "a12e6943149d57a357f85cdd9cd48731",
+    "semantic_hash": "a12e6943149d57a357f85cdd9cd48731"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/LlmResponseNormalizerTest.java": {
+    "mtime": 1785941041.9239395,
+    "ast_hash": "f7e868ac01b6644d97113f02a0e2618c",
+    "semantic_hash": "f7e868ac01b6644d97113f02a0e2618c"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/ManualFlowBuilderSaveTest.java": {
+    "mtime": 1786132775.4490263,
+    "ast_hash": "8441d66694e095194d78a6ab4029af7f",
+    "semantic_hash": "8441d66694e095194d78a6ab4029af7f"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/MenuVxmlExporterTest.java": {
+    "mtime": 1785941041.9239395,
+    "ast_hash": "9a89fb16ec772a4a2ced7794b0ab9ec1",
+    "semantic_hash": "9a89fb16ec772a4a2ced7794b0ab9ec1"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/ModelAutoRepairWarningResolutionTest.java": {
+    "mtime": 1785941041.9239395,
+    "ast_hash": "9018717f00e7962d70bc9f9f5d71e7b1",
+    "semantic_hash": "9018717f00e7962d70bc9f9f5d71e7b1"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/ModelFlowValidatorTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "573a5322a21b291901bbd209bc4a8de0",
+    "semantic_hash": "573a5322a21b291901bbd209bc4a8de0"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/PromptCompletenessCheckerTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "9b90587ef470b1211b41d7419a3859ca",
+    "semantic_hash": "9b90587ef470b1211b41d7419a3859ca"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/PromptRefinerHardGateTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "3595a3b76b1bde8cccf51a4ad1eb99df",
+    "semantic_hash": "3595a3b76b1bde8cccf51a4ad1eb99df"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/PromptRefinerServiceTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "d95707dc31ed5247a32db7b1435d4a03",
+    "semantic_hash": "d95707dc31ed5247a32db7b1435d4a03"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/ProviderAttributionTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "2fb3808b0261c59172d8894b878c4144",
+    "semantic_hash": "2fb3808b0261c59172d8894b878c4144"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/RefinedSpecCacheTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "d886438f5c28223fcb5df69b74447059",
+    "semantic_hash": "d886438f5c28223fcb5df69b74447059"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/SaveVsPublishIsolationTest.java": {
+    "mtime": 1786132693.840227,
+    "ast_hash": "3c28c2e6875a62db82b729bed61339d6",
+    "semantic_hash": "3c28c2e6875a62db82b729bed61339d6"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/SubMenuPreservationTest.java": {
+    "mtime": 1785941041.9239395,
+    "ast_hash": "f1d1e8012c5cea5da6f07eebe2ea01f6",
+    "semantic_hash": "f1d1e8012c5cea5da6f07eebe2ea01f6"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/TransferDestinationTest.java": {
+    "mtime": 1785839813.2234719,
+    "ast_hash": "080978625ea8847faccff6560ea87918",
+    "semantic_hash": "080978625ea8847faccff6560ea87918"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/TransferNodePortAndRepairTest.java": {
+    "mtime": 1785839813.2234719,
+    "ast_hash": "522e47d7e6b8c4ad3074374084bd86be",
+    "semantic_hash": "522e47d7e6b8c4ad3074374084bd86be"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/UnifiedAiEngineCompletenessTest.java": {
+    "mtime": 1785941041.9249394,
+    "ast_hash": "370612d0a1326e60a17995bff1857932",
+    "semantic_hash": "370612d0a1326e60a17995bff1857932"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/UnifiedAiEngineFeaturePreservationTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "4c9f08e2a931a0a1ac42942f121ca164",
+    "semantic_hash": "4c9f08e2a931a0a1ac42942f121ca164"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/UnifiedAiEngineImproveRollbackTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "0dfc3b697cefde56791d0f12e9a0b582",
+    "semantic_hash": "0dfc3b697cefde56791d0f12e9a0b582"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/UnifiedAiEngineSuggestionApplyTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "9c805dddbff1e7c32debcf4d31bb16e3",
+    "semantic_hash": "9c805dddbff1e7c32debcf4d31bb16e3"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/UnifiedAiEngineTwoPassTest.java": {
+    "mtime": 1785941041.9249394,
+    "ast_hash": "a01f7495c4be28e7fa39bf0a49afe228",
+    "semantic_hash": "a01f7495c4be28e7fa39bf0a49afe228"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/ValidateSyncRegressionTest.java": {
+    "mtime": 1785519718.3690376,
+    "ast_hash": "af112b1253f8706fbfbd6673e539be95",
+    "semantic_hash": "af112b1253f8706fbfbd6673e539be95"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/VxmlExporterUnificationTest.java": {
+    "mtime": 1786117091.6085682,
+    "ast_hash": "391becc66ee5786eaecf0a50fb81cae5",
+    "semantic_hash": "391becc66ee5786eaecf0a50fb81cae5"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/VxmlFullRoundTripTest.java": {
+    "mtime": 1785839813.2234719,
+    "ast_hash": "ded00197d3aac5c821d36882eaf0bd66",
+    "semantic_hash": "ded00197d3aac5c821d36882eaf0bd66"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/VxmlImportLayoutTest.java": {
+    "mtime": 1785839813.2234719,
+    "ast_hash": "4287bc4b32c5503c2cc1b5d8bc58e263",
+    "semantic_hash": "4287bc4b32c5503c2cc1b5d8bc58e263"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/VxmlRoundTripFidelityTest.java": {
+    "mtime": 1785839813.2234719,
+    "ast_hash": "f7ddd03d4e99aa38985518f8c2e299ce",
+    "semantic_hash": "f7ddd03d4e99aa38985518f8c2e299ce"
+  },
+  "IVR-AI-engine/src/test/java/com/nexusivr/ai/service/VxmlToModelConverterTest.java": {
+    "mtime": 1785941041.9249394,
+    "ast_hash": "e076db0d16fe7e81c8123cd25599a3fd",
+    "semantic_hash": "e076db0d16fe7e81c8123cd25599a3fd"
+  },
+  "IVR-AI-engine/src/test/resources/healthcare_ivr.json": {
+    "mtime": 1786117091.609568,
+    "ast_hash": "5980fe1c0e14189eb386aa949f3bdd83",
+    "semantic_hash": "5980fe1c0e14189eb386aa949f3bdd83"
+  },
+  "IVR-engine/add_extension.sh": {
+    "mtime": 1786117091.609568,
+    "ast_hash": "aced60f5e23a5fe50d6c24b35a7dcb27",
+    "semantic_hash": "aced60f5e23a5fe50d6c24b35a7dcb27"
+  },
+  "IVR-engine/pom.xml": {
+    "mtime": 1786128786.7578356,
+    "ast_hash": "abbdfd8ee65dd879f39c81baed04a509",
+    "semantic_hash": "abbdfd8ee65dd879f39c81baed04a509"
+  },
+  "IVR-engine/scenarios/banking_iv.json": {
+    "mtime": 1786209594.1667726,
+    "ast_hash": "25d3f180d5644b15812bd93af1832a92",
+    "semantic_hash": "25d3f180d5644b15812bd93af1832a92"
+  },
+  "IVR-engine/scenarios/education_iv.json": {
+    "mtime": 1786218411.0483172,
+    "ast_hash": "085902aa18a1d9c05c35196317e5e73f",
+    "semantic_hash": "085902aa18a1d9c05c35196317e5e73f"
+  },
+  "IVR-engine/scenarios/generic_iv.json": {
+    "mtime": 1786135130.5893295,
+    "ast_hash": "05dd1008310c8c6d04c442711b24c082",
+    "semantic_hash": "05dd1008310c8c6d04c442711b24c082"
+  },
+  "IVR-engine/scenarios/healthcare_iv.json": {
+    "mtime": 1786218529.0606186,
+    "ast_hash": "7683c2e4aa23f6c8b9a62e99dfe8e6a0",
+    "semantic_hash": "7683c2e4aa23f6c8b9a62e99dfe8e6a0"
+  },
+  "IVR-engine/scenarios/hotel_concierge_iv.json": {
+    "mtime": 1786213878.2173994,
+    "ast_hash": "ad78da4025c0a105fb4764f1c7bf2e20",
+    "semantic_hash": "ad78da4025c0a105fb4764f1c7bf2e20"
+  },
+  "IVR-engine/scenarios/pool_booking_iv.json": {
+    "mtime": 1786192255.2570426,
+    "ast_hash": "5ae6872c329d141c2dae40b247acf413",
+    "semantic_hash": "5ae6872c329d141c2dae40b247acf413"
+  },
+  "IVR-engine/scenarios/restaurant_ivr.json": {
+    "mtime": 1786133669.9373357,
+    "ast_hash": "98aa5e7932e716778a3314c72c54665e",
+    "semantic_hash": "98aa5e7932e716778a3314c72c54665e"
+  },
+  "IVR-engine/scenarios/telecom_iv.json": {
+    "mtime": 1786217660.1606972,
+    "ast_hash": "f4c25458fad11f035b853ea4d3476571",
+    "semantic_hash": "f4c25458fad11f035b853ea4d3476571"
+  },
+  "IVR-engine/scenarios/test.json": {
+    "mtime": 1786214999.42299,
+    "ast_hash": "ad78da4025c0a105fb4764f1c7bf2e20",
+    "semantic_hash": "ad78da4025c0a105fb4764f1c7bf2e20"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/AnalyticsTracker.java": {
+    "mtime": 1786225860.4865654,
+    "ast_hash": "8015cce1402ea6ed2b7acf523f00800c",
+    "semantic_hash": "8015cce1402ea6ed2b7acf523f00800c"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/App.java": {
+    "mtime": 1786129007.5009646,
+    "ast_hash": "772b0ee6627171b88a0e85c69db461b3",
+    "semantic_hash": "772b0ee6627171b88a0e85c69db461b3"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/FastAgiServerMain.java": {
+    "mtime": 1786128775.721486,
+    "ast_hash": "f3269e55c067ac988c9e1e20ab80404e",
+    "semantic_hash": "f3269e55c067ac988c9e1e20ab80404e"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/OllamaAgent.java": {
+    "mtime": 1786129910.5316825,
+    "ast_hash": "05ce10a8c406e6a7347189ae7c4886f1",
+    "semantic_hash": "05ce10a8c406e6a7347189ae7c4886f1"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/TtsEngine.java": {
+    "mtime": 1786152632.8746386,
+    "ast_hash": "d154733bbb82187454ab2cd11fbb52ba",
+    "semantic_hash": "d154733bbb82187454ab2cd11fbb52ba"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/VxmlAgiHandler.java": {
+    "mtime": 1786225949.9252663,
+    "ast_hash": "1723bd78d78b365ec456fb937ef7c208",
+    "semantic_hash": "1723bd78d78b365ec456fb937ef7c208"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/VxmlConfig.java": {
+    "mtime": 1784970101.4608102,
+    "ast_hash": "7e8310f6366286a4ff6ffc2332c7e9e5",
+    "semantic_hash": "7e8310f6366286a4ff6ffc2332c7e9e5"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/VxmlLoader.java": {
+    "mtime": 1786129003.5439599,
+    "ast_hash": "4450f275e384300cc61eea2b3f47c001",
+    "semantic_hash": "4450f275e384300cc61eea2b3f47c001"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/VxmlScenarioEngine.java": {
+    "mtime": 1786129083.6471922,
+    "ast_hash": "522d81f97de4c6fb0c981c1b8f93afbc",
+    "semantic_hash": "522d81f97de4c6fb0c981c1b8f93afbc"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/VxmlSession.java": {
+    "mtime": 1786225906.9954512,
+    "ast_hash": "c7090fd666bc6b184523d3a10b6e2e1d",
+    "semantic_hash": "c7090fd666bc6b184523d3a10b6e2e1d"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/VxmlValidator.java": {
+    "mtime": 1784970101.4608102,
+    "ast_hash": "40e7a08318414c3aeab24c1568385e2f",
+    "semantic_hash": "40e7a08318414c3aeab24c1568385e2f"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/api/SchoolApiServer.java": {
+    "mtime": 1786129914.9837773,
+    "ast_hash": "8c46d170bdbdb48bf7d34b9972ed88a2",
+    "semantic_hash": "8c46d170bdbdb48bf7d34b9972ed88a2"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/platform/AsteriskConnectionInformation.java": {
+    "mtime": 1784970101.4608102,
+    "ast_hash": "6b7e858510607f0bdb0c3a03bc887139",
+    "semantic_hash": "6b7e858510607f0bdb0c3a03bc887139"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/platform/AsteriskImplementationPlatformFactory.java": {
+    "mtime": 1784972960.2645533,
+    "ast_hash": "1eac214074f0f1cbc36826769b405621",
+    "semantic_hash": "1eac214074f0f1cbc36826769b405621"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/platform/AsteriskSpokenInput.java": {
+    "mtime": 1784970101.4611459,
+    "ast_hash": "f9e2a9fc800cfd734aaa6eb2112aa7ad",
+    "semantic_hash": "f9e2a9fc800cfd734aaa6eb2112aa7ad"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/platform/AsteriskSpokenInputFactory.java": {
+    "mtime": 1784970101.4611459,
+    "ast_hash": "046aebaacf6ab7f29b8bf94a48a6e090",
+    "semantic_hash": "046aebaacf6ab7f29b8bf94a48a6e090"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/platform/AsteriskSynthesizedOutput.java": {
+    "mtime": 1784970101.4611459,
+    "ast_hash": "a7718d910b97de71a5531fdaa63df0d7",
+    "semantic_hash": "a7718d910b97de71a5531fdaa63df0d7"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/platform/AsteriskSynthesizedOutputFactory.java": {
+    "mtime": 1784970101.4611459,
+    "ast_hash": "139d372cd884ff011d9caafe887ba384",
+    "semantic_hash": "139d372cd884ff011d9caafe887ba384"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/platform/AsteriskTelephony.java": {
+    "mtime": 1784970101.4611459,
+    "ast_hash": "39dbbc99e5b5cc0693dddb4ea80c24b5",
+    "semantic_hash": "39dbbc99e5b5cc0693dddb4ea80c24b5"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/platform/AsteriskTelephonyFactory.java": {
+    "mtime": 1784970101.4611459,
+    "ast_hash": "252706b2c03aed5d9f0e979f8bce5f2a",
+    "semantic_hash": "252706b2c03aed5d9f0e979f8bce5f2a"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/platform/MinimalConfiguration.java": {
+    "mtime": 1784970101.4611459,
+    "ast_hash": "d0373597565462331c32a6399788c6f8",
+    "semantic_hash": "d0373597565462331c32a6399788c6f8"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/platform/MinimalProfile.java": {
+    "mtime": 1784970101.4611459,
+    "ast_hash": "ae2344fdd468a4ee1029a79bc7ef1277",
+    "semantic_hash": "ae2344fdd468a4ee1029a79bc7ef1277"
+  },
+  "IVR-engine/src/main/java/gov/iti/telecom/platform/SimpleDataModel.java": {
+    "mtime": 1784970101.4611459,
+    "ast_hash": "d3afe6d6cc2c7de4276c6c8e561383f9",
+    "semantic_hash": "d3afe6d6cc2c7de4276c6c8e561383f9"
+  },
+  "IVR-engine/src/test/java/gov/iti/telecom/AppTest.java": {
+    "mtime": 1784970101.4614034,
+    "ast_hash": "8f02d7055e4cfc66c6fc1a7b8e4ff083",
+    "semantic_hash": "8f02d7055e4cfc66c6fc1a7b8e4ff083"
+  },
+  "IVR-engine/src/test/java/gov/iti/telecom/VxmlAgiCompatibilityTest.java": {
+    "mtime": 1785935291.8665955,
+    "ast_hash": "dc75d8550534d778700ef5454ed4e937",
+    "semantic_hash": "dc75d8550534d778700ef5454ed4e937"
+  },
+  "IVR-webapp/package.json": {
+    "mtime": 1786123844.2314095,
+    "ast_hash": "6112620e1985085909408874c471ac1d",
+    "semantic_hash": "6112620e1985085909408874c471ac1d"
+  },
+  "IVR-webapp/src/App.tsx": {
+    "mtime": 1786226119.804472,
+    "ast_hash": "6c18a5bc0016121fab631f8533adbea0",
+    "semantic_hash": "6c18a5bc0016121fab631f8533adbea0"
+  },
+  "IVR-webapp/src/api/aiApi.ts": {
+    "mtime": 1786152823.6619563,
+    "ast_hash": "c9f45766d161269396ceb975f2a7d4d9",
+    "semantic_hash": "c9f45766d161269396ceb975f2a7d4d9"
+  },
+  "IVR-webapp/src/api/backendUrl.ts": {
+    "mtime": 1786129605.9139361,
+    "ast_hash": "4865b42e3d4fc3e23badce75df56226c",
+    "semantic_hash": "4865b42e3d4fc3e23badce75df56226c"
+  },
+  "IVR-webapp/src/components/AiAssistantPanel.tsx": {
+    "mtime": 1786117091.6101494,
+    "ast_hash": "1e05a864bf3a1145a34f6dade29b2961",
+    "semantic_hash": "1e05a864bf3a1145a34f6dade29b2961"
+  },
+  "IVR-webapp/src/components/GenerationStepper.tsx": {
+    "mtime": 1785839813.2234719,
+    "ast_hash": "eb71d846d80467a8be7926ccfc32f3b4",
+    "semantic_hash": "eb71d846d80467a8be7926ccfc32f3b4"
+  },
+  "IVR-webapp/src/components/QuotaWarningBanner.tsx": {
+    "mtime": 1785941041.9249394,
+    "ast_hash": "92aaa25851a07b31da5f33b7cd0b8cb7",
+    "semantic_hash": "92aaa25851a07b31da5f33b7cd0b8cb7"
+  },
+  "IVR-webapp/src/components/SuperAdminLayout.tsx": {
+    "mtime": 1786129619.0258963,
+    "ast_hash": "b44f156c1fbcd7faa4751261fd4c3b6c",
+    "semantic_hash": "b44f156c1fbcd7faa4751261fd4c3b6c"
+  },
+  "IVR-webapp/src/components/TenantLayout.tsx": {
+    "mtime": 1786226119.7944717,
+    "ast_hash": "fd4e1eaab68f4131b5d10519a1c52c85",
+    "semantic_hash": "fd4e1eaab68f4131b5d10519a1c52c85"
+  },
+  "IVR-webapp/src/hooks/__tests__/useAIAssistantSessionHandling.test.ts": {
+    "mtime": 1786117091.6101494,
+    "ast_hash": "12bf94dd835f562713c401e0e466e178",
+    "semantic_hash": "12bf94dd835f562713c401e0e466e178"
+  },
+  "IVR-webapp/src/hooks/useAIAssistant.ts": {
+    "mtime": 1786129292.97394,
+    "ast_hash": "cd9df7d336c327e0327a51a3748767bb",
+    "semantic_hash": "cd9df7d336c327e0327a51a3748767bb"
+  },
+  "IVR-webapp/src/ivr/FlowCanvas.tsx": {
+    "mtime": 1785519718.3710527,
+    "ast_hash": "5102ee3581e8061a7a19b698b1393c27",
+    "semantic_hash": "5102ee3581e8061a7a19b698b1393c27"
+  },
+  "IVR-webapp/src/ivr/NodeLibrary.tsx": {
+    "mtime": 1786124667.2009537,
+    "ast_hash": "4f3f387b3c941bd55857c412ea77c666",
+    "semantic_hash": "4f3f387b3c941bd55857c412ea77c666"
+  },
+  "IVR-webapp/src/ivr/PropertiesPanel.tsx": {
+    "mtime": 1786210332.718909,
+    "ast_hash": "314e80bb77635910d89ba1f5ba3a61d8",
+    "semantic_hash": "314e80bb77635910d89ba1f5ba3a61d8"
+  },
+  "IVR-webapp/src/ivr/flowParser.ts": {
+    "mtime": 1786210314.552582,
+    "ast_hash": "1301c74956afb029ea8b7fd370be5e7d",
+    "semantic_hash": "1301c74956afb029ea8b7fd370be5e7d"
+  },
+  "IVR-webapp/src/ivr/graphEngine.test.ts": {
+    "mtime": 1785941041.9249394,
+    "ast_hash": "aa394e7b4003604d5afef81db667ab6f",
+    "semantic_hash": "aa394e7b4003604d5afef81db667ab6f"
+  },
+  "IVR-webapp/src/ivr/graphEngine.ts": {
+    "mtime": 1786124667.2009537,
+    "ast_hash": "588484fa5f2be568c68c1fbbfde2309f",
+    "semantic_hash": "588484fa5f2be568c68c1fbbfde2309f"
+  },
+  "IVR-webapp/src/ivr/initialFlow.ts": {
+    "mtime": 1785519718.3713741,
+    "ast_hash": "b508ee865d9058d51d321e2b9102b9f2",
+    "semantic_hash": "b508ee865d9058d51d321e2b9102b9f2"
+  },
+  "IVR-webapp/src/ivr/nodeConfig.ts": {
+    "mtime": 1786129396.0452702,
+    "ast_hash": "9b0d26dd9d8c97ecbeb88e9d82a88b7a",
+    "semantic_hash": "9b0d26dd9d8c97ecbeb88e9d82a88b7a"
+  },
+  "IVR-webapp/src/ivr/types.ts": {
+    "mtime": 1786210306.678441,
+    "ast_hash": "902bfc03760f3a09eec1a91b317b3578",
+    "semantic_hash": "902bfc03760f3a09eec1a91b317b3578"
+  },
+  "IVR-webapp/src/ivr/vxmlExporter.ts": {
+    "mtime": 1786218263.1404338,
+    "ast_hash": "26cd5ad5fe3e553e5f4c08c3b2b97d7e",
+    "semantic_hash": "26cd5ad5fe3e553e5f4c08c3b2b97d7e"
+  },
+  "IVR-webapp/src/main.tsx": {
+    "mtime": 1785519718.3713741,
+    "ast_hash": "5336d5767fca5d64b14dbcb6e829b548",
+    "semantic_hash": "5336d5767fca5d64b14dbcb6e829b548"
+  },
+  "IVR-webapp/src/screens/AIAssistant.tsx": {
+    "mtime": 1786129455.2401433,
+    "ast_hash": "ab90a3cbe1f080696a88d2712897a6ad",
+    "semantic_hash": "ab90a3cbe1f080696a88d2712897a6ad"
+  },
+  "IVR-webapp/src/screens/CallAnalytics.tsx": {
+    "mtime": 1786235186.8240352,
+    "ast_hash": "75cd614392871b800ee6893a83e5bc79",
+    "semantic_hash": "75cd614392871b800ee6893a83e5bc79"
+  },
+  "IVR-webapp/src/screens/IVRBuilder.tsx": {
+    "mtime": 1786195971.2864678,
+    "ast_hash": "7409d6c7c6c249b063ac2f28c80756c3",
+    "semantic_hash": "7409d6c7c6c249b063ac2f28c80756c3"
+  },
+  "IVR-webapp/src/screens/LoginPage.tsx": {
+    "mtime": 1786129622.2019541,
+    "ast_hash": "7d1c496e3ab14d904c47d2afccb469bb",
+    "semantic_hash": "7d1c496e3ab14d904c47d2afccb469bb"
+  },
+  "IVR-webapp/src/screens/QueueManagement.tsx": {
+    "mtime": 1785519718.372011,
+    "ast_hash": "64f96b4895c80c3903fe5919f9d21cc3",
+    "semantic_hash": "64f96b4895c80c3903fe5919f9d21cc3"
+  },
+  "IVR-webapp/src/screens/SIPExtensions.tsx": {
+    "mtime": 1785519718.372011,
+    "ast_hash": "bf94c9009ab4d122037c1d3637623489",
+    "semantic_hash": "bf94c9009ab4d122037c1d3637623489"
+  },
+  "IVR-webapp/src/screens/Settings.tsx": {
+    "mtime": 1785946053.6442444,
+    "ast_hash": "b0f1456382b8ca761601568f3f223775",
+    "semantic_hash": "b0f1456382b8ca761601568f3f223775"
+  },
+  "IVR-webapp/src/screens/SuperAdminCompanies.tsx": {
+    "mtime": 1786129626.260028,
+    "ast_hash": "a3f9e74549612a81c4d4b8e873a6b992",
+    "semantic_hash": "a3f9e74549612a81c4d4b8e873a6b992"
+  },
+  "IVR-webapp/src/screens/SuperAdminDashboard.tsx": {
+    "mtime": 1786129627.3950486,
+    "ast_hash": "6910b29a24547972e151b548b755512b",
+    "semantic_hash": "6910b29a24547972e151b548b755512b"
+  },
+  "IVR-webapp/src/screens/SuperAdminUsers.tsx": {
+    "mtime": 1786129630.1820993,
+    "ast_hash": "88461bbfdb9d5c24f7a241a0ac327973",
+    "semantic_hash": "88461bbfdb9d5c24f7a241a0ac327973"
+  },
+  "IVR-webapp/src/screens/TenantAdminDashboard.tsx": {
+    "mtime": 1786152943.9927258,
+    "ast_hash": "b1ef4ce80cfba02856d95a0d696823db",
+    "semantic_hash": "b1ef4ce80cfba02856d95a0d696823db"
+  },
+  "IVR-webapp/src/screens/TenantCompanies.tsx": {
+    "mtime": 1786129636.6422176,
+    "ast_hash": "51792dae6ee73cb3801b87482f2666af",
+    "semantic_hash": "51792dae6ee73cb3801b87482f2666af"
+  },
+  "IVR-webapp/src/screens/VoicePrompts.tsx": {
+    "mtime": 1786117091.6105683,
+    "ast_hash": "1a1f1580f6c2c7aaaec0831fb34eebb4",
+    "semantic_hash": "1a1f1580f6c2c7aaaec0831fb34eebb4"
+  },
+  "IVR-webapp/src/vite-env.d.ts": {
+    "mtime": 1785519718.3723543,
+    "ast_hash": "0352474ba2918efe13895edbc3780d94",
+    "semantic_hash": "0352474ba2918efe13895edbc3780d94"
+  },
+  "IVR-webapp/tsconfig.json": {
+    "mtime": 1785519718.3723543,
+    "ast_hash": "535eb88fcf3d4fe7b6f0d5a172f5aad7",
+    "semantic_hash": "535eb88fcf3d4fe7b6f0d5a172f5aad7"
+  },
+  "IVR-webapp/vite.config.ts": {
+    "mtime": 1785941033.2367282,
+    "ast_hash": "3bdff245c3d250a9f5f5a19a1b73826f",
+    "semantic_hash": "3bdff245c3d250a9f5f5a19a1b73826f"
+  },
+  "tools/agi_sim.py": {
+    "mtime": 1786155469.6023178,
+    "ast_hash": "b5977e9a00b4e57064da450924b586b5",
+    "semantic_hash": "b5977e9a00b4e57064da450924b586b5"
+  },
+  "BILINGUAL_DEMO.md": {
+    "mtime": 1786151062.0703537,
+    "ast_hash": "a2632749e9367fcfd1babd6b7e8599b9",
+    "semantic_hash": "a2632749e9367fcfd1babd6b7e8599b9"
+  },
+  "E2E_TESTING.md": {
+    "mtime": 1786134103.5775223,
+    "ast_hash": "27118d20c5aa80d05e378431221edb72",
+    "semantic_hash": "27118d20c5aa80d05e378431221edb72"
+  },
+  "IVR-AI-engine/logs.txt": {
+    "mtime": 1786117091.5995681,
+    "ast_hash": "f3f73f4b12f9ac1c3a2572d39da972ce",
+    "semantic_hash": "f3f73f4b12f9ac1c3a2572d39da972ce"
+  },
+  "IVR-webapp/AGENTS.md": {
+    "mtime": 1785519718.3699684,
+    "ast_hash": "9c97758d48e503f1949872e89c326e08",
+    "semantic_hash": "9c97758d48e503f1949872e89c326e08"
+  },
+  "IVR-webapp/README.md": {
+    "mtime": 1785519718.3704793,
+    "ast_hash": "c01d9efebc01ca0f1e8d6c2e98eacdc7",
+    "semantic_hash": "c01d9efebc01ca0f1e8d6c2e98eacdc7"
+  },
+  "IVR-webapp/index.html": {
+    "mtime": 1785519718.3704793,
+    "ast_hash": "b819d41167bbf8f256e37b6722b56350",
+    "semantic_hash": "b819d41167bbf8f256e37b6722b56350"
+  },
+  "README.md": {
+    "mtime": 1786117091.6105683,
+    "ast_hash": "bd42fbb37f1150b612a0aeff63dc6b0e",
+    "semantic_hash": "bd42fbb37f1150b612a0aeff63dc6b0e"
+  },
+  "docker-compose.yml": {
+    "mtime": 1786225831.6760154,
+    "ast_hash": "f23b98a7f1a599041c7001ee0559b8c0",
+    "semantic_hash": "f23b98a7f1a599041c7001ee0559b8c0"
+  },
+  "AI-IVR-Platform-Architecture.png": {
+    "mtime": 1785519718.3609064,
+    "ast_hash": "78e1e3b32510381e080355d6b6f0ee2a",
+    "semantic_hash": "78e1e3b32510381e080355d6b6f0ee2a"
+  }
+}

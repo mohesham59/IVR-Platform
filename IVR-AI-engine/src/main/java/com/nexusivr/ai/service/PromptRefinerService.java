@@ -33,6 +33,7 @@ public class PromptRefinerService {
 
         OUTPUT FORMAT (JSON):
         {
+          "flow_title": "A concise business name for the flow in English (e.g. Pensions IVR, Telecom Support, Restaurant Reservation). Maximum 4 words.",
           "refined_prompt": "A complete, detailed description of the IVR flow requirements",
           "business_domain": "inferred domain",
           "departments": ["Dept A", "Dept B"],

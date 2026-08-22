@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- FlowName: Frontend Flow -->
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+  <meta name="flowname" content="Frontend Flow"/>
+  <!-- Start (n1) -->
+  <form id="n1">
+    <!-- Type: start -->
+    <block>
+      <prompt>مرحبًا، هذا الخط الساخن لخدمة جوازات السفر المصرية. كيف ي...</prompt>
+      <goto next="#n2"/>
+    </block>
+  </form>
+  <!-- Error form (n19) -->
+  <form id="n19">
+    <!-- Type: prompt -->
+    <block>
+      <prompt>عذرًا، حدث خطأ. يرجى إعادة المحاولة أو الاتصال بمساعد جوا...</prompt>
+      <goto next="#n20"/>
+    </block>
+  </form>
+  <!-- Main menu (n3) -->
+  <menu id="n3" dtmf="true">
+    <prompt>الرجاء اختيار أحد الخيارات التالية.</prompt>
+    <choice dtmf="1" next="#n4">Key 1</choice>
+    <choice dtmf="2" next="#n4">Key 2</choice>
+    <choice dtmf="3" next="#n4">Key 3</choice>
+    <choice dtmf="0" next="#n4">Key 0</choice>
+  </menu>
+  <!-- Ai routing (n2) -->
+  <form id="n2">
+    <!-- Type: ai -->
+    <block>
+      <prompt>أخبرني ما الخدمة التي تحتاجها.</prompt>
+      <goto next="#n4"/>
+    </block>
+  </form>
+  <!-- Passport new (n4) -->
+  <form id="n4">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#n21"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#n19"/>
+      </catch>
+    </transfer>
+  </form>
+  <!-- Passport renew (n5) -->
+  <form id="n5">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#n21"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#n19"/>
+      </catch>
+    </transfer>
+  </form>
+  <!-- Passport replace (n6) -->
+  <form id="n6">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#n21"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#n19"/>
+      </catch>
+    </transfer>
+  </form>
+  <!-- Passport child (n7) -->
+  <form id="n7">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#n21"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#n19"/>
+      </catch>
+    </transfer>
+  </form>
+  <!-- Passport military (n8) -->
+  <form id="n8">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#n21"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#n19"/>
+      </catch>
+    </transfer>
+  </form>
+  <!-- Passport dual (n9) -->
+  <form id="n9">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#n21"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#n19"/>
+      </catch>
+    </transfer>
+  </form>
+  <!-- Passport special (n10) -->
+  <form id="n10">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#n21"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#n19"/>
+      </catch>
+    </transfer>
+  </form>
+  <!-- Passport biometric (n11) -->
+  <form id="n11">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#n21"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#n19"/>
+      </catch>
+    </transfer>
+  </form>
+  <!-- Passport abroad (n12) -->
+  <form id="n12">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#n21"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#n19"/>
+      </catch>
+    </transfer>
+  </form>
+  <!-- Passport status (n13) -->
+  <form id="n13">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#n21"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#n19"/>
+      </catch>
+    </transfer>
+  </form>
+  <!-- Appointment (n14) -->
+  <form id="n14">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#n21"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#n19"/>
+      </catch>
+    </transfer>
+  </form>
+  <!-- Pay fees (n15) -->
+  <form id="n15">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#n21"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#n19"/>
+      </catch>
+    </transfer>
+  </form>
+  <!-- Form help (n16) -->
+  <form id="n16">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#n21"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#n19"/>
+      </catch>
+    </transfer>
+  </form>
+  <!-- Modify data (n17) -->
+  <form id="n17">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#n21"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#n19"/>
+      </catch>
+    </transfer>
+  </form>
+  <!-- Emergency passport (n18) -->
+  <form id="n18">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#n21"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#n19"/>
+      </catch>
+    </transfer>
+  </form>
+  <!-- Agent transfer (n20) -->
+  <form id="n20">
+    <!-- Type: transfer -->
+    <block>
+      <prompt>Transfer to live agent</prompt>
+    </block>
+    <transfer dest="TRANSFER_TARGET_PLACEHOLDER">
+      <filled>
+        <goto next="#n21"/>
+      </filled>
+      <catch event="error connection.failed">
+        <goto next="#n21"/>
+      </catch>
+    </transfer>
+  </form>
+  <!-- End Call (n21) -->
+  <form id="n21">
+    <!-- Type: end -->
+    <block>
+      <prompt>Hang up</prompt>
+      <disconnect/>
+    </block>
+  </form>
+</vxml>

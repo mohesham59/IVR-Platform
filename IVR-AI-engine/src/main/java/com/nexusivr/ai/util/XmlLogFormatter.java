@@ -41,12 +41,8 @@ public class XmlLogFormatter {
             return xml;
         }
         try {
-            javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(false);
-            factory.setValidating(false);
-            try {
-                factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-            } catch (Exception ignored) {}
+            javax.xml.parsers.DocumentBuilderFactory factory =
+                    com.nexusivr.ai.util.SecureXmlFactory.newDocumentBuilderFactory(false);
             javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
             org.w3c.dom.Document doc = builder.parse(new org.xml.sax.InputSource(new java.io.StringReader(xml.trim())));
 

@@ -1,6 +1,7 @@
 package com.nexusivr.ai.ai;
 
 import com.nexusivr.ai.service.exception.ProviderException;
+import com.nexusivr.ai.service.DomainFlowGenerator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -8,6 +9,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.*;
 
 class ProviderManagerTest {
 
@@ -21,7 +23,8 @@ class ProviderManagerTest {
     void testPriorityOrder() {
         ProviderManager pm = new ProviderManager();
         assertEquals("groq", pm.getAvailableProviders().get(0));
-        assertEquals("gemini", pm.getAvailableProviders().get(1));
+        assertEquals("openrouter", pm.getAvailableProviders().get(1));
+        assertEquals("gemini", pm.getAvailableProviders().get(2));
     }
 
     @Test
@@ -77,8 +80,8 @@ class ProviderManagerTest {
     @Test
     void testNextProviderReturnsFirstAvailable() {
         ProviderManager pm = new ProviderManager();
-        assertEquals("gemini", pm.getNextProvider("groq"));
-        assertEquals("groq", pm.getNextProvider("gemini"));
+        assertEquals("openrouter", pm.getNextProvider("groq"));
+        assertEquals("groq", pm.getNextProvider("openrouter"));
     }
 
     @Test
@@ -118,6 +121,7 @@ class ProviderManagerTest {
     void testAllProvidersExhaustedReturnsTemplateFallback() {
         ProviderManager pm = new ProviderManager();
         pm.markRateLimited("groq");
+        pm.markRateLimited("openrouter");
         pm.markRateLimited("gemini");
         pm.markRateLimited("ollama");
 
@@ -135,6 +139,7 @@ class ProviderManagerTest {
     void testTemplateFallbackAttributesRequestedProvider() {
         ProviderManager pm = new ProviderManager();
         pm.markRateLimited("groq");
+        pm.markRateLimited("openrouter");
         pm.markRateLimited("gemini");
         pm.markRateLimited("ollama");
 
@@ -152,6 +157,7 @@ class ProviderManagerTest {
     void testMultiProviderAttemptsTrackingWhenAllProvidersFail() {
         ProviderManager pm = new ProviderManager();
         pm.markRateLimited("groq");
+        pm.markRateLimited("openrouter");
         pm.markRateLimited("gemini");
         pm.markRateLimited("ollama");
 
@@ -165,7 +171,7 @@ class ProviderManagerTest {
         assertNotNull(response.getProviderAttempts());
         assertFalse(response.getProviderAttempts().isEmpty());
 
-        assertEquals(3, response.getProviderAttempts().size());
+        assertEquals(4, response.getProviderAttempts().size());
 
         com.nexusivr.ai.dto.common.ProviderAttemptDto groqAttempt = response.getProviderAttempts().get(0);
         assertEquals("groq", groqAttempt.getProvider());
@@ -217,19 +223,147 @@ class ProviderManagerTest {
     void testExhaustedQuotaProvidersThrowProviderExceptionWithQuotaReason() {
         ProviderManager pm = new ProviderManager();
         pm.markRateLimited("groq");
+        pm.markRateLimited("openrouter");
         pm.markRateLimited("gemini");
         pm.markRateLimited("ollama");
 
-        // Vague description "design IVR" causes TemplateGenerator fallback to fail, triggering ProviderException
-        ProviderException ex = assertThrows(ProviderException.class, () ->
+        try (var mockedGenerator = mockConstruction(DomainFlowGenerator.class, (mock, context) -> {
+            when(((DomainFlowGenerator) mock).generateVxml(anyString(), anyString())).thenThrow(new RuntimeException("Simulated Failure"));
+        })) {
+            // Vague description "design IVR" causes TemplateGenerator fallback to fail, triggering ProviderException
+            ProviderException ex = assertThrows(ProviderException.class, () ->
+                    pm.executeWithRetryAndFallback(
+                            "gemini", "gemini-2.0-flash", 0.7, 30,
+                            "system instruction", "design IVR", "GENERATE_FLOW", List.of(), "generic",
+                            true
+                    )
+            );
+
+            assertEquals(ProviderException.FailureReason.QUOTA_EXCEEDED, ex.getReason(),
+                    "FailureReason must be QUOTA_EXCEEDED when all providers failed due to 429 quota exhaustion");
+        }
+    }
+
+    @Test
+    void testSingleProviderImmediateSuccess() {
+        LlmClient mockClient = mock(LlmClient.class);
+        when(mockClient.getProviderName()).thenReturn("groq");
+        when(mockClient.isAvailable()).thenReturn(true);
+        when(mockClient.generateStructuredResponse(anyString(), anyString(), anyList()))
+                .thenReturn(new AiResponse("vxml", "model", 10, 10, false, false, "groq", null, 200, "groq", "groq"));
+
+        ProviderManager pm = new ProviderManager() {
+            @Override
+            public LlmClient getLlmClient(String provider, String model, double temp, int timeout) {
+                return mockClient;
+            }
+        };
+
+        AiResponse response = pm.executeWithRetryAndFallback(
+                "groq", "llama-3.3-70b-versatile", 0.7, 30,
+                "system", "prompt", "GENERATE_FLOW", List.of(), "banking"
+        );
+
+        assertNotNull(response);
+        assertEquals("groq", response.getActualProviderUsed());
+        assertFalse(response.isFallbackUsed());
+    }
+
+    @Test
+    void testFallbackSuccessOnSecondProvider() {
+        LlmClient badClient = mock(LlmClient.class);
+        when(badClient.getProviderName()).thenReturn("groq");
+        when(badClient.isAvailable()).thenReturn(true);
+        when(badClient.generateStructuredResponse(anyString(), anyString(), anyList()))
+                .thenThrow(new RuntimeException("Groq rate limit"));
+
+        LlmClient goodClient = mock(LlmClient.class);
+        when(goodClient.getProviderName()).thenReturn("openrouter");
+        when(goodClient.isAvailable()).thenReturn(true);
+        when(goodClient.generateStructuredResponse(anyString(), anyString(), anyList()))
+                .thenReturn(new AiResponse("vxml", "model", 10, 10, false, false, "openrouter", null, 200, "groq", "openrouter"));
+
+        ProviderManager pm = new ProviderManager() {
+            @Override
+            public LlmClient getLlmClient(String provider, String model, double temp, int timeout) {
+                if ("groq".equalsIgnoreCase(provider)) return badClient;
+                return goodClient;
+            }
+        };
+
+        AiResponse response = pm.executeWithRetryAndFallback(
+                "groq", "llama-3.3-70b-versatile", 0.7, 30,
+                "system", "prompt", "GENERATE_FLOW", List.of(), "banking"
+        );
+
+        assertNotNull(response);
+        assertEquals("openrouter", response.getActualProviderUsed());
+        assertTrue(response.isFallbackUsed());
+    }
+
+    @Test
+    void testTotalFailureAttribution() {
+        LlmClient badClient = mock(LlmClient.class);
+        when(badClient.getProviderName()).thenReturn("groq");
+        when(badClient.isAvailable()).thenReturn(true);
+        when(badClient.generateStructuredResponse(anyString(), anyString(), anyList()))
+                .thenThrow(new RuntimeException("Provider failure"));
+
+        ProviderManager pm = new ProviderManager() {
+            @Override
+            public LlmClient getLlmClient(String provider, String model, double temp, int timeout) {
+                return badClient;
+            }
+        };
+
+        try (var mockedGenerator = mockConstruction(DomainFlowGenerator.class, (mock, context) -> {
+            when(((DomainFlowGenerator) mock).generateVxml(anyString(), anyString())).thenThrow(new RuntimeException("Simulated Template Generator Failure"));
+        })) {
+            ProviderException ex = assertThrows(ProviderException.class, () ->
+                    pm.executeWithRetryAndFallback(
+                            "groq", "llama-3.3-70b-versatile", 0.7, 30,
+                            "system", "prompt", "GENERATE_FLOW", List.of(), "banking"
+                    )
+            );
+
+            assertEquals("none", ex.getActualProviderUsed());
+            assertFalse(ex.isFallbackUsed());
+            assertNotNull(ex.getProvidersAttempted());
+            assertTrue(ex.getProvidersAttempted().contains("template-generator"));
+        }
+    }
+
+    @Test
+    void testCancellationMidFallbackChain() {
+        java.util.UUID session = java.util.UUID.randomUUID();
+        com.nexusivr.ai.service.GenerationCancellationRegistry.setCurrentSessionId(session);
+        com.nexusivr.ai.service.GenerationCancellationRegistry.clear(session);
+
+        LlmClient client = mock(LlmClient.class);
+        when(client.getProviderName()).thenReturn("groq");
+        when(client.isAvailable()).thenReturn(true);
+        when(client.generateStructuredResponse(anyString(), anyString(), anyList()))
+                .thenAnswer(invocation -> {
+                    // Set cancellation flag mid-chain / mid-attempt
+                    com.nexusivr.ai.service.GenerationCancellationRegistry.cancel(session);
+                    throw new RuntimeException("First provider failed");
+                });
+
+        ProviderManager pm = new ProviderManager() {
+            @Override
+            public LlmClient getLlmClient(String provider, String model, double temp, int timeout) {
+                return client;
+            }
+        };
+
+        // Assert that the next provider in the fallback chain is skipped and GenerationCancelledException is thrown
+        assertThrows(com.nexusivr.ai.service.exception.GenerationCancelledException.class, () ->
                 pm.executeWithRetryAndFallback(
-                        "gemini", "gemini-2.0-flash", 0.7, 30,
-                        "system instruction", "design IVR", "GENERATE_FLOW", List.of(), "generic",
-                        true
+                        "groq", "llama-3.3-70b-versatile", 0.7, 30,
+                        "system", "prompt", "GENERATE_FLOW", List.of(), "banking"
                 )
         );
 
-        assertEquals(ProviderException.FailureReason.QUOTA_EXCEEDED, ex.getReason(),
-                "FailureReason must be QUOTA_EXCEEDED when all providers failed due to 429 quota exhaustion");
+        com.nexusivr.ai.service.GenerationCancellationRegistry.clearCurrentSessionId();
     }
 }

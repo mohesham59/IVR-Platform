@@ -10,7 +10,6 @@
     "format": "oxfmt"
   },
   "dependencies": {
-    "dev": "^0.1.5",
     "lucide-react": "^1.24.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

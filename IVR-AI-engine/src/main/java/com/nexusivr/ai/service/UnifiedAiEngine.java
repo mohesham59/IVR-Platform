@@ -107,6 +107,13 @@ public class UnifiedAiEngine {
         return domainLabel.substring(0, 1).toUpperCase() + domainLabel.substring(1) + " IVR";
     }
 
+    private static boolean isRawPromptLike(String name) {
+        if (name == null) return false;
+        String clean = name.trim();
+        String[] words = clean.split("\\s+");
+        return clean.length() > 50 || words.length > 5;
+    }
+
     /**
      * Generates a brand new IVR flow from description prompt.
      */
@@ -199,6 +206,7 @@ public class UnifiedAiEngine {
              systemInstruction = PromptBuilder.FLOW_GENERATOR_SYSTEM_INSTRUCTION;
          }
 
+         String refinedTitle = null;
          String flowDomain = detectedDomain;
          if (refinedSpec != null && !refinedSpec.isBlank()) {
              try {
@@ -208,6 +216,9 @@ public class UnifiedAiEngine {
                      if (!specDomain.isBlank() && !"generic".equalsIgnoreCase(specDomain)) {
                          flowDomain = specDomain;
                      }
+                 }
+                 if (obj.has("flow_title") && !obj.get("flow_title").getAsString().isBlank()) {
+                     refinedTitle = obj.get("flow_title").getAsString().trim();
                  }
              } catch (Exception ignored) {}
          }
@@ -401,6 +412,20 @@ public class UnifiedAiEngine {
         SemanticCache.getInstance().put(pass2CacheKey, rawResponse);
 
         // 8. Render Internal Flow Model to React Flow JSON (frontend format)
+        String resolvedFlowName = null;
+        if (refinedTitle != null && !refinedTitle.isBlank()) {
+            resolvedFlowName = refinedTitle;
+        } else if (finalModel.getName() != null && !finalModel.getName().isBlank() 
+                && !"LLM Flow".equalsIgnoreCase(finalModel.getName())
+                && !"Imported IVR Flow".equalsIgnoreCase(finalModel.getName())
+                && !"Generated IVR Flow".equalsIgnoreCase(finalModel.getName())
+                && !isRawPromptLike(finalModel.getName())) {
+            resolvedFlowName = finalModel.getName();
+        } else {
+            resolvedFlowName = generateDescriptiveTitle(description, detectedDomain);
+        }
+        finalModel.setName(resolvedFlowName);
+
         String finalFlowJson = modelToFlowRenderer.render(finalModel);
         logger.info("[UnifiedAiEngine] Converter Stage: FlowModel → React Flow JSON. Status: SUCCESS. Nodes={}.\n{}",
                 getJsonArraySize(finalFlowJson, "nodes"), buildModelSummary(finalModel));
@@ -408,7 +433,7 @@ public class UnifiedAiEngine {
         // Inject metadata into JSON
         try {
             JsonObject rootObj = JsonParser.parseString(finalFlowJson).getAsJsonObject();
-            rootObj.addProperty("name", finalModel.getName() != null ? finalModel.getName() : (description.length() > 30 ? description.substring(0, 30) + "..." : description));
+            rootObj.addProperty("name", resolvedFlowName);
             rootObj.addProperty("description", finalModel.getDescription() != null ? finalModel.getDescription() : description);
             finalFlowJson = rootObj.toString();
         } catch (Exception e) {
@@ -433,7 +458,7 @@ public class UnifiedAiEngine {
         Flow flow = new Flow();
         flow.setId(flowId);
         flow.setTenantId(tenantId);
-        flow.setName(finalModel.getName() != null ? finalModel.getName() : generateDescriptiveTitle(description, detectedDomain));
+        flow.setName(resolvedFlowName);
         flow.setDescription(description);
         flow.setFlowJson(finalFlowJson);
         flow.setStatus("DRAFT");
@@ -962,13 +987,13 @@ public class UnifiedAiEngine {
 
         if (resolvedModel != null) {
             if (sessionId != null) {
-                ServiceRegistry.getFlowContextService().updateFlowContext(sessionId, resolvedModel);
+                flowContextService.updateFlowContext(sessionId, resolvedModel);
             }
             return resolvedModel;
         }
 
         logger.warn("[UnifiedAiEngine] Parser Stage: Unrecognized format or parse failed. Trying session memory.");
-        FlowModel sessionModel = ServiceRegistry.getFlowContextService().getActiveFlowModel(sessionId);
+        FlowModel sessionModel = flowContextService.getActiveFlowModel(sessionId);
         if (sessionModel != null) {
             logger.info("[UnifiedAiEngine] Parser Stage: Session Memory → FlowModel. Status: SUCCESS. Nodes={}.", sessionModel.getNodes().size());
             return sessionModel;
@@ -1552,10 +1577,8 @@ public class UnifiedAiEngine {
             String trimmed = normalized.trim();
 
             try {
-                javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
-                factory.setNamespaceAware(false);
-                factory.setValidating(false);
-                factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+                javax.xml.parsers.DocumentBuilderFactory factory =
+                        com.nexusivr.ai.util.SecureXmlFactory.newDocumentBuilderFactory(false);
                 javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
                 builder.parse(new org.xml.sax.InputSource(new java.io.StringReader(trimmed)));
             } catch (Exception e) {
@@ -1644,10 +1667,8 @@ public class UnifiedAiEngine {
         }
 
         try {
-            javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(false);
-            factory.setValidating(false);
-            factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            javax.xml.parsers.DocumentBuilderFactory factory =
+                    com.nexusivr.ai.util.SecureXmlFactory.newDocumentBuilderFactory(false);
             javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
             builder.parse(new org.xml.sax.InputSource(new java.io.StringReader(trimmed)));
             return true;

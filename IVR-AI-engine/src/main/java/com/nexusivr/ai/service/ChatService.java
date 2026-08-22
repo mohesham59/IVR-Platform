@@ -47,26 +47,36 @@ import java.util.stream.Collectors;
  * <p>For all other questions, the serialized flow JSON is prepended to the LLM prompt so
  * the model answers in the context of the actual IVR topology.
  */
+import com.nexusivr.ai.dto.SourceCitation;
+import com.nexusivr.ai.rag.RagClient;
+
 public class ChatService {
 
     private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
+    private static final ThreadLocal<List<SourceCitation>> lastQueryCitations = new ThreadLocal<>();
 
     private final AiSessionDao sessionDao;
     private final MessageDao messageDao;
     private final AiService aiService;
     private final FlowContextService flowContextService;
     private final ConversationMemory conversationMemory;
+    private final RagClient ragClient;
 
     public ChatService(AiSessionDao sessionDao, MessageDao messageDao, AiService aiService) {
         this(sessionDao, messageDao, aiService, new FlowContextService());
     }
 
     public ChatService(AiSessionDao sessionDao, MessageDao messageDao, AiService aiService, FlowContextService flowContextService) {
+        this(sessionDao, messageDao, aiService, flowContextService, new RagClient());
+    }
+
+    public ChatService(AiSessionDao sessionDao, MessageDao messageDao, AiService aiService, FlowContextService flowContextService, RagClient ragClient) {
         this.sessionDao = Objects.requireNonNull(sessionDao, "sessionDao must not be null");
         this.messageDao = Objects.requireNonNull(messageDao, "messageDao must not be null");
         this.aiService  = Objects.requireNonNull(aiService,  "aiService must not be null");
         this.flowContextService = Objects.requireNonNull(flowContextService, "flowContextService must not be null");
         this.conversationMemory = new ConversationMemory();
+        this.ragClient = ragClient != null ? ragClient : new RagClient();
     }
 
     public AiService getAiService() {
@@ -308,6 +318,11 @@ public class ChatService {
             ChatResponse response = new ChatResponse(sessionId, tenantId, aiReply, MessageRole.ASSISTANT,
                     assistantMsg.getTurnNumber(), userMessage.length() + aiReply.length());
             response.setQuotaWarnings(quotaWarnings);
+            List<SourceCitation> citations = lastQueryCitations.get();
+            if (citations != null && !citations.isEmpty()) {
+                response.setSources(citations);
+            }
+            lastQueryCitations.remove();
             applyProviderMetadata(response);
             return response;
 
@@ -326,6 +341,11 @@ public class ChatService {
             ChatResponse response = new ChatResponse(sessionId, tenantId, aiReply, MessageRole.ASSISTANT, 1,
                     userMessage.length() + aiReply.length());
             response.setQuotaWarnings(quotaWarnings);
+            List<SourceCitation> fallbackCitations = lastQueryCitations.get();
+            if (fallbackCitations != null && !fallbackCitations.isEmpty()) {
+                response.setSources(fallbackCitations);
+            }
+            lastQueryCitations.remove();
             applyProviderMetadata(response);
             return response;
         }
@@ -427,9 +447,38 @@ public class ChatService {
         }
 
         String finalFlowContext = flowContextForLlm;
+        String finalQueryPrompt = userMessage;
+
+        // Query RAG microservice for relevant documentation context
+        try {
+            RagClient.RagQueryResult ragResult = ragClient.queryRag(userMessage, 5, 0.35);
+            if (ragResult != null && !ragResult.getCitations().isEmpty() && !ragResult.isFallbackRequired()) {
+                lastQueryCitations.set(ragResult.getCitations());
+                StringBuilder ragPromptSb = new StringBuilder(userMessage);
+                ragPromptSb.append("\n\n### Relevant Context:\n");
+                for (SourceCitation cit : ragResult.getCitations()) {
+                    ragPromptSb.append(String.format("- [Source: %s, %s] %s\n",
+                            cit.getSourceName(),
+                            cit.getSectionOrPage() != null && !cit.getSectionOrPage().isBlank() ? cit.getSectionOrPage() : "General",
+                            cit.getChunkContent().replaceAll("\r?\n", " ")));
+                }
+                ragPromptSb.append("\n### Instructions:\n" +
+                        "Use ONLY the Relevant Context provided above to answer the user's question if applicable. " +
+                        "Cite sources inline using [Source: filename, Section/Page]. " +
+                        "If the answer cannot be determined from the context, state explicitly: " +
+                        "\"I cannot find information about this in the project documentation.\"\n");
+                finalQueryPrompt = ragPromptSb.toString();
+            } else {
+                lastQueryCitations.set(new ArrayList<>());
+            }
+        } catch (Exception e) {
+            logger.debug("[ChatService] RAG lookup skipped or failed: {}", e.getMessage());
+            lastQueryCitations.set(new ArrayList<>());
+        }
+
         String aiReply;
         try {
-            aiReply = aiService.generateResponse(userMessage, history, finalFlowContext);
+            aiReply = aiService.generateResponse(finalQueryPrompt, history, finalFlowContext);
         } catch (com.nexusivr.ai.service.exception.ProviderException e) {
             logger.warn("[ChatService] All providers exhausted for chat query session={}: {}", sessionId, e.getMessage());
             aiReply = "I couldn't process that right now — please try again in a moment.";

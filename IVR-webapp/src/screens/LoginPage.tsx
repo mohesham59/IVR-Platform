@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { backendUrl } from '../api/backendUrl'
 import { Eye, EyeOff, Phone, Cpu, Cloud, Zap, Shield, Globe, CheckCircle } from 'lucide-react'
 
 interface Props {
@@ -12,13 +13,54 @@ export default function LoginPage({ onLogin }: Props) {
   const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [errorMsg, setErrorMsg] = useState('')
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setTimeout(() => {
+    setErrorMsg('')
+    try {
+      let res = await fetch('/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      }).catch(() => null)
+
+      if (!res) {
+        res = await fetch(backendUrl('/api/v1/auth/login'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        }).catch(() => null)
+      }
+
+      if (!res) {
+        setIsLoading(false)
+        setErrorMsg('Unable to connect to authentication server.')
+        return
+      }
+
+      const data = await res.json()
       setIsLoading(false)
-      onLogin(email)
-    }, 900)
+      if (res.ok && data.success) {
+        if (data.token) {
+          localStorage.setItem('nexus_jwt_token', data.token)
+          localStorage.setItem('nexus_user', JSON.stringify(data.user))
+          if (data.user?.activeTenantId) {
+            localStorage.setItem('tenant_id', data.user.activeTenantId)
+          } else if (data.user?.id) {
+             // Fallback for owners if activeTenantId is not set directly
+             localStorage.setItem('tenant_id', data.user.id)
+          }
+        }
+        onLogin(data.user?.isSuperadmin ? 'admin@nexusivr.com' : email)
+      } else {
+        setErrorMsg(data.message || 'Invalid email or password.')
+      }
+    } catch (err: any) {
+      setIsLoading(false)
+      setErrorMsg('Unable to connect to authentication server.')
+    }
   }
 
   return (
@@ -152,13 +194,18 @@ export default function LoginPage({ onLogin }: Props) {
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-5">
+              {errorMsg && (
+                <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium">
+                  {errorMsg}
+                </div>
+              )}
               <div>
                 <label className="block text-[#374151] text-sm font-medium mb-1.5">Email address</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@company.com"
+                  placeholder="admin@nexusivr.com"
                   required
                   className="w-full h-11 px-4 rounded-xl border border-[#E5E7EB] bg-white text-[#1F2937] text-sm placeholder-[#9CA3AF] outline-none transition-all focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/10"
                 />
@@ -228,8 +275,9 @@ export default function LoginPage({ onLogin }: Props) {
             {/* Hint */}
             <div className="mt-6 p-4 rounded-xl bg-[#F8FAFC] border border-[#E5E7EB]">
               <p className="text-[#6B7280] text-xs">
-                <span className="font-semibold text-[#374151]">Demo:</span> Use <code className="bg-[#E5E7EB] px-1 rounded text-[#1F2937]">admin@...</code> for Super Admin,
-                any other email for Tenant Admin.
+                <span className="font-semibold text-[#374151]">Demo Credentials:</span><br />
+                • Super Admin: <code className="bg-[#E5E7EB] px-1 rounded text-[#1F2937]">admin@nexusivr.com</code> / <code className="bg-[#E5E7EB] px-1 rounded text-[#1F2937]">admin</code><br />
+                • Tenant Admin: <code className="bg-[#E5E7EB] px-1 rounded text-[#1F2937]">user@nexusivr.com</code> / <code className="bg-[#E5E7EB] px-1 rounded text-[#1F2937]">user</code>
               </p>
             </div>
           </div>

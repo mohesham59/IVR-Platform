@@ -25,6 +25,6 @@ public class AsteriskSynthesizedOutputFactory implements ResourceFactory<Synthes
 
     @Override
     public String getType() {
-        return "dummy";
+        return "asterisk-output";
     }
 }

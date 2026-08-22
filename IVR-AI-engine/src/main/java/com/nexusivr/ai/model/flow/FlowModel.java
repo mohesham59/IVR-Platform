@@ -23,7 +23,7 @@ public class FlowModel {
 
     public FlowModel(String id, String name, String description) {
         this.id = id;
-        this.name = name;
+        setName(name);
         this.description = description;
         this.voicexmlVersion = "2.1";
     }
@@ -41,6 +41,9 @@ public class FlowModel {
     }
 
     public void setName(String name) {
+        if (name != null) {
+            name = name.replaceAll("^[\\s\\\\n\\\\r]+", "").replaceAll("[\\s\\\\n\\\\r]+$", "").trim();
+        }
         this.name = name;
     }
 

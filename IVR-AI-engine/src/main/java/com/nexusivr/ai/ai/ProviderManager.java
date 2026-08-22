@@ -55,6 +55,7 @@ public class ProviderManager {
     // so it is never silently substituted when generation fails.
     private static final List<String> PROVIDER_PRIORITY = List.of(
             "groq",
+            "openrouter",
             "gemini",
             "ollama"
     );
@@ -68,8 +69,9 @@ public class ProviderManager {
         PROVIDER_MODELS.put("groq", List.of("llama-3.3-70b-versatile", "llama-3.1-8b-instant", "llama-3.1-70b", "mixtral"));
         PROVIDER_MODELS.put("gemini", List.of("gemini-2.0-flash", "gemini-1.5-flash"));
         PROVIDER_MODELS.put("ollama", List.of("granite3.2:2b", "llama3", "qwen", "mistral"));
+        PROVIDER_MODELS.put("openrouter", List.of("openai.gpt-oss-20b-1:0", "openai/gpt-oss-20b"));
         PROVIDER_MODELS.put("mock", List.of("mock-model"));
-        // NOTE: "openai" and "claude" providers removed — only gemini (default) and groq (fallback) are supported.
+        // NOTE: "openai" and "claude" providers removed — only openrouter, gemini (default) and groq (fallback) are supported.
     }
 
     /**
@@ -123,6 +125,7 @@ public class ProviderManager {
             case "gemini" -> com.nexusivr.ai.config.LlmConfig.getGeminiModel();
             case "groq"   -> com.nexusivr.ai.config.LlmConfig.getGroqModel();
             case "ollama"  -> com.nexusivr.ai.config.LlmConfig.getOllamaModel();
+            case "openrouter" -> com.nexusivr.ai.config.LlmConfig.getOpenrouterModel();
             default -> {
                 List<String> models = PROVIDER_MODELS.get(provider);
                 yield (models != null && !models.isEmpty()) ? models.get(0) : "default";
@@ -159,6 +162,14 @@ public class ProviderManager {
                     "ollama",
                     "", // Ollama doesn't require API Key normally
                     com.nexusivr.ai.config.LlmConfig.getOllamaBaseUrl(),
+                    model,
+                    timeoutSeconds,
+                    temperature
+            );
+            case "openrouter" -> new OpenAiCompatibleClient(
+                    "openrouter",
+                    com.nexusivr.ai.config.LlmConfig.getOpenrouterApiKey(),
+                    com.nexusivr.ai.config.LlmConfig.getOpenrouterBaseUrl(),
                     model,
                     timeoutSeconds,
                     temperature
@@ -451,6 +462,11 @@ public class ProviderManager {
                                                    String userPrompt, String callerLabel,
                                                    List<QuotaWarning> quotaWarnings, String domain,
                                                    boolean structuredOutput) {
+        UUID currentSessionId = com.nexusivr.ai.service.GenerationCancellationRegistry.getCurrentSessionId();
+        if (currentSessionId != null && com.nexusivr.ai.service.GenerationCancellationRegistry.isCancelled(currentSessionId)) {
+            throw new com.nexusivr.ai.service.exception.GenerationCancelledException("Generation request was cancelled.");
+        }
+
         List<String> providersToTry = new ArrayList<>(PROVIDER_PRIORITY);
 
         // If a specific provider was requested, try it first, then fall back to priority order.
@@ -479,6 +495,10 @@ public class ProviderManager {
         List<com.nexusivr.ai.dto.common.ProviderAttemptDto> providerAttempts = new ArrayList<>();
 
         for (String targetProvider : providersToTry) {
+            UUID checkSessionId = com.nexusivr.ai.service.GenerationCancellationRegistry.getCurrentSessionId();
+            if (checkSessionId != null && com.nexusivr.ai.service.GenerationCancellationRegistry.isCancelled(checkSessionId)) {
+                throw new com.nexusivr.ai.service.exception.GenerationCancelledException("Generation request was cancelled.");
+            }
             if (!isProviderAvailable(targetProvider)) {
                 ProviderHealth health = getHealth(targetProvider);
                 CircuitBreaker breaker = getCircuitBreaker(targetProvider);
@@ -584,15 +604,17 @@ public class ProviderManager {
             return null;
         }
 
+        boolean templateGeneratorAttempted = false;
         logger.warn("[AI_PROVIDER] [{}] All real LLM providers exhausted after retries. Invoking last-resort TemplateGenerator circuit-breaker.", callerLabel);
         try {
+            templateGeneratorAttempted = true;
             TemplateGenerator templateGen = new TemplateGenerator(getProviderDefaultModel("template-generator"), domain);
             AiResponse templateResponse = structuredOutput
                     ? templateGen.generateStructuredResponse(systemInstruction, userPrompt, List.of(), domain)
                     : templateGen.generateResponse(systemInstruction, userPrompt, List.of());
             if (templateResponse != null && templateResponse.getContent() != null && !templateResponse.getContent().isBlank()) {
                 logger.info("[AI_PROVIDER] [{}] TemplateGenerator circuit-breaker generated fallback response successfully for domain='{}'.",
-                        callerLabel, domain);
+                         callerLabel, domain);
                 return new AiResponse(
                         templateResponse.getContent(),
                         "template-generator",
@@ -638,7 +660,18 @@ public class ProviderManager {
         }
 
         Map<String, String> providerStatuses = collectProviderStatuses(providersToTry);
-        throw new ProviderException(originalRequestedProvider, errorMsg, reason, providerStatuses);
+        
+        String actualProvider = templateGeneratorAttempted ? "template-generator" : (lastAttemptedProvider != null ? lastAttemptedProvider : originalRequestedProvider);
+        boolean fallback = providerAttempts.size() > 1 || templateGeneratorAttempted;
+        List<String> attemptedList = new ArrayList<>();
+        for (com.nexusivr.ai.dto.common.ProviderAttemptDto attempt : providerAttempts) {
+            attemptedList.add(attempt.getProvider());
+        }
+        if (templateGeneratorAttempted) {
+            attemptedList.add("template-generator");
+        }
+
+        throw new ProviderException(originalRequestedProvider, errorMsg, reason, providerStatuses, "none", false, attemptedList);
     }
 
     private AiResponse attemptWithRetries(LlmClient client, String provider, String model, double temp,
@@ -648,6 +681,10 @@ public class ProviderManager {
         String errorContent = null;
 
         for (int attempt = 1; attempt <= MAX_RETRIES_PER_PROVIDER; attempt++) {
+            UUID checkSessionId = com.nexusivr.ai.service.GenerationCancellationRegistry.getCurrentSessionId();
+            if (checkSessionId != null && com.nexusivr.ai.service.GenerationCancellationRegistry.isCancelled(checkSessionId)) {
+                throw new com.nexusivr.ai.service.exception.GenerationCancelledException("Generation request was cancelled.");
+            }
             logger.info("[ProviderManager] [{}] Attempt {}/{} on provider '{}' (model='{}', structuredOutput={}).",
                     callerLabel, attempt, MAX_RETRIES_PER_PROVIDER, provider, model, structuredOutput);
 
@@ -745,6 +782,28 @@ public class ProviderManager {
             statuses.put(provider, status);
         }
         return statuses;
+    }
+
+    public Map<String, Map<String, Object>> getProviderHealthOverview() {
+        Map<String, Map<String, Object>> overview = new LinkedHashMap<>();
+        for (String provider : List.of("groq", "gemini", "openrouter", "ollama")) {
+            Map<String, Object> item = new HashMap<>();
+            ProviderHealth health = getHealth(provider);
+            CircuitBreaker breaker = circuitBreakerMap.get(provider);
+
+            boolean available = isProviderAvailable(provider);
+            String state = breaker != null ? breaker.getStateName() : "CLOSED";
+            long cooldownMs = getCooldownRemainingMs(provider);
+
+            item.put("provider", provider);
+            item.put("status", available ? "HEALTHY" : (state.equals("OPEN") ? "CIRCUIT_OPEN" : "UNHEALTHY"));
+            item.put("circuitState", state);
+            item.put("cooldownRemainingSeconds", (int) Math.max(0, cooldownMs / 1000));
+            item.put("consecutiveFailures", health != null ? health.getConsecutiveFailures() : 0);
+            item.put("lastFailureReason", (health != null && health.getLastFailureReason() != null) ? health.getLastFailureReason() : "None");
+            overview.put(provider, item);
+        }
+        return overview;
     }
 
     private static String capitalize(String value) {

@@ -26,6 +26,16 @@ public class FlowNode {
     private FlowAi ai;
     private String voicexmlRef; // reference to original VoiceXML form id
 
+    private String promptEn;
+    private String promptAr;
+    private String audioEn;
+    private String audioAr;
+    private String aiRole;
+    private Integer maxDigits;
+    private Integer menuOptionsCount;
+    private String variableName;
+    private String variableValue;
+
     public FlowNode() {
     }
 
@@ -183,6 +193,45 @@ public class FlowNode {
         return prompt != null || menu != null || input != null || transfer != null ||
                queue != null || condition != null || businessHours != null || recording != null ||
                api != null || database != null || voicemail != null || webhook != null || ai != null;
+    }
+
+    public String getPromptEn() { return promptEn; }
+    public void setPromptEn(String promptEn) { this.promptEn = promptEn; }
+
+    public String getPromptAr() { return promptAr; }
+    public void setPromptAr(String promptAr) { this.promptAr = promptAr; }
+
+    public String getAudioEn() { return audioEn; }
+    public void setAudioEn(String audioEn) { this.audioEn = audioEn; }
+
+    public String getAudioAr() { return audioAr; }
+    public void setAudioAr(String audioAr) { this.audioAr = audioAr; }
+
+    public String getAiRole() { return aiRole; }
+    public void setAiRole(String aiRole) { this.aiRole = aiRole; }
+
+    public Integer getMaxDigits() { return maxDigits; }
+    public void setMaxDigits(Integer maxDigits) { this.maxDigits = maxDigits; }
+
+    public Integer getMenuOptionsCount() { return menuOptionsCount; }
+    public void setMenuOptionsCount(Integer menuOptionsCount) {
+        this.menuOptionsCount = menuOptionsCount;
+    }
+
+    public String getVariableName() {
+        return variableName;
+    }
+
+    public void setVariableName(String variableName) {
+        this.variableName = variableName;
+    }
+
+    public String getVariableValue() {
+        return variableValue;
+    }
+
+    public void setVariableValue(String variableValue) {
+        this.variableValue = variableValue;
     }
 
     @Override

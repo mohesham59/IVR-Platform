@@ -1,8 +1,11 @@
-import { useState, type ReactNode } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
+import { backendUrl } from '../api/backendUrl'
+import NotificationBell from './NotificationBell'
+import AccountMenu from './AccountMenu'
 import {
-  Activity, BarChart3, Bell, Building2, ChevronDown, ChevronLeft, ChevronRight,
-  CreditCard, LayoutDashboard, LogOut, Moon, Phone, ScrollText, Search, Settings, Users,
+  Activity, BarChart3, Building2, ChevronDown, ChevronLeft, ChevronRight,
+  CreditCard, LayoutDashboard, LogOut, Moon, Phone, ScrollText, Settings, Users,
 } from 'lucide-react'
 
 const navItems = [
@@ -19,13 +22,24 @@ const navItems = [
 interface SuperAdminLayoutProps {
   children: ReactNode
   pageTitle: string
+  pageSubtitle?: string
+  headerActions?: ReactNode
   onLogout: () => void
 }
 
-export default function SuperAdminLayout({ children, pageTitle, onLogout }: SuperAdminLayoutProps) {
+export default function SuperAdminLayout({ children, pageTitle, pageSubtitle, headerActions, onLogout }: SuperAdminLayoutProps) {
   const [collapsed, setCollapsed] = useState(false)
-  const [darkMode, setDarkMode] = useState(false)
-  const navigate = useNavigate()
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark')
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
+  }, [darkMode])
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden">
@@ -46,15 +60,22 @@ export default function SuperAdminLayout({ children, pageTitle, onLogout }: Supe
       </aside>
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header className="h-16 bg-white border-b border-[#E5E7EB] flex items-center px-6 gap-4 flex-shrink-0 z-20">
-          <div className="relative flex-1 max-w-sm"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" /><input placeholder="Search companies, users…" className="w-full h-9 pl-9 pr-4 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] text-[#1F2937] text-sm placeholder-[#9CA3AF] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition-all" /></div>
           <div className="flex items-center gap-2 ml-auto">
             <button onClick={() => setDarkMode(!darkMode)} className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${darkMode ? 'bg-[#1F2937] text-white' : 'text-[#6B7280] hover:bg-[#F3F4F6]'}`}><Moon className="w-4 h-4" /></button>
-            <button className="relative w-8 h-8 rounded-lg flex items-center justify-center text-[#6B7280] hover:bg-[#F3F4F6] transition-colors"><Bell className="w-4 h-4" /><span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#EF4444]" /></button>
-            <button className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-lg hover:bg-[#F3F4F6] transition-colors"><div className="w-7 h-7 rounded-full bg-[#2563EB] flex items-center justify-center text-white text-xs font-bold">SA</div><div className="text-left hidden sm:block"><div className="text-[#1F2937] text-xs font-semibold leading-tight">Super Admin</div><div className="text-[#9CA3AF] text-[10px]">admin@nexusivr.io</div></div><ChevronDown className="w-3 h-3 text-[#9CA3AF]" /></button>
-            <button onClick={() => { onLogout(); navigate('/') }} className="w-8 h-8 rounded-lg flex items-center justify-center text-[#9CA3AF] hover:text-[#EF4444] hover:bg-[#FEF2F2] transition-colors"><LogOut className="w-4 h-4" /></button>
+            <NotificationBell />
+            <AccountMenu role="super_admin" onLogout={onLogout} />
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto p-6 space-y-6"><div><h1 className="text-[#1F2937] text-xl font-bold">{pageTitle}</h1></div>{children}</main>
+        <main className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-[#1F2937] text-xl font-bold">{pageTitle}</h1>
+              {pageSubtitle && <p className="text-[#9CA3AF] text-xs mt-0.5">{pageSubtitle}</p>}
+            </div>
+            {headerActions && <div className="flex items-center gap-3">{headerActions}</div>}
+          </div>
+          {children}
+        </main>
       </div>
     </div>
   )

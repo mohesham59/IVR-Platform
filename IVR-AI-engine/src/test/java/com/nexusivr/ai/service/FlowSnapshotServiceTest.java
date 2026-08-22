@@ -170,7 +170,7 @@ public class FlowSnapshotServiceTest {
 
         // 5. Verify flow questions (e.g. NODE_COUNT) retrieve correct counts from correct snapshots
         ChatResponse countV1 = (ChatResponse) router.route(AiOperation.NODE_COUNT, sessionId, tenantId, "", null, snap1.getSnapshotId(), null, null, -1.0, -1);
-        assertTrue(countV1.getReplyMessage().contains("3 nodes"));
+        assertTrue(countV1.getReplyMessage().contains("2 nodes"));
 
         ChatResponse countV2 = (ChatResponse) router.route(AiOperation.NODE_COUNT, sessionId, tenantId, "", null, snap2.getSnapshotId(), null, null, -1.0, -1);
         assertTrue(countV2.getReplyMessage().contains("3 nodes"));

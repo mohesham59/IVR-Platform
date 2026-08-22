@@ -10,18 +10,21 @@ export interface ValidationItem {
   nodeId?: string
 }
 
-export function isPlaceholderDestination(dest?: string): boolean {
-  if (!dest || !dest.trim()) return true
-  const d = dest.trim().toLowerCase()
-  if (d === 'transfer_target_placeholder' || d === 'unconfigured' || d === 'placeholder') return true
-  if (/^\+?[0-9*#]{2,15}$/.test(dest.trim())) return false
-  if (/^(sip|sips|tel):/i.test(dest.trim())) return false
-  if (d === 'agent_queue' || d === 'fraud_hotline') return false
-  return true
+export function isPlaceholderDestination(d: string): boolean {
+  if (!d) return true
+  const normalized = d.trim()
+  if (!normalized) return true
+  const lower = normalized.toLowerCase()
+  if (/placeholder/i.test(lower)) return true
+  if (/^(enter|set|specify|type|insert|choose|add)\b/.test(lower)) return true
+  if (/^(destination|target|extension|number|recipient|transfer\s?number)$/.test(lower)) return true
+  if (!/[a-z0-9+#*]/i.test(normalized)) return true
+  return false
 }
 
 interface Props {
   selectedNode: FlowNode | null
+  selectedEdge?: FlowEdge | null
   flowName: string
   nodesCount: number
   edgesCount: number
@@ -30,6 +33,7 @@ interface Props {
   activeTab: 'props' | 'versions' | 'validation'
   onTabChange: (t: 'props' | 'versions' | 'validation') => void
   onNodeChange?: (updatedNode: FlowNode) => void
+  onEdgeChange?: (updatedEdge: FlowEdge) => void
   onRestoreVersion?: (version: FlowVersion) => void
   onSelectNode?: (nodeId?: string) => void
   onSaveVersion?: () => void
@@ -90,6 +94,54 @@ function Toggle({ label, checked, onChange }: { label: string; checked?: boolean
   )
 }
 
+function AudioUploader({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const tenantId = localStorage.getItem('tenant_id') || '11111111-1111-1111-1111-111111111111';
+      const res = await fetch('/api/v1/voice-prompts/upload', {
+        method: 'POST',
+        headers: {
+          'X-Tenant-ID': tenantId
+        },
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success && data.fileName) {
+        onChange(data.fileName);
+      } else {
+        alert(data.message || 'Failed to upload audio file');
+      }
+    } catch (err) {
+      alert('Error uploading file');
+    } finally {
+      setIsUploading(false);
+      e.target.value = ''; // Reset input
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2 w-full">
+      <div className="flex-1 min-w-0">
+        <TextInput value={value} onChange={onChange} placeholder="e.g. uploaded_file.wav" />
+      </div>
+      <label className={`flex-shrink-0 flex items-center justify-center h-8 px-3 rounded-lg border border-[#E5E7EB] bg-white text-xs font-medium cursor-pointer hover:bg-[#F9FAFB] transition-colors ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+        {isUploading ? 'Uploading...' : 'Upload'}
+        <input type="file" accept="audio/wav,.wav" className="hidden" onChange={handleUpload} />
+      </label>
+    </div>
+  );
+}
+
+
 function NodePropsContent({ node, onNodeChange }: { node: FlowNode; onNodeChange?: (updated: FlowNode) => void }) {
   const def = NODE_DEFS[node.type] || { label: node.type, description: '', iconBg: '#EFF6FF', color: '#2563EB' }
 
@@ -125,34 +177,84 @@ function NodePropsContent({ node, onNodeChange }: { node: FlowNode; onNodeChange
         </FieldRow>
 
         {/* Type-specific fields */}
-        {(node.type === 'greeting' || node.type === 'playback') && (
-          <FieldRow label="Audio File">
-            <SelectInput
-              options={['welcome_hospital.wav', 'afterhours_msg.wav', 'hold_music.wav', 'beep.wav']}
-              value={node.subtitle || 'welcome_hospital.wav'}
-              onChange={v => handleUpdate({ subtitle: v })}
-            />
-          </FieldRow>
+        {node.type === 'playback' && (
+          <div className="space-y-3 pt-2 border-t border-[#F3F4F6]">
+            <h4 className="text-[#9CA3AF] text-[10px] font-semibold uppercase tracking-wider">Playback Audio</h4>
+            <div className="p-2.5 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] space-y-3">
+              <FieldRow label="Primary Audio File (en)">
+                 <AudioUploader 
+                    value={node.audioEn || ''}
+                    onChange={(fileName) => handleUpdate({ audioEn: fileName })}
+                 />
+              </FieldRow>
+              <FieldRow label="Secondary Audio File (ar) - Optional">
+                 <AudioUploader 
+                    value={node.audioAr || ''}
+                    onChange={(fileName) => handleUpdate({ audioAr: fileName })}
+                 />
+              </FieldRow>
+            </div>
+          </div>
         )}
-        {node.type === 'tts' && (
-          <>
-            <FieldRow label="Text / Template">
-              <textarea
-                className="w-full px-2.5 py-2 rounded-lg border border-[#E5E7EB] bg-white text-xs text-[#1F2937] outline-none focus:border-[#2563EB] resize-none"
-                rows={3}
-                value={node.subtitle || 'Thank you for calling. Please stay on the line.'}
-                onChange={e => handleUpdate({ subtitle: e.target.value })}
-              />
-            </FieldRow>
-            <FieldRow label="Voice">
-              <SelectInput options={['Polly.Joanna (en-US)', 'Polly.Matthew (en-US)', 'Polly.Amy (en-GB)']} />
-            </FieldRow>
-          </>
+
+        {['greeting', 'dtmf_menu', 'tts', 'ai', 'voicemail', 'record', 'dtmf_input', 'transfer'].includes(node.type) && (
+          <div className="space-y-3 pt-2 border-t border-[#F3F4F6]">
+            <h4 className="text-[#9CA3AF] text-[10px] font-semibold uppercase tracking-wider">Bilingual Prompts</h4>
+            
+            {/* English Config */}
+            <div className="p-2.5 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] space-y-2">
+              <span className="text-[#374151] text-[11px] font-bold">English (en)</span>
+              <FieldRow label="Text Prompt">
+                <textarea
+                  className="w-full px-2.5 py-1.5 rounded-lg border border-[#E5E7EB] bg-white text-xs text-[#1F2937] outline-none focus:border-[#2563EB] resize-none"
+                  rows={2}
+                  placeholder="e.g. Press 1 for Sales"
+                  value={node.promptEn ?? ''}
+                  onChange={e => handleUpdate({ promptEn: e.target.value })}
+                />
+              </FieldRow>
+              <FieldRow label="Audio File (optional)">
+                <TextInput placeholder="e.g. menu_en.wav" value={node.audioEn ?? ''} onChange={v => handleUpdate({ audioEn: v })} />
+              </FieldRow>
+            </div>
+
+            {/* Arabic Config */}
+            <div className="p-2.5 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] space-y-2">
+              <span className="text-[#374151] text-[11px] font-bold">Arabic (ar)</span>
+              <FieldRow label="Text Prompt">
+                <textarea
+                  className="w-full px-2.5 py-1.5 rounded-lg border border-[#E5E7EB] bg-white text-xs text-[#1F2937] outline-none focus:border-[#2563EB] resize-none"
+                  rows={2}
+                  placeholder="e.g. للمبيعات اضغط 1"
+                  value={node.promptAr ?? ''}
+                  onChange={e => handleUpdate({ promptAr: e.target.value })}
+                  dir="rtl"
+                />
+              </FieldRow>
+              <FieldRow label="Audio File (optional)">
+                <TextInput placeholder="e.g. menu_ar.wav" value={node.audioAr ?? ''} onChange={v => handleUpdate({ audioAr: v })} />
+              </FieldRow>
+            </div>
+          </div>
         )}
+
         {node.type === 'dtmf_menu' && (
-          <>
-            <FieldRow label="Prompt File">
-              <SelectInput options={['menu_main.wav', 'menu_billing.wav', 'menu_support.wav']} />
+          <div className="space-y-3 pt-2 border-t border-[#F3F4F6]">
+            <FieldRow label="Number of Options">
+              <SelectInput 
+                options={['2', '3', '4', '5', '6', '7', '8', '9']} 
+                value={node.menuOptionsCount?.toString() || '4'}
+                onChange={(val) => {
+                  const count = parseInt(val, 10);
+                  const newPorts = [];
+                  for (let i = 1; i <= count; i++) {
+                    const idStr = i === 10 ? '0' : i.toString();
+                    newPorts.push({ id: `key${idStr}`, label: `Key ${idStr}`, color: '#8B5CF6', type: 'output' as const });
+                  }
+                  newPorts.push({ id: 'timeout', label: 'Timeout', color: '#F59E0B', type: 'output' as const });
+                  handleUpdate({ menuOptionsCount: count, ports: newPorts });
+                }}
+              />
             </FieldRow>
             <FieldRow label="Max Retries">
               <SelectInput options={['1', '2', '3', '5']} value="3" />
@@ -160,69 +262,56 @@ function NodePropsContent({ node, onNodeChange }: { node: FlowNode; onNodeChange
             <FieldRow label="Timeout (sec)">
               <TextInput value="5" />
             </FieldRow>
-          </>
+          </div>
         )}
-        {(node.type === 'transfer' || node.type === 'extension') && (() => {
-          const currentDest = node.transferDestination ?? node.dest ?? ''
-          const isPlaceholder = isPlaceholderDestination(currentDest)
-          return (
-            <>
-              <FieldRow label="Destination Extension / Target">
-                <TextInput
-                  placeholder="e.g. +1003, 1001, or sip:agent@company.com"
-                  value={currentDest}
-                  onChange={v => handleUpdate({ transferDestination: v, dest: v })}
-                />
-              </FieldRow>
-              {isPlaceholder && (
-                <div className="p-2.5 rounded-lg bg-[#FEF3C7] border border-[#FDE68A] text-[#B45309] text-xs flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 text-[#F59E0B] flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-semibold text-[11px]">Unconfigured Transfer Target</p>
-                    <p className="text-[10px] text-[#92400E] mt-0.5">
-                      This node currently has a placeholder target ('{currentDest || 'None'}'). Please enter a dialable extension or SIP URI before publishing.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </>
-          )
-        })()}
 
-        {node.type === 'queue' && (
-          <>
-            <FieldRow label="Queue Name">
-              <SelectInput options={['appt-queue', 'billing-queue', 'support-queue', 'vip-queue']} value="appt-queue" />
+        {node.type === 'dtmf_input' && (
+          <div className="space-y-3 pt-2 border-t border-[#F3F4F6]">
+            <FieldRow label="Max Digits">
+              <TextInput placeholder="e.g. 4" value={node.maxDigits ?? ''} onChange={v => handleUpdate({ maxDigits: v })} />
             </FieldRow>
-            <FieldRow label="Max Wait Time (sec)">
-              <TextInput value="300" />
-            </FieldRow>
-          </>
+          </div>
         )}
+
         {node.type === 'api' && (
-          <>
+          <div className="space-y-3 pt-2 border-t border-[#F3F4F6]">
             <FieldRow label="Method">
               <SelectInput options={['GET', 'POST', 'PUT', 'DELETE']} value="GET" />
             </FieldRow>
             <FieldRow label="Endpoint URL">
               <TextInput value={node.subtitle?.startsWith('http') ? node.subtitle : 'https://api.nexusivr.com/verify'} onChange={v => handleUpdate({ subtitle: v })} />
             </FieldRow>
-          </>
+          </div>
         )}
-        {node.type === 'ai' && (
-          <>
-            <FieldRow label="AI Model">
-              <SelectInput options={['llama-3.3-70b-versatile', 'granite3.2:2b']} />
+
+        {node.type === 'variable' && (
+          <div className="space-y-3 pt-2 border-t border-[#F3F4F6]">
+            <FieldRow label="Variable Name">
+              <TextInput value={node.variableName ?? ''} onChange={v => handleUpdate({ variableName: v })} placeholder="e.g. language" />
             </FieldRow>
-            <FieldRow label="System Prompt">
+            <FieldRow label="Variable Value">
+              <TextInput value={node.variableValue ?? ''} onChange={v => handleUpdate({ variableValue: v })} placeholder="e.g. 'en'" />
+            </FieldRow>
+          </div>
+        )}
+
+        {node.type === 'ai' && (
+          <div className="space-y-3 pt-2 border-t border-[#F3F4F6]">
+            <FieldRow label="AI Role (System Prompt)">
               <textarea
                 className="w-full px-2.5 py-2 rounded-lg border border-[#E5E7EB] bg-white text-xs text-[#1F2937] outline-none focus:border-[#2563EB] resize-none"
                 rows={3}
-                value={node.subtitle || 'You are an AI IVR assistant. Assist callers clearly.'}
-                onChange={e => handleUpdate({ subtitle: e.target.value })}
+                placeholder="e.g. You are a polite hospital assistant."
+                value={node.aiRole ?? ''}
+                onChange={e => handleUpdate({ aiRole: e.target.value })}
               />
             </FieldRow>
-          </>
+            <div className="p-2.5 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE]">
+              <p className="text-[10px] text-[#1D4ED8] leading-tight">
+                <strong>Dynamic Routing:</strong> To add routing options, draw connections from this node to other nodes. The AI will automatically map the connection labels to intents!
+              </p>
+            </div>
+          </div>
         )}
       </section>
 
@@ -451,6 +540,7 @@ function ValidationContent({ items, onSelectNode }: { items: ValidationItem[]; o
 
 export default function PropertiesPanel({
   selectedNode,
+  selectedEdge,
   flowName,
   nodesCount,
   edgesCount,
@@ -459,6 +549,7 @@ export default function PropertiesPanel({
   activeTab,
   onTabChange,
   onNodeChange,
+  onEdgeChange,
   onRestoreVersion,
   onSelectNode,
   onSaveVersion,
@@ -497,35 +588,58 @@ export default function PropertiesPanel({
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
         {activeTab === 'props' && (
-          selectedNode
-            ? <NodePropsContent node={selectedNode} onNodeChange={onNodeChange} />
-            : (
-              <div className="space-y-4">
-                <div className="p-3 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB]">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Layers className="w-4 h-4 text-[#2563EB]" />
-                    <p className="text-[#1F2937] font-semibold text-sm">{flowName || 'IVR Flow'}</p>
-                  </div>
-                  <p className="text-[#9CA3AF] text-xs">Active Flow Overview</p>
+          selectedNode ? (
+            <NodePropsContent node={selectedNode} onNodeChange={onNodeChange} />
+          ) : selectedEdge ? (
+            <div className="space-y-4">
+              <div className="p-3 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB]">
+                <div className="flex items-center gap-2 mb-1">
+                  <GitBranch className="w-4 h-4 text-[#8B5CF6]" />
+                  <p className="text-[#1F2937] font-semibold text-sm">Connection Properties</p>
                 </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="p-2.5 rounded-lg border border-[#F3F4F6] bg-white">
-                    <div className="text-sm font-bold text-[#2563EB]">{nodesCount}</div>
-                    <div className="text-[#9CA3AF] text-[10px]">Total Nodes</div>
-                  </div>
-                  <div className="p-2.5 rounded-lg border border-[#F3F4F6] bg-white">
-                    <div className="text-sm font-bold text-[#8B5CF6]">{edgesCount}</div>
-                    <div className="text-[#9CA3AF] text-[10px]">Connections</div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col items-center justify-center py-8 text-center border-t border-[#F3F4F6]">
-                  <p className="text-[#374151] font-medium text-xs">No node selected</p>
-                  <p className="text-[#9CA3AF] text-[11px] mt-1">Click a node on the canvas to inspect and edit its properties.</p>
+                <p className="text-[#9CA3AF] text-xs">Edit connection label</p>
+              </div>
+              <div className="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden shadow-sm shadow-black/5">
+                <div className="p-3 space-y-3">
+                  <FieldRow label="Label">
+                    <input
+                      type="text"
+                      className="w-full h-8 px-2 border border-[#D1D5DB] rounded bg-[#F9FAFB] text-sm text-[#111827] focus:outline-none focus:ring-1 focus:ring-[#2563EB] focus:border-[#2563EB] transition-all"
+                      placeholder="Enter connection label..."
+                      value={selectedEdge.label || ''}
+                      onChange={e => onEdgeChange?.({ ...selectedEdge, label: e.target.value })}
+                    />
+                  </FieldRow>
                 </div>
               </div>
-            )
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="p-3 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB]">
+                <div className="flex items-center gap-2 mb-1">
+                  <Layers className="w-4 h-4 text-[#2563EB]" />
+                  <p className="text-[#1F2937] font-semibold text-sm">{flowName || 'IVR Flow'}</p>
+                </div>
+                <p className="text-[#9CA3AF] text-xs">Active Flow Overview</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-2.5 rounded-lg border border-[#F3F4F6] bg-white">
+                  <div className="text-sm font-bold text-[#2563EB]">{nodesCount}</div>
+                  <div className="text-[#9CA3AF] text-[10px]">Total Nodes</div>
+                </div>
+                <div className="p-2.5 rounded-lg border border-[#F3F4F6] bg-white">
+                  <div className="text-sm font-bold text-[#8B5CF6]">{edgesCount}</div>
+                  <div className="text-[#9CA3AF] text-[10px]">Connections</div>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center justify-center py-8 text-center border-t border-[#F3F4F6]">
+                <p className="text-[#374151] font-medium text-xs">No element selected</p>
+                <p className="text-[#9CA3AF] text-[11px] mt-1">Click a node or connection on the canvas to inspect and edit its properties.</p>
+              </div>
+            </div>
+          )
         )}
         {activeTab === 'versions' && (
           <VersionsContent

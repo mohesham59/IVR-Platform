@@ -180,6 +180,16 @@ public class FlowContextService {
         }
         try {
             com.google.gson.JsonObject obj = com.google.gson.JsonParser.parseString(json).getAsJsonObject();
+            if (obj.has("connections") && !obj.has("edges")) {
+                FlowModel directModel = new com.google.gson.GsonBuilder()
+                        .registerTypeAdapter(com.nexusivr.ai.model.flow.FlowNodeType.class, new com.nexusivr.ai.model.flow.FlowNodeTypeAdapter())
+                        .create()
+                        .fromJson(json, FlowModel.class);
+                if (directModel != null && directModel.getNodes() != null) {
+                    return directModel;
+                }
+            }
+
             FlowModel model = new FlowModel();
             model.setName(obj.has("name") ? obj.get("name").getAsString() : "Frontend Flow");
             model.setDescription("Imported from React Flow JSON");
@@ -201,6 +211,28 @@ public class FlowContextService {
                     if (nodeObj.has("subtitle")) {
                         node.setSubtitle(nodeObj.get("subtitle").getAsString());
                     }
+                    if (nodeObj.has("promptEn") && !nodeObj.get("promptEn").isJsonNull()) node.setPromptEn(nodeObj.get("promptEn").getAsString());
+                    if (nodeObj.has("promptAr") && !nodeObj.get("promptAr").isJsonNull()) node.setPromptAr(nodeObj.get("promptAr").getAsString());
+                    if (nodeObj.has("audioEn") && !nodeObj.get("audioEn").isJsonNull()) node.setAudioEn(nodeObj.get("audioEn").getAsString());
+                    if (nodeObj.has("audioAr") && !nodeObj.get("audioAr").isJsonNull()) node.setAudioAr(nodeObj.get("audioAr").getAsString());
+                    if (nodeObj.has("aiRole") && !nodeObj.get("aiRole").isJsonNull()) node.setAiRole(nodeObj.get("aiRole").getAsString());
+                    
+                    if (nodeObj.has("maxDigits") && !nodeObj.get("maxDigits").isJsonNull()) {
+                        try { node.setMaxDigits(Integer.parseInt(nodeObj.get("maxDigits").getAsString())); } catch (Exception ignored) {}
+                    }
+                    if (nodeObj.has("menuOptionsCount") && !nodeObj.get("menuOptionsCount").isJsonNull()) {
+                        try { node.setMenuOptionsCount(nodeObj.get("menuOptionsCount").getAsInt()); } catch (Exception ignored) {}
+                    }
+                    if (nodeObj.has("prompt")) {
+                        com.nexusivr.ai.model.flow.FlowPrompt prompt = new com.nexusivr.ai.model.flow.FlowPrompt();
+                        prompt.setText(nodeObj.get("prompt").getAsString());
+                        node.setPrompt(prompt);
+                    } else if (nodeObj.has("subtitle")) {
+                        com.nexusivr.ai.model.flow.FlowPrompt prompt = new com.nexusivr.ai.model.flow.FlowPrompt();
+                        prompt.setText(nodeObj.get("subtitle").getAsString());
+                        node.setPrompt(prompt);
+                    }
+
                     if (type == FlowNodeType.MENU && nodeObj.has("ports") && nodeObj.get("ports").isJsonArray()) {
                         com.google.gson.JsonArray ports = nodeObj.getAsJsonArray("ports");
                         com.nexusivr.ai.model.flow.FlowMenu menu = new com.nexusivr.ai.model.flow.FlowMenu();
@@ -212,6 +244,21 @@ public class FlowContextService {
                         }
                         node.setMenu(menu);
                     }
+
+                    if (type == FlowNodeType.TRANSFER) {
+                        String dest = null;
+                        if (nodeObj.has("transferDestination")) {
+                            dest = nodeObj.get("transferDestination").getAsString();
+                        } else if (nodeObj.has("dest")) {
+                            dest = nodeObj.get("dest").getAsString();
+                        } else if (nodeObj.has("subtitle")) {
+                            dest = nodeObj.get("subtitle").getAsString();
+                        }
+                        if (dest != null && !dest.isBlank()) {
+                            node.setTransfer(new com.nexusivr.ai.model.flow.FlowTransfer(dest));
+                        }
+                    }
+
                     model.addNode(node);
                 }
             }

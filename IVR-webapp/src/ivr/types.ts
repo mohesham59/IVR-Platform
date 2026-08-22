@@ -5,20 +5,20 @@ export type NodeType =
   | 'tts'
   | 'dtmf_menu'
   | 'dtmf_input'
+  | 'voicemail'
+  | 'api'
+  | 'variable'
+  | 'ai'
+  | 'end'
   | 'queue'
   | 'transfer'
   | 'extension'
-  | 'voicemail'
   | 'record'
-  | 'api'
-  | 'database'
   | 'hours'
   | 'holiday'
   | 'condition'
-  | 'variable'
+  | 'database'
   | 'webhook'
-  | 'ai'
-  | 'end'
 
 export interface NodePort {
   id: string
@@ -40,6 +40,16 @@ export interface FlowNode {
   ports: NodePort[]
   transferDestination?: string
   dest?: string
+  prompt?: string
+  promptEn?: string
+  promptAr?: string
+  audioEn?: string
+  audioAr?: string
+  aiRole?: string
+  maxDigits?: string
+  menuOptionsCount?: number
+  variableName?: string
+  variableValue?: string
 }
 
 

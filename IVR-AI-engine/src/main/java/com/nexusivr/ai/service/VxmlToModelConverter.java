@@ -71,28 +71,48 @@ public class VxmlToModelConverter {
             model.setVoicexmlVersion("2.1");
         }
 
-        NodeList formNodes = root.getElementsByTagName("form");
-        if (formNodes.getLength() == 0) {
-            logger.warn("[VxmlToModelConverter] Parser Stage: VoiceXML → FlowModel. Status: FAILED. Reason: VXML must contain at least one <form>.");
-            throw new VxmlParseException("VXML must contain at least one <form>");
+        NodeList metas = root.getElementsByTagName("meta");
+        for (int i = 0; i < metas.getLength(); i++) {
+            Element metaEl = (Element) metas.item(i);
+            if ("flow-name".equalsIgnoreCase(metaEl.getAttribute("name"))) {
+                model.setName(metaEl.getAttribute("content"));
+            }
+        }
+
+        List<Element> dialogNodes = new ArrayList<>();
+        NodeList childNodes = root.getChildNodes();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            Node n = childNodes.item(i);
+            if (n.getNodeType() == Node.ELEMENT_NODE) {
+                String tagName = n.getNodeName();
+                if ("form".equalsIgnoreCase(tagName) || "menu".equalsIgnoreCase(tagName)) {
+                    dialogNodes.add((Element) n);
+                }
+            }
+        }
+        if (dialogNodes.isEmpty()) {
+            logger.warn("[VxmlToModelConverter] Parser Stage: VoiceXML → FlowModel. Status: FAILED. Reason: VXML must contain at least one <form> or <menu>.");
+            throw new VxmlParseException("VXML must contain at least one <form> or <menu>");
         }
 
         Map<String, FlowNode> nodeMap = new LinkedHashMap<>();
 
-        for (int i = 0; i < formNodes.getLength(); i++) {
-            Element formEl = (Element) formNodes.item(i);
+        for (int i = 0; i < dialogNodes.size(); i++) {
+            Element formEl = dialogNodes.get(i);
             FlowNode node = parseForm(formEl);
             if (node != null) {
+                if (i == 0 && node.getType() == FlowNodeType.PROMPT) {
+                    node.setType(FlowNodeType.START);
+                    node.setTitle("Start");
+                    node.setSubtitle("Entry Point");
+                }
                 model.addNode(node);
                 nodeMap.put(node.getId(), node);
-                if (model.getName() == null && node.getSubtitle() != null && !node.getSubtitle().isBlank()) {
-                    model.setName(node.getSubtitle());
-                }
             }
         }
 
-        for (int i = 0; i < formNodes.getLength(); i++) {
-            Element formEl = (Element) formNodes.item(i);
+        for (int i = 0; i < dialogNodes.size(); i++) {
+            Element formEl = dialogNodes.get(i);
             String formId = formEl.getAttribute("id");
             if (formId == null || formId.isBlank()) {
                 formId = nodeMap.keySet().toArray(new String[0])[i];
@@ -119,8 +139,21 @@ public class VxmlToModelConverter {
             nodeType = FlowNodeType.PROMPT;
         }
 
-        FlowNode node = new FlowNode(id, nodeType, formatTitle(id, nodeType));
+        String commentTitle = findPrecedingCommentTitle(formEl);
+        String title = (commentTitle != null && !commentTitle.isBlank()) ? commentTitle : formatTitle(id, nodeType);
+        FlowNode node = new FlowNode(id, nodeType, title);
         node.setVoicexmlRef(id);
+
+        if ("menu".equalsIgnoreCase(formEl.getTagName())) {
+            node.setMenu(parseMenu(formEl));
+            String menuPrompt = parseMenuPrompt(formEl);
+            if (menuPrompt != null && !menuPrompt.isBlank()) {
+                if (node.getPrompt() == null) {
+                    node.setPrompt(new FlowPrompt());
+                }
+                node.getPrompt().setText(menuPrompt);
+            }
+        }
 
         NodeList children = formEl.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
@@ -154,26 +187,194 @@ public class VxmlToModelConverter {
                 case "disconnect", "hangup" -> node.setType(FlowNodeType.END);
                 case "if" -> node.setCondition(parseIf(el));
                 case "subdialog" -> node.setAi(new FlowAi("subdialog", ""));
+                case "ai" -> {
+                    FlowAi ai = new FlowAi();
+                    ai.setRole(el.getAttribute("role"));
+                    String optionsStr = el.getAttribute("options");
+                    if (optionsStr != null && !optionsStr.isBlank()) {
+                        LinkedHashMap<String, String> routingOptions = new LinkedHashMap<>();
+                        for (String opt : optionsStr.split(",")) {
+                            String[] parts = opt.split(":");
+                            if (parts.length == 2) {
+                                routingOptions.put(parts[0].trim(), parts[1].trim());
+                            }
+                        }
+                        ai.setRoutingOptions(routingOptions);
+                    }
+                    node.setAi(ai);
+                }
                 default -> {
+                }
+            }
+        }
+
+        // Fallback checks for nested tags anywhere in the form
+        if (node.getTransfer() == null) {
+            NodeList transfers = formEl.getElementsByTagName("transfer");
+            if (transfers.getLength() > 0) {
+                node.setTransfer(parseTransfer((Element) transfers.item(0)));
+            }
+        }
+        
+        if (node.getType() == FlowNodeType.VARIABLE) {
+            NodeList assigns = formEl.getElementsByTagName("assign");
+            NodeList vars = formEl.getElementsByTagName("var");
+            if (assigns.getLength() > 0) {
+                Element assignEl = (Element) assigns.item(0);
+                node.setVariableName(assignEl.getAttribute("name"));
+                node.setVariableValue(assignEl.getAttribute("expr").replaceAll("^['\"]|['\"]$", "")); // strip outer quotes
+            } else if (vars.getLength() > 0) {
+                Element varEl = (Element) vars.item(0);
+                node.setVariableName(varEl.getAttribute("name"));
+                node.setVariableValue(varEl.getAttribute("expr").replaceAll("^['\"]|['\"]$", ""));
+            }
+            node.setSubtitle("Set " + node.getVariableName() + " = " + node.getVariableValue());
+        }
+        if (node.getInput() == null) {
+            NodeList fields = formEl.getElementsByTagName("field");
+            if (fields.getLength() > 0) {
+                node.setInput(parseField((Element) fields.item(0)));
+            }
+        }
+        if (node.getMenu() == null) {
+            NodeList menus = formEl.getElementsByTagName("menu");
+            if (menus.getLength() > 0) {
+                Element menuEl = (Element) menus.item(0);
+                node.setMenu(parseMenu(menuEl));
+                String menuPrompt = parseMenuPrompt(menuEl);
+                if (menuPrompt != null && !menuPrompt.isBlank()) {
+                    if (node.getPrompt() == null) {
+                        node.setPrompt(new FlowPrompt());
+                    }
+                    node.getPrompt().setText(menuPrompt);
+                }
+            }
+        }
+
+        if (node.getAi() == null) {
+            NodeList ais = formEl.getElementsByTagName("ai");
+            if (ais.getLength() > 0) {
+                Element aiEl = (Element) ais.item(0);
+                FlowAi ai = new FlowAi();
+                ai.setRole(aiEl.getAttribute("role"));
+                String optionsStr = aiEl.getAttribute("options");
+                if (optionsStr != null && !optionsStr.isBlank()) {
+                    LinkedHashMap<String, String> routingOptions = new LinkedHashMap<>();
+                    for (String opt : optionsStr.split(",")) {
+                        String[] parts = opt.split(":");
+                        if (parts.length == 2) {
+                            routingOptions.put(parts[0].trim(), parts[1].trim());
+                        }
+                    }
+                    ai.setRoutingOptions(routingOptions);
+                }
+                node.setAi(ai);
+            } else {
+                NodeList subdialogs = formEl.getElementsByTagName("subdialog");
+                if (subdialogs.getLength() > 0) {
+                    node.setAi(new FlowAi("subdialog", ""));
                 }
             }
         }
 
         if (node.getType() == FlowNodeType.START) {
             node.setTitle("Start");
-            if (node.getPrompt() != null && node.getPrompt().getText() != null && !node.getPrompt().getText().isBlank()) {
-                node.setSubtitle(node.getPrompt().getDisplayText());
-            } else {
-                node.setSubtitle("Entry Point");
-            }
+            node.setSubtitle("Entry Point");
         } else if (node.getType() == FlowNodeType.END) {
-            node.setTitle("End Call");
-            node.setSubtitle("Hang up");
-        } else if (node.getPrompt() != null && node.getPrompt().getText() != null && !node.getPrompt().getText().isBlank()) {
-            node.setSubtitle(node.getPrompt().getDisplayText());
+            String formId = node.getId();
+            if (formId == null || formId.isBlank() || "end".equalsIgnoreCase(formId) || "disconnect".equalsIgnoreCase(formId)) {
+                node.setTitle("End Call");
+                node.setSubtitle("Hang up");
+            } else {
+                String[] words = formId.split("[_-]");
+                StringBuilder sb = new StringBuilder();
+                for (String word : words) {
+                    if (!word.isEmpty()) {
+                        if (sb.length() > 0) sb.append(" ");
+                        if ("sim".equalsIgnoreCase(word)) {
+                            sb.append("SIM");
+                        } else {
+                            sb.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
+                        }
+                    }
+                }
+                node.setTitle(sb.toString());
+                node.setSubtitle("Hang up");
+            }
         }
 
+        extractBilingualPrompts(formEl, node);
         return node;
+    }
+
+    private void extractBilingualPrompts(Element container, FlowNode node) {
+        NodeList prompts = container.getElementsByTagName("prompt");
+        StringBuilder en = new StringBuilder();
+        StringBuilder ar = new StringBuilder();
+        for (int i = 0; i < prompts.getLength(); i++) {
+            Element el = (Element) prompts.item(i);
+            
+            // Skip prompts that are inside error handlers or logic blocks
+            if (isInsideElement(el, "noinput") || isInsideElement(el, "nomatch") ||
+                isInsideElement(el, "filled") || isInsideElement(el, "catch") ||
+                isInsideElement(el, "if")) {
+                continue;
+            }
+            
+            String lang = el.getAttribute("xml:lang");
+            
+            // 1. If AI used xml:lang
+            if ("en".equalsIgnoreCase(lang)) {
+                en.append(parsePromptText(el)).append(" ");
+                continue;
+            } else if ("ar".equalsIgnoreCase(lang)) {
+                ar.append(parsePromptText(el)).append(" ");
+                continue;
+            }
+            
+            // 2. If AI used <en> and <ar> child elements
+            NodeList enNodes = el.getElementsByTagName("en");
+            NodeList arNodes = el.getElementsByTagName("ar");
+            if (enNodes.getLength() > 0 || arNodes.getLength() > 0) {
+                if (enNodes.getLength() > 0) en.append(enNodes.item(0).getTextContent().trim()).append(" ");
+                if (arNodes.getLength() > 0) ar.append(arNodes.item(0).getTextContent().trim()).append(" ");
+                continue;
+            }
+            
+            // 3. Fallback: AI concatenated them in a single string (split by first Arabic character)
+            String text = parsePromptText(el);
+            int firstArabicIndex = -1;
+            for (int j = 0; j < text.length(); j++) {
+                char c = text.charAt(j);
+                if (c >= '\u0600' && c <= '\u06FF') {
+                    firstArabicIndex = j;
+                    break;
+                }
+            }
+            
+            if (firstArabicIndex != -1) {
+                String enPart = text.substring(0, firstArabicIndex).trim();
+                String arPart = text.substring(firstArabicIndex).trim();
+                if (!enPart.isBlank()) en.append(enPart).append(" ");
+                if (!arPart.isBlank()) ar.append(arPart).append(" ");
+            } else {
+                // If it's pure English (no Arabic found)
+                en.append(text).append(" ");
+            }
+        }
+        if (en.length() > 0) node.setPromptEn(en.toString().trim());
+        if (ar.length() > 0) node.setPromptAr(ar.toString().trim());
+    }
+
+    private boolean isInsideElement(Node node, String tagName) {
+        Node parent = node.getParentNode();
+        while (parent != null && parent.getNodeType() == Node.ELEMENT_NODE) {
+            if (tagName.equalsIgnoreCase(parent.getNodeName())) {
+                return true;
+            }
+            parent = parent.getParentNode();
+        }
+        return false;
     }
 
     private FlowPrompt parseBlock(Element blockEl) {
@@ -459,10 +660,14 @@ public class VxmlToModelConverter {
                     if (isInsideField(gotoEl)) {
                         continue;
                     }
+                    String sourcePort = "out";
+                    if (sourceNode.getType() == FlowNodeType.TRANSFER) {
+                        sourcePort = isInsideFilled(gotoEl) ? "success" : "fail";
+                    }
                     model.addConnection(new FlowConnection(
                             "c_" + sourceId + "_" + targetId,
                             sourceId,
-                            "out",
+                            sourcePort,
                             targetId,
                             "in"
                     ));
@@ -609,9 +814,54 @@ public class VxmlToModelConverter {
                 }
             }
         }
+
+        // <ai> options connections
+        NodeList ais = formEl.getElementsByTagName("ai");
+        for (int i = 0; i < ais.getLength(); i++) {
+            Element aiEl = (Element) ais.item(i);
+            String optionsStr = aiEl.getAttribute("options");
+            if (optionsStr != null && !optionsStr.isBlank()) {
+                for (String opt : optionsStr.split(",")) {
+                    String[] parts = opt.split(":");
+                    if (parts.length == 2) {
+                        String port = parts[0].trim();
+                        String targetId = parts[1].trim();
+                        if (nodeMap.containsKey(targetId)) {
+                            model.addConnection(new FlowConnection(
+                                    "c_" + sourceId + "_" + targetId + "_" + port,
+                                    sourceId,
+                                    port,
+                                    targetId,
+                                    "in"
+                            ));
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private FlowNodeType determineNodeType(Element formEl) {
+        if (formEl.getElementsByTagName("assign").getLength() > 0 || formEl.getElementsByTagName("var").getLength() > 0) {
+            return FlowNodeType.VARIABLE;
+        }
+        if ("menu".equalsIgnoreCase(formEl.getTagName()) || formEl.getElementsByTagName("menu").getLength() > 0) {
+            return FlowNodeType.MENU;
+        }
+        if (formEl.getElementsByTagName("disconnect").getLength() > 0 ||
+            formEl.getElementsByTagName("hangup").getLength() > 0) {
+            return FlowNodeType.END;
+        }
+        if (formEl.getElementsByTagName("transfer").getLength() > 0) {
+            return FlowNodeType.TRANSFER;
+        }
+        if (formEl.getElementsByTagName("field").getLength() > 0) {
+            return FlowNodeType.INPUT;
+        }
+        if (formEl.getElementsByTagName("subdialog").getLength() > 0 ||
+            formEl.getElementsByTagName("ai").getLength() > 0) {
+            return FlowNodeType.AI;
+        }
         if (formEl.hasAttribute("id")) {
             String id = formEl.getAttribute("id").toLowerCase(Locale.ROOT);
             if ("start".equals(id)) {
@@ -656,8 +906,7 @@ public class VxmlToModelConverter {
         // LLMs often output "Billing & Payments" instead of "Billing &amp; Payments",
         // causing SAXException: "The entity name must immediately follow the '&'".
         trimmed = sanitizeBareAmpersands(trimmed);
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(false);
+        DocumentBuilderFactory factory = com.nexusivr.ai.util.SecureXmlFactory.newDocumentBuilderFactory(false);
         DocumentBuilder builder = factory.newDocumentBuilder();
         return builder.parse(new org.xml.sax.InputSource(new StringReader(trimmed)));
     }
@@ -755,6 +1004,45 @@ public class VxmlToModelConverter {
         Node current = node.getParentNode();
         while (current != null) {
             if (current.getNodeType() == Node.ELEMENT_NODE && "field".equalsIgnoreCase(((Element) current).getTagName())) {
+                return true;
+            }
+            current = current.getParentNode();
+        }
+        return false;
+    }
+
+    private static String findPrecedingCommentTitle(Element el) {
+        Node sibling = el.getPreviousSibling();
+        while (sibling != null) {
+            if (sibling.getNodeType() == Node.COMMENT_NODE) {
+                String commentText = sibling.getNodeValue().trim();
+                if (commentText.contains("(")) {
+                    commentText = commentText.substring(0, commentText.indexOf('(')).trim();
+                }
+                if (commentText.contains(":")) {
+                    commentText = commentText.substring(0, commentText.indexOf(':')).trim();
+                }
+                if (commentText.toLowerCase().startsWith("type")) {
+                    // skip
+                } else if (!commentText.isEmpty()) {
+                    return commentText;
+                }
+            } else if (sibling.getNodeType() == Node.TEXT_NODE) {
+                if (!sibling.getNodeValue().trim().isEmpty()) {
+                    break;
+                }
+            } else {
+                break;
+            }
+            sibling = sibling.getPreviousSibling();
+        }
+        return null;
+    }
+
+    private static boolean isInsideFilled(Node node) {
+        Node current = node.getParentNode();
+        while (current != null) {
+            if (current.getNodeType() == Node.ELEMENT_NODE && "filled".equalsIgnoreCase(((Element) current).getTagName())) {
                 return true;
             }
             current = current.getParentNode();

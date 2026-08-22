@@ -9,6 +9,9 @@ import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 /**
@@ -148,9 +151,9 @@ public class LlmConfig {
         return resolve("gemini.apiKey", "GEMINI_API_KEY", "").trim();
     }
 
-    /** Gemini model identifier. Default: gemini-2.5-flash. */
+    /** Gemini model identifier. Default: gemini-2.0-flash. */
     public static String getGeminiModel() {
-        return resolve("gemini.model", "GEMINI_MODEL", "gemini-2.5-flash").trim();
+        return resolve("gemini.model", "GEMINI_MODEL", "gemini-2.0-flash").trim();
     }
 
     /** Gemini model for Stage 1 planning. Default: gemini-2.0-flash. */
@@ -239,6 +242,30 @@ public class LlmConfig {
     }
 
     // ----------------------------------------------------------------
+    // OpenRouter configuration
+    // ----------------------------------------------------------------
+
+    public static String getOpenrouterApiKey() {
+        return resolve("openrouter.apiKey", "OPENROUTER_API_KEY", "").trim();
+    }
+
+    public static String getOpenrouterModel() {
+        return resolve("openrouter.model", "OPENROUTER_MODEL", "openai/gpt-oss-20b").trim();
+    }
+
+    public static String getOpenrouterBaseUrl() {
+        return resolve("openrouter.baseUrl", "OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").trim();
+    }
+
+    public static int getOpenrouterTimeout() {
+        return parseIntOrDefault(resolve("openrouter.timeout", "OPENROUTER_TIMEOUT", "35"), 35);
+    }
+
+    public static int getMaxTokens() {
+        return parseIntOrDefault(resolve("ai.maxTokens", "AI_MAX_TOKENS", "8192"), 8192);
+    }
+
+    // ----------------------------------------------------------------
     // Circuit Breaker configuration
     // ----------------------------------------------------------------
 
@@ -275,6 +302,91 @@ public class LlmConfig {
     /** Database password. Default: empty string. */
     public static String getDatabasePassword() {
         return resolve("db.password", "DATABASE_PASSWORD", "").trim();
+    }
+
+    // ----------------------------------------------------------------
+    // Dynamic Project Root & IVR Engine Configuration
+    // ----------------------------------------------------------------
+
+    /** Resolves the main repository project root directory dynamically at runtime. */
+    public static Path resolveProjectRoot() {
+        String customRoot = resolve("ivr.engine.root", "IVR_ENGINE_ROOT", null);
+        if (customRoot != null && !customRoot.isBlank()) {
+            Path p = Paths.get(customRoot.trim()).toAbsolutePath().normalize();
+            if (Files.exists(p)) {
+                return p;
+            }
+        }
+
+        String userDirStr = System.getProperty("user.dir", ".");
+        Path userDir = Paths.get(userDirStr).toAbsolutePath().normalize();
+
+        if (Files.exists(userDir.resolve("IVR-engine"))) {
+            return userDir;
+        }
+        if (userDir.getParent() != null && Files.exists(userDir.getParent().resolve("IVR-engine"))) {
+            return userDir.getParent();
+        }
+
+        try {
+            Path codeSourcePath = Paths.get(LlmConfig.class.getProtectionDomain().getCodeSource().getLocation().toURI()).toAbsolutePath().normalize();
+            Path cur = codeSourcePath;
+            while (cur != null) {
+                if (Files.exists(cur.resolve("IVR-engine"))) {
+                    return cur;
+                }
+                cur = cur.getParent();
+            }
+        } catch (Exception ignored) {
+        }
+
+        return userDir.getParent() != null ? userDir.getParent() : userDir;
+    }
+
+    private static String resolvePath(String pathStr) {
+        if (pathStr == null) {
+            return null;
+        }
+        pathStr = pathStr.trim();
+        if (pathStr.startsWith("\"") && pathStr.endsWith("\"")) {
+            pathStr = pathStr.substring(1, pathStr.length() - 1).trim();
+        }
+        Path path = Paths.get(pathStr);
+        if (path.isAbsolute()) {
+            if (Files.exists(path)) {
+                return path.toAbsolutePath().normalize().toString();
+            }
+            if (pathStr.contains("scenarios")) {
+                return resolveProjectRoot().resolve("IVR-engine").resolve("scenarios").toAbsolutePath().normalize().toString();
+            } else if (pathStr.contains("draft")) {
+                return resolveProjectRoot().resolve("IVR-engine").resolve("draft").toAbsolutePath().normalize().toString();
+            } else if (pathStr.contains("add_extension.sh") || pathStr.contains("add_extension")) {
+                return resolveProjectRoot().resolve("IVR-engine").resolve("add_extension.sh").toAbsolutePath().normalize().toString();
+            }
+            return path.toAbsolutePath().normalize().toString();
+        }
+        return resolveProjectRoot().resolve(path).toAbsolutePath().normalize().toString();
+    }
+
+    /** Drafts directory path. Default: <project_root>/IVR-engine/draft */
+    public static String getDraftsDir() {
+        String defaultDir = resolveProjectRoot().resolve("IVR-engine").resolve("draft").toAbsolutePath().toString();
+        String val = resolve("ivr.engine.draftsDir", "IVR_ENGINE_DRAFTS_DIR", defaultDir).trim();
+        return resolvePath(val);
+    }
+
+    /** Scenarios directory path. Default: <project_root>/IVR-engine/scenarios */
+    public static String getScenariosDir() {
+        String defaultDir = resolveProjectRoot().resolve("IVR-engine").resolve("scenarios").toAbsolutePath().toString();
+        String val = resolve("ivr.engine.scenariosDir", "IVR_ENGINE_SCENARIOS_DIR", defaultDir).trim();
+        return resolvePath(val);
+    }
+
+    /** Add extension script path. Default: <project_root>/IVR-engine/add_extension.sh */
+    public static String getAddExtensionScriptPath() {
+        String defaultDir = resolveProjectRoot().resolve("IVR-engine").resolve("add_extension.sh").toAbsolutePath().toString();
+        String val = resolve("ivr.engine.addExtensionScriptPath", "IVR_ENGINE_ADD_EXTENSION_SCRIPT", defaultDir).trim();
+        return resolvePath(val);
     }
 
     // ----------------------------------------------------------------

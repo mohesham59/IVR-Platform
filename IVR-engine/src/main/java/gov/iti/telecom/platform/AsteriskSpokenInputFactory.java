@@ -23,6 +23,6 @@ public class AsteriskSpokenInputFactory implements ResourceFactory<SpokenInput> 
 
     @Override
     public String getType() {
-        return "dummy";
+        return "asterisk-input";
     }
 }

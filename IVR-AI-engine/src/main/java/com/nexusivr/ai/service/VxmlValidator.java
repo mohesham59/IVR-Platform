@@ -162,8 +162,7 @@ public class VxmlValidator {
 
     private Document parseXml(String xml) throws ParserConfigurationException, SAXException, IOException {
         String trimmed = xml.trim();
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(false);
+        DocumentBuilderFactory factory = com.nexusivr.ai.util.SecureXmlFactory.newDocumentBuilderFactory(false);
         DocumentBuilder builder = factory.newDocumentBuilder();
         return builder.parse(new org.xml.sax.InputSource(new StringReader(trimmed)));
     }

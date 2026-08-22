@@ -91,6 +91,7 @@ public class VxmlSession {
 
     // Session data
     private final Map<String, Object> variables;
+    private AnalyticsTracker tracker;
 
     /**
      * Creates a new VXML session.
@@ -260,6 +261,14 @@ public class VxmlSession {
     public void clearVariables() {
         variables.clear();
         System.out.println("[VxmlSession] " + sessionId + " cleared all variables");
+    }
+
+    public AnalyticsTracker getTracker() {
+        return tracker;
+    }
+
+    public void setTracker(AnalyticsTracker tracker) {
+        this.tracker = tracker;
     }
 
     /**

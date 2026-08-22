@@ -183,6 +183,12 @@ class DomainDetectorTest {
     }
 
     @Test
+    void testArabicGovernmentKeywordsAreDetectedAsGovernment() {
+        String prompt = "نظام الرد الآلي في الجوازات للاستعلام عن جوازات السفر والمعاملات في الهيئة";
+        assertEquals("government", DomainDetector.detect(prompt));
+    }
+
+    @Test
     void testRetailIvrIsDetectedAsRetail() {
         String prompt = "Retail IVR. Options: order status, return and refund, store hours, ecommerce support.";
         assertEquals("retail", DomainDetector.detect(prompt));
@@ -212,5 +218,52 @@ class DomainDetectorTest {
         assertNotEquals("insurance", domain,
                 "Government IVR with ordinance/legislation must not be classified as insurance");
         assertEquals("government", domain);
+    }
+
+    @Test
+    void testEgyptianArabicDialectDetectionForEachDomain() {
+        // Healthcare
+        assertEquals("healthcare", DomainDetector.detect("عايز مستشفى قريبة أو دكتور كويس أحجز عنده كشف"));
+        assertEquals("healthcare", DomainDetector.detect("عندي مشكلة ومحتاج حجز معاد في العيادة وعايز صيدلية تجيب الروشتة"));
+
+        // Education
+        assertEquals("education", DomainDetector.detect("عايز أسجل في الكلية وأشوف شؤون الطلاب عشان المحاضرة"));
+        assertEquals("education", DomainDetector.detect("تقديم جامعة القاهرة والمصاريف والمنهج الدراسي للطلبة"));
+
+        // Insurance
+        assertEquals("insurance", DomainDetector.detect("عايز أعمل تأمين على العربية وأدفع القسط السنوي للبوليصة"));
+        assertEquals("insurance", DomainDetector.detect("تقديم مطالبة تعويض عن حادثة لشركة التأمين"));
+
+        // Government
+        assertEquals("government", DomainDetector.detect("تجديد جواز السفر في مصلحة الجوازات أو السجل المدني"));
+        assertEquals("government", DomainDetector.detect("عايز أروح الشهر العقاري عشان توثيق وتراخيص المرور والضرائب"));
+
+        // Airline
+        assertEquals("airline", DomainDetector.detect("حجز رحلة طيران وميعاد الطيارة وتذاكر السفر للمطار"));
+        assertEquals("airline", DomainDetector.detect("استعلام عن شنط السفر في صالة الوصول بمطار القاهرة"));
+
+        // Hospitality
+        assertEquals("hospitality", DomainDetector.detect("حجز أوضة في فندق خمس نجوم مع روم سيرفيس"));
+        assertEquals("hospitality", DomainDetector.detect("لوكاندة كويسة في الإسكندرية وعايز ريسبشن عشان التشيك إن"));
+
+        // Restaurant
+        assertEquals("restaurant", DomainDetector.detect("عايز أطلب أوردر دليفري من مطعم سمك"));
+        assertEquals("restaurant", DomainDetector.detect("حجز ترابيزة لعيلة في مطعم سوري ومينيو الأكل"));
+
+        // Retail
+        assertEquals("retail", DomainDetector.detect("عملت شوبينج من المحل وعايز مرتجع أو استرجاع للفاتورة"));
+        assertEquals("retail", DomainDetector.detect("شراء منتج جديد من الدكان وفيه ضمان سنة"));
+
+        // Telecom
+        assertEquals("telecom", DomainDetector.detect("عايز أشحن رصيد خط اتصالات عشان باقة النت"));
+        assertEquals("telecom", DomainDetector.detect("شريحة خط وباقة المكالمات والانترنت"));
+
+        // Technical Support
+        assertEquals("technical_support", DomainDetector.detect("كلم الدعم الفني عشان السيستم عطلان والشبكة وقعت"));
+        assertEquals("technical_support", DomainDetector.detect("عندي مشكلة في اللابتوب وبايظ ومش شغال ومحتاج صيانة"));
+
+        // Banking
+        assertEquals("banking", DomainDetector.detect("عايز أسحب فلوس من البنك أو أعمل تحويل من حسابي"));
+        assertEquals("banking", DomainDetector.detect("طلب قرض من البنك والاستعلام عن كشف حساب الكارت"));
     }
 }

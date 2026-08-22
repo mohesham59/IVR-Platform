@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
+  <meta name="flow-name" content="Frontend Flow"/>
+  <!-- Start (n1) -->
+  <form id="n1">
+    <block>
+      <prompt bargein="false">Entry Point</prompt>
+      <goto next="#n2"/>
+    </block>
+  </form>
+  <!-- Language select (n2) -->
+  <menu id="n2">
+      <prompt bargein="true" xml:lang="en">
+        Thank you for calling XYZ Telecom Customer Support. Please note that this call may be recorded for quality assurance purposes. For English press 1, for Arabic press 2.
+      </prompt>
+      <prompt bargein="true" xml:lang="ar">
+        شكرًا لاتصالك بخدمة دعم XYZ للاتصالات. يُرجى ملاحظة أن هذه المكالمة قد تُسجَّل لأغراض ضمان الجودة. للمحاورة باللغة الإنجليزية اضغط 1، وللغة العربية اضغط 2.
+      </prompt>
+      <choice dtmf="1" next="#n3"/>
+      <choice dtmf="2" next="#n4"/>
+      <noinput>
+        <prompt xml:lang="en">We did not receive any input. Please try again.</prompt>
+        <prompt xml:lang="ar">لم نتلق أي إدخال. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </noinput>
+      <nomatch>
+        <prompt xml:lang="en">Invalid option. Please try again.</prompt>
+        <prompt xml:lang="ar">خيار غير صالح. يرجى المحاولة مرة أخرى.</prompt>
+        <reprompt/>
+      </nomatch>
+  </menu>
+  <!-- Lang en (n3) -->
+  <form id="n3">
+    <block>
+      <assign name="language" expr="'en'"/>
+      <goto next="#n5"/>
+    </block>
+  </form>
+  <!-- Lang ar (n4) -->
+  <form id="n4">
+    <block>
+      <assign name="language" expr="'ar'"/>
+      <goto next="#n5"/>
+    </block>
+  </form>
+  <!-- Main menu (n5) -->
+  <form id="n5">
+    <block>
+      <assign name="attemptCount" expr="'0'"/>
+      <goto next="#n21"/>
+    </block>
+  </form>
+  <!-- Billing submenu (n6) -->
+  <form id="n6">
+    <block>
+      <assign name="attemptCount" expr="'0'"/>
+      <goto next="#n21"/>
+    </block>
+  </form>
+  <!-- Roaming submenu (n7) -->
+  <form id="n7">
+    <block>
+      <assign name="attemptCount" expr="'0'"/>
+      <goto next="#n21"/>
+    </block>
+  </form>
+  <!-- Sim submenu (n8) -->
+  <form id="n8">
+    <block>
+      <assign name="attemptCount" expr="'0'"/>
+      <goto next="#n21"/>
+    </block>
+  </form>
+  <!-- Internet submenu (n9) -->
+  <form id="n9">
+    <block>
+      <assign name="attemptCount" expr="'0'"/>
+      <goto next="#n21"/>
+    </block>
+  </form>
+  <!-- Specialist transfer (n10) -->
+  <form id="n10">
+    <block>
+      <prompt bargein="false">Transfer the call to an agent or number</prompt>
+      <transfer dest="Transfer the call to an agent or number"/>
+    </block>
+  </form>
+  <!-- Billing outage (n11) -->
+  <form id="n11">
+    <block>
+      <prompt bargein="false">Transfer the call to an agent or number</prompt>
+      <transfer dest="Transfer the call to an agent or number"/>
+    </block>
+  </form>
+  <!-- Billing troubleshoot (n12) -->
+  <form id="n12">
+    <block>
+      <prompt bargein="false">Transfer the call to an agent or number</prompt>
+      <transfer dest="Transfer the call to an agent or number"/>
+    </block>
+  </form>
+  <!-- Billing plan (n13) -->
+  <form id="n13">
+    <block>
+      <prompt bargein="false">Transfer the call to an agent or number</prompt>
+      <transfer dest="Transfer the call to an agent or number"/>
+    </block>
+  </form>
+  <!-- Roaming outage (n14) -->
+  <form id="n14">
+    <block>
+      <prompt bargein="false">Transfer the call to an agent or number</prompt>
+      <transfer dest="Transfer the call to an agent or number"/>
+    </block>
+  </form>
+  <!-- Roaming troubleshoot (n15) -->
+  <form id="n15">
+    <block>
+      <prompt bargein="false">Transfer the call to an agent or number</prompt>
+      <transfer dest="Transfer the call to an agent or number"/>
+    </block>
+  </form>
+  <!-- Roaming plan (n16) -->
+  <form id="n16">
+    <block>
+      <prompt bargein="false">Transfer the call to an agent or number</prompt>
+      <transfer dest="Transfer the call to an agent or number"/>
+    </block>
+  </form>
+  <!-- Sim activation (n17) -->
+  <form id="n17">
+    <block>
+      <prompt bargein="false">Transfer the call to an agent or number</prompt>
+      <transfer dest="Transfer the call to an agent or number"/>
+    </block>
+  </form>
+  <!-- Sim troubleshoot (n18) -->
+  <form id="n18">
+    <block>
+      <prompt bargein="false">Transfer the call to an agent or number</prompt>
+      <transfer dest="Transfer the call to an agent or number"/>
+    </block>
+  </form>
+  <!-- Internet speedtest (n19) -->
+  <form id="n19">
+    <block>
+      <prompt bargein="false">Transfer the call to an agent or number</prompt>
+      <transfer dest="Transfer the call to an agent or number"/>
+    </block>
+  </form>
+  <!-- Internet troubleshoot (n20) -->
+  <form id="n20">
+    <block>
+      <prompt bargein="false">Transfer the call to an agent or number</prompt>
+      <transfer dest="Transfer the call to an agent or number"/>
+    </block>
+  </form>
+  <!-- Live agent (n21) -->
+  <form id="n21">
+    <block>
+      <prompt bargein="false">Transfer the call to an agent or number</prompt>
+      <transfer dest="Transfer the call to an agent or number"/>
+    </block>
+  </form>
+  <!-- Closing (n22) -->
+  <form id="n22">
+    <block>
+      <prompt bargein="false" xml:lang="en">
+        Thank you for contacting XYZ Telecom. Have a great day!
+      </prompt>
+      <prompt bargein="false" xml:lang="ar">
+        شكرًا لتواصلك مع XYZ للاتصالات. نتمنى لك يومًا سعيدًا!
+      </prompt>
+      <disconnect/>
+    </block>
+  </form>
+</vxml>

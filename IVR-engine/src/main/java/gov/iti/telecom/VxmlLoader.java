@@ -137,8 +137,11 @@ public class VxmlLoader {
         }
 
         // Load from classpath as fallback
-        String classpathResource = resourcePath.toString().replace("\\", "/") +
-                "/" + vxmlName + VXML_EXTENSION;
+        String resourceDir = resourcePath.toString().replace("\\", "/");
+        if (resourceDir.endsWith("/")) {
+            resourceDir = resourceDir.substring(0, resourceDir.length() - 1);
+        }
+        String classpathResource = resourceDir + "/" + vxmlName + VXML_EXTENSION;
         InputStream inputStream = getClass().getClassLoader()
                 .getResourceAsStream(classpathResource);
         if (inputStream != null) {
